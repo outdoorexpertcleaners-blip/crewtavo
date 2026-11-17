@@ -10,6 +10,7 @@ import { AUTOPAY_YOURS_TO_PAY } from "@crewtavo/core/autopay";
 import { lateFeeNotice, type LateFee } from "@crewtavo/core/billing";
 import { depositFor, type ContractInput, type LibrarySection } from "@crewtavo/core/contracts";
 import { documentColor, templateSettings, type TemplateSettings } from "@crewtavo/core/documents";
+import type { BrandProposal, ProposalBrand } from "@crewtavo/core/proposal";
 import type { ClientChecklist } from "@crewtavo/core/forms";
 import { SITE_ADJUSTMENT_NAME } from "@crewtavo/core/estimates";
 import { normalizePitch, pitchFactor } from "@crewtavo/core/geo";
@@ -45,6 +46,8 @@ export interface HubLine {
   /** Optional lines that share a group are one choice (Good, Better, Best): the client picks one. */
   option_group?: string | null;
 }
+/** One brand's Big Proposal as the Hub gets it: the settings, with addresses for its pictures. */
+export type HubBrandProposal = Omit<BrandProposal, "logo" | "testimonials_picture" | "insurance_picture" | "photos"> & { logo: string | null; testimonials_picture: string | null; insurance_picture: string | null; photos: string[] };
 export interface HubCompany {
   name: string;
   phone: string | null;
@@ -57,6 +60,8 @@ export interface HubCompany {
   address?: string[];
   /** The business's privacy policy link, when it set one (Settings → Company). */
   privacy_url?: string | null;
+  /** The Big Proposal while it's on (core proposal.ts), one look per brand, its pictures as addresses; null while off. */
+  big_proposal?: Record<ProposalBrand, HubBrandProposal> | null;
 }
 /** A map drawing the office chose to show the client, with the sizes measured on it. */
 export interface HubDrawing {

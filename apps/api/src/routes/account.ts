@@ -17,6 +17,7 @@ import { timeRates } from "../services/payRates";
 import { saveLetterheadPicture } from "../services/letterhead";
 import { emailCodesOffered, textCodesOffered } from "../services/signInCodes";
 import { removeLogo, setLogo } from "../services/logo";
+import { currentProposal, proposalPictureUrl, proposalSchema, saveProposal, saveProposalPicture } from "../services/proposal";
 import { removePhoto, setPhoto } from "../services/photos";
 import { adminAccess, allowAdminGrant, invitePerson, inviteStatus, sendInvite, welcomeLink, type TeamScope } from "../services/team";
 import { clientIp } from "../lib/visitor";
@@ -659,6 +660,28 @@ account.put("/company/logo", requireUser, requireCompany(ADMINS), async (c) => {
 account.delete("/company/logo", requireUser, requireCompany(ADMINS), async (c) => {
   await removeLogo(adminClient(c.env), c.var.companyId);
   return c.json({ ok: true });
+});
+
+/**
+ * The Big Proposal (services/proposal.ts; Outdoor Expert Cleaners' modification), from Settings →
+ * Proposal: its settings, and a picture for it uploaded on its own (base64 JPEG or PNG), which goes
+ * into use when the settings that name it are saved. Owners and admins change it, as the logo.
+ */
+account.get("/company/proposal", requireUser, requireCompany(ADMINS), async (c) => {
+  const { proposal } = await currentProposal(adminClient(c.env), c.var.companyId);
+  return c.json({ proposal });
+});
+
+account.put("/company/proposal", requireUser, requireCompany(ADMINS), async (c) => {
+  const body = await readJson(c, proposalSchema);
+  return c.json({ proposal: await saveProposal(adminClient(c.env), c.var.companyId, body) });
+});
+
+account.put("/company/proposal/picture", requireUser, requireCompany(ADMINS), async (c) => {
+  const body = await readJson(c, z.object({ picture: z.string().min(100).max(1_990_000).regex(/^[A-Za-z0-9+/]+={0,2}$/) }));
+  if (!(await allow(c.env, `proposal-picture:${c.var.companyId}`, 120, 3600))) throw new HttpError(429, "Too many pictures at once. Wait a while and try again.");
+  const path = await saveProposalPicture(adminClient(c.env), c.var.companyId, body.picture);
+  return c.json({ path, url: proposalPictureUrl(path) });
 });
 
 /**

@@ -15,6 +15,7 @@
     "./money": "./src/money.ts",
     "./materials": "./src/materials.ts",
     "./estimates": "./src/estimates.ts",
+    "./proposal": "./src/proposal.ts",
     "./documents": "./src/documents.ts",
     "./contracts": "./src/contracts.ts",
     "./formulas": "./src/formulas.ts",

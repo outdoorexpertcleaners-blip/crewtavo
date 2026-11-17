@@ -27,6 +27,7 @@ import { SalesAreaSettings } from "./SalesAreaSettings";
 import { ScheduleSettings } from "./ScheduleSettings";
 import { t } from "@/lib/i18n";
 import { settingsGroups, type SettingsTab } from "./sections";
+import { ProposalSettings } from "./ProposalSettings";
 import { StorageSettings } from "./StorageSettings";
 import { TeamSettings } from "./TeamSettings";
 import { TemplateSettings } from "./TemplateSettings";
@@ -84,6 +85,7 @@ export function SettingsPage() {
           {tab === "sales-areas" && <SalesAreaSettings />}
           {tab === "prices" && <PriceList />}
           {tab === "templates" && <TemplateSettings />}
+          {tab === "proposal" && <ProposalSettings />}
           {tab === "contracts" && <ContractSettings />}
           {tab === "custom-fields" && <CustomFieldSettings />}
           {tab === "checklists" && <ChecklistSettings />}
