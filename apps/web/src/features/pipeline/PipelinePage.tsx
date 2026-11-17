@@ -88,7 +88,7 @@ export function PipelinePage() {
     queryKey: key,
     queryFn: async () => {
       const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
-      const quoteFields = "id, number, title, status, brand, total, tax_rate, discount_amount, promo:promo_codes(kind, value), updated_at, client:clients(display_name, email, phone), options:quote_options!quote_options_quote_fkey(id), option:quote_options!quotes_option_fkey(name, tier), lines:quote_line_items(name), request:requests(stage), jobs:jobs!jobs_company_id_quote_id_fkey(status)";
+      const quoteFields = "id, number, title, status, brand, total, tax_rate, discount_amount, promo:promo_codes(kind, value), updated_at, client:clients(display_name, email, phone), options:quote_options!quote_options_quote_fkey(id), option:quote_options!quotes_option_fkey(name, tier), services:quote_line_items(name), request:requests(stage), jobs:jobs!jobs_company_id_quote_id_fkey(status)";
       const [requests, quotes, closed] = await Promise.all([
         supabase().from("requests").select("id, number, title, status, stage, brand, updated_at, client:clients(display_name, email, phone)").eq("company_id", company.id).in("status", ["new", "assessment_scheduled", "assessment_complete"]),
         supabase().from("quotes").select(quoteFields).eq("company_id", company.id).in("status", OPEN_STATUSES).eq("is_template", false),
@@ -105,7 +105,7 @@ export function PipelinePage() {
         const stage = quoteStage({ status: x.status, requestStage: x.request?.stage, jobStatus: x.jobs[0]?.status });
         if (!stage) continue;
         const price = listPrice(x);
-        cards.push({ kind: "quote", id: x.id, status: x.status, number: x.number, title: x.title, client: x.client?.display_name ?? "", email: x.client?.email ?? null, phone: x.client?.phone ?? null, value: price.amount, from: price.from, updated: x.updated_at, options: x.options.length, option: x.option, stage, brand: quoteBrand(x) });
+        cards.push({ kind: "quote", id: x.id, status: x.status, number: x.number, title: x.title, client: x.client?.display_name ?? "", email: x.client?.email ?? null, phone: x.client?.phone ?? null, value: price.amount, from: price.from, updated: x.updated_at, options: x.options.length, option: x.option, stage, brand: quoteBrand({ brand: x.brand, lines: x.services }) });
       }
       return { cards };
     },
