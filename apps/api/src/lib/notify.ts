@@ -4,8 +4,9 @@
  *      SMTP with an app password, or the company's Resend key;
  *   2. the server's Resend account (RESEND_API_KEY, EMAIL_FROM), if whoever installed it set one;
  *   3. in development, the local Mailpit inbox (MAILPIT_URL).
- * SMS uses Twilio over REST: the company's own account when it connected one (Apps → Twilio), else
- * the server's (lib/twilio.ts). When nothing is set up, sends are skipped and the caller gets
+ * SMS goes through the company's Quo when it set one up (Apps → Quo, lib/quo.ts: its own lines, one
+ * per brand, and while it's test only, only to its test numbers), else Twilio over REST: the
+ * company's own account when it connected one (Apps → Twilio), else the server's (lib/twilio.ts). When nothing is set up, sends are skipped and the caller gets
  * { sent: false } plus the reason; the UI can then offer the link to copy instead.
  * How each send for a company went is noted (noteSending), so its owners and admins hear on the bell
  * and by push when its email or texts stop going out, and not only on Settings → Email.
@@ -16,6 +17,8 @@ import { decryptJson } from "./crypto";
 import { reportError } from "./monitoring";
 import { smtpSend, SmtpError, type SmtpSettings } from "./smtp";
 import { adminClient } from "./supabase";
+import { quoLineFor, quoNumberAllowed } from "@crewtavo/core/quo";
+import { companyQuo, postQuoMessage, type QuoAccount } from "./quo";
 import { companyTwilio, postMessage, twilioFor, type TwilioAccount } from "./twilio";
 
 export interface SendResult {
@@ -122,6 +125,7 @@ export async function emailReady(env: Env, companyId?: string | null): Promise<b
 
 /** Can this company send texts (its own Twilio account, or the server's)? */
 export async function smsReady(env: Env, companyId?: string | null): Promise<boolean> {
+  if (companyId && (await companyQuo(env, companyId).catch(() => null))) return true;
   if (companyId && (await companyTwilio(env, companyId).catch(() => null))) return true;
   return smsConfigured(env);
 }
@@ -370,8 +374,14 @@ async function mailpit(env: Env, message: EmailMessage & { from?: string }): Pro
  * `companyId` (sends nobody is watching: notifications, automations, review asks), how it went is
  * also noted, so its owners hear when texts stop going out (noteSending).
  */
-export async function sendSms(env: Env, message: { to: string; body: string; company?: string | null }, companyId?: string | null): Promise<SendResult> {
+export async function sendSms(env: Env, message: { to: string; body: string; company?: string | null; brand?: "washing" | "lights" | null }, companyId?: string | null): Promise<SendResult> {
   const whose = companyId ?? message.company ?? null;
+  const quo = whose ? await companyQuo(env, whose).catch(() => null) : null;
+  if (quo) {
+    const result = await quoOut(quo, message);
+    if (companyId) await noteSending(env, companyId, "sms", result, true);
+    return result;
+  }
   const account = await twilioFor(env, whose);
   const result = await textOut(env, account, message);
   if (account?.own && whose) await noteTwilioHealth(env, whose, account, result);
@@ -393,6 +403,18 @@ async function noteTwilioHealth(env: Env, companyId: string, account: TwilioAcco
     .update({ status: next, last_error: result.sent ? null : (result.reason ?? "").slice(0, 500) })
     .eq("company_id", companyId)
     .eq("provider", "twilio");
+}
+
+/**
+ * A text through the company's Quo: from the line for its brand. While Quo is test only, a number
+ * that isn't on the test list isn't texted at all; in practice mode nothing leaves Crewtavo.
+ */
+async function quoOut(quo: QuoAccount, message: { to: string; body: string; brand?: "washing" | "lights" | null }): Promise<SendResult> {
+  if (!quoNumberAllowed(quo.settings, message.to)) return { sent: false, reason: "Not sent: Quo is in test mode, so it only texts the test numbers on Apps → Quo." };
+  const line = quoLineFor(quo.settings, message.brand ?? null);
+  if (quo.settings.practice) return { sent: true, id: `practice-${crypto.randomUUID()}` };
+  if (!line || !quo.apiKey) return { sent: false, reason: "Quo has no line to text from. Pick one on Apps → Quo." };
+  return postQuoMessage(quo.apiKey, line, message);
 }
 
 async function textOut(env: Env, account: TwilioAccount | null, message: { to: string; body: string }): Promise<SendResult> {

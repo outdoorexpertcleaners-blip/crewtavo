@@ -23,6 +23,7 @@ import { sendEmail, sendSms } from "../lib/notify";
 import { inboundAccounts } from "../lib/twilio";
 import { adminClient } from "../lib/supabase";
 import { companyAddress } from "../services/automations";
+import { brandFor } from "../services/brand";
 import { logoImage } from "../services/logo";
 import { receiveText } from "../services/inboundTexts";
 import { noteRefusedText, numberStopped, numberStoppedRefusal, phoneKey, setTexts, TextsRefusal, textsOffRefusal, textsOffTo } from "../services/textsOff";
@@ -59,7 +60,9 @@ messages.post("/messages/send", requireUser, requireCompany(SALES), async (c) =>
     if (textsOffTo(client, to)) throw new HttpError(400, textsOffRefusal(client.display_name));
     if (await numberStopped(adminClient(c.env), companyId, to)) throw new HttpError(400, numberStoppedRefusal(to));
     if (body.body.length > 1600) throw new HttpError(400, "Texts are limited to 1,600 characters.");
-    result = await sendSms(c.env, { to, body: body.body, company: companyId });
+    // From the line for the client's brand (their latest quote or request), when texts go through Quo.
+    const brand = await brandFor(adminClient(c.env), companyId, { clientId: client.id });
+    result = await sendSms(c.env, { to, body: body.body, company: companyId, ...(brand ? { brand } : {}) });
     await noteRefusedText(adminClient(c.env), client, to, result, companyId);
   }
   const { data: row, error } = await db

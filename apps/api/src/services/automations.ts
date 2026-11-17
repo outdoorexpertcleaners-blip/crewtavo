@@ -55,6 +55,7 @@ import { companyAddress, companyFooter, firstName, isEmail, renderEmail } from "
 import { clientLink } from "../lib/links";
 import { peopleOnVisits } from "./visitPeople";
 import { sendEmail, sendSms } from "../lib/notify";
+import { brandFor } from "./brand";
 import { adminClient, type Db } from "../lib/supabase";
 import { CAMPAIGN_LINK_DAYS, campaignRuleOf, letStretchGo, sendCampaignEmail } from "./automatedCampaigns";
 import { sendAutopayInvite } from "./autopay";
@@ -786,11 +787,13 @@ export async function performAction(env: Env, admin: Db, ctx: RunContext, action
       }
       // As with emails: their own links to the client's own phone, the office's copies to a contact's.
       const kept = { ...ctx, vars: await officeVars(env, ctx, baseUrl) };
+      // From the Quo line for the brand it's about (services/brand.ts), when texts go through Quo.
+      const brand = await brandFor(admin, ctx.company.id, { subject: ctx.subject, id: ctx.id, clientId: client.id });
       const delivery = await sendToEach(people, async (person) => {
         // The first text a number gets says how to stop them, and a promotional one always does (services/stopLine.ts).
         const result = await textWithStopLine(
           admin, ctx.company.id, person.to, render(action.body, person.contact_id ? kept : ctx),
-          (body) => sendSms(env, { to: person.to, body }, ctx.company.id),
+          (body) => sendSms(env, { to: person.to, body, brand }, ctx.company.id),
           { promotional: Boolean(ctx.campaign?.marketing) },
         );
         await noteRefusedText(admin, client, person.to, result, ctx.company.id);
