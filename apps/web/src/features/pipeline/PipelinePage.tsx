@@ -70,6 +70,7 @@ const OPEN_STATUSES = ["draft", "sent", "changes_requested", "approved"];
 const BRAND_LABEL: Record<Brand, string> = { washing: "Washing", lights: "Lights" };
 type BrandFilter = Brand | "all";
 
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 const daysOld = (iso: string) => Math.floor((Date.now() - Date.parse(iso)) / 86_400_000);
 
 export function PipelinePage() {
@@ -206,9 +207,9 @@ export function PipelinePage() {
       </div>
       {data.data && (
         <div className="stat-row">
-          <div className="card stat"><div className="label">Open quotes</div><div className="value">{formatMoney(openValue)}</div><div className="hint">{open.length} quotes · {cards.filter((c) => c.kind === "request").length} leads</div></div>
+          <div className="card stat"><div className="label">Open quotes</div><div className="value">{formatMoney(openValue)}</div><div className="hint">{plural(open.length, "quote")} · {plural(cards.filter((c) => c.kind === "request").length, "lead")}</div></div>
           <div className="card stat"><div className="label">Won (30 days)</div><div className="value">{formatMoney(sum(won))}</div><div className="hint">{won.length} converted to jobs</div></div>
-          <div className="card stat"><div className="label">Lost (30 days)</div><div className="value">{formatMoney(sum(lost))}</div><div className="hint">{lost.length} quotes</div></div>
+          <div className="card stat"><div className="label">Lost (30 days)</div><div className="value">{formatMoney(sum(lost))}</div><div className="hint">{plural(lost.length, "quote")}</div></div>
           <div className="card stat"><div className="label">Win rate (30 days)</div><div className="value">{winRate === null ? "—" : `${winRate}%`}</div></div>
         </div>
       )}
