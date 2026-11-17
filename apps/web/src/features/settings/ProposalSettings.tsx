@@ -151,7 +151,7 @@ export function ProposalSettings() {
         <Editor key={`${brand}-closing`} html={b.closing_html} onChange={(closing_html) => change({ closing_html })} label="In Closing" />
       </Card>
 
-      <div className="row" style={{ gap: 8, position: "sticky", bottom: 0, padding: "12px 0", background: "var(--bg)" }}>
+      <div className="row" style={{ gap: 8, position: "sticky", bottom: 0, padding: "12px 0", background: "var(--page)", borderTop: "1px solid var(--border)" }}>
         <Button type="submit" variant="primary" loading={save.isPending}>Save</Button>
         {save.error && <span className="error-text small">{(save.error as Error).message}</span>}
       </div>
