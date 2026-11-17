@@ -11,7 +11,7 @@
   --bp-menu: #f2f2f2;
   --bp-rule: #eee;
   --bp-link: #337ab7;
-  --bp-item: #0066ff;
+
   --bp-alert: #ff0000;
   --bp-body: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --bp-lato: "BP Lato", Georgia, Calibri, Helvetica, sans-serif;
@@ -92,7 +92,7 @@
 .lines th:last-child { text-align: right; padding-right: 5px; }
 .lines td { vertical-align: top; padding: 5px 5px 0 17px; }
 .amt { text-align: right; white-space: nowrap; padding-left: 5px !important; }
-.nm { font-weight: 600; color: var(--bp-item); }
+.nm { font-weight: var(--bp-item-weight, 600); color: var(--bp-item, #0066ff); }
 .qty { color: #777; font-size: 13px; }
 .desc { padding-bottom: 14px !important; white-space: pre-line; }
 .tot { width: 40%; min-width: 260px; margin: 40px 2% 0 auto; border-collapse: collapse; font-size: 13px; }

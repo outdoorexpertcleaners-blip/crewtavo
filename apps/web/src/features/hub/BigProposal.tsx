@@ -14,7 +14,7 @@ import { fillProposal, firstName, proposalBrand, proposalDate, type ProposalBran
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { ApiError } from "@/lib/api";
-import { formatMoney, todayIn } from "@/lib/format";
+import { formatMoneyCents as formatMoney, todayIn } from "@/lib/format";
 import { sanitizeHtml } from "@/lib/html";
 import type { HubBrandProposal, QuoteView } from "./document";
 import s from "./BigProposal.module.css";
@@ -35,8 +35,10 @@ export function bigProposalFor(data: QuoteView): { brand: ProposalBrand; look: H
   return { brand, look: bp[brand] };
 }
 
-export function BigProposal({ token, data, look, hubFetch, onChanged, onPrint, approval }: {
+export function BigProposal({ token, data, brand, look, hubFetch, onChanged, onPrint, approval }: {
   token: string;
+  /** Washing names its services in blue, as CF did; lights in plain text. */
+  brand: ProposalBrand;
   data: QuoteView;
   look: HubBrandProposal;
   hubFetch: Fetch;
@@ -79,7 +81,7 @@ export function BigProposal({ token, data, look, hubFetch, onChanged, onPrint, a
     else window.scrollTo({ top: 0 });
   };
 
-  const style = { ["--bp-brand" as string]: look.color };
+  const style = { ["--bp-brand" as string]: look.color, ["--bp-item" as string]: brand === "washing" ? "#0066ff" : "inherit", ["--bp-item-weight" as string]: brand === "washing" ? 600 : 400 };
   const footer = (
     <p className={s.foot}>
       <a href={SOURCE_URL} target="_blank" rel="noreferrer">Source code</a>

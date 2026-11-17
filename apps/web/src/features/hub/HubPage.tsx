@@ -235,7 +235,7 @@ export function HubPage() {
     );
     return (
       <>
-        <BigProposal token={token} data={d} look={big.look} hubFetch={hubFetch} onChanged={() => view.refetch()} onPrint={() => {
+        <BigProposal token={token} data={d} brand={big.brand} look={big.look} hubFetch={hubFetch} onChanged={() => view.refetch()} onPrint={() => {
           const url = new URL(window.location.href);
           url.searchParams.set("print", "1");
           window.location.assign(url.toString());
