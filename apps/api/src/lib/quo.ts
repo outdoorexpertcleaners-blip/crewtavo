@@ -12,6 +12,7 @@
  * "{webhook-id}.{webhook-timestamp}.{raw body}" with the key it gave when the webhook was made
  * ("whsec_" + base64), base64 in the webhook-signature header as "v1,<sig>" (several, space separated).
  */
+import { phoneE164 } from "@crewtavo/core/phone";
 import { quoSettings, type QuoLine, type QuoSettings } from "@crewtavo/core/quo";
 import type { Env } from "../env";
 import { decryptJson, safeEqual } from "./crypto";
@@ -103,7 +104,10 @@ export async function quoLines(apiKey: string, fetcher: FetchLike = fetch): Prom
 
 /** One text from a line. Quo's id for it, or why it wasn't sent. */
 export async function postQuoMessage(apiKey: string, line: QuoLine, message: { to: string; body: string }, fetcher: FetchLike = fetch): Promise<{ sent: boolean; id?: string; reason?: string; status?: number }> {
-  const res = await call(apiKey, "/messages", { method: "POST", body: JSON.stringify({ from: line.id, to: [message.to], content: message.body }) }, fetcher);
+  // Quo takes the number in E.164 (+14705550101) only.
+  const to = phoneE164(message.to);
+  if (!to) return { sent: false, reason: "That isn't a phone number Quo can text." };
+  const res = await call(apiKey, "/messages", { method: "POST", body: JSON.stringify({ from: line.id, to: [to], content: message.body }) }, fetcher);
   if (!res) return { sent: false, reason: "Couldn't reach Quo. Try again." };
   if (!res.ok) {
     const words = await refusal(res);

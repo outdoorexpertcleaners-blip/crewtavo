@@ -101,7 +101,8 @@ quo.put("/apps/quo/account", requireUser, requireCompany(ADMINS, "apps"), async 
       api_key: z.string().trim().max(300).regex(/^\S*$/, "Paste the key without spaces.").optional(),
       washing_line_id: z.string().trim().max(60).nullable(),
       lights_line_id: z.string().trim().max(60).nullable(),
-      test_numbers: numbers,
+      // Left out when changing the connection: the test numbers stay as they are (Test numbers changes them).
+      test_numbers: numbers.optional(),
     }),
   );
   const admin = adminClient(c.env);
@@ -130,7 +131,7 @@ quo.put("/apps/quo/account", requireUser, requireCompany(ADMINS, "apps"), async 
   const settings: QuoSettings = {
     practice: false,
     test_only: before?.test_only ?? true,
-    test_numbers: testNumbers(body.test_numbers),
+    test_numbers: body.test_numbers === undefined ? (before?.test_numbers ?? []) : testNumbers(body.test_numbers),
     lines: { ...(washing ? { washing } : {}), ...(lights ? { lights } : {}) },
     webhook_id: sameKey && !before?.practice ? (before?.webhook_id ?? null) : null,
   };

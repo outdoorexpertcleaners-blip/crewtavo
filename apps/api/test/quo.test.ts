@@ -67,7 +67,7 @@ describe("a text through Quo", () => {
     expect(await sendSms(env, { to: "(470) 555-0101", body: "Your lights quote", brand: "lights" }, co)).toEqual({ sent: true, id: "AC-sent" });
     expect(quo).toHaveLength(1);
     expect(quo[0]!.path).toBe("/messages");
-    expect(quo[0]!.body).toEqual({ from: "PNlights", to: ["(470) 555-0101"], content: "Your lights quote" });
+    expect(quo[0]!.body).toEqual({ from: "PNlights", to: ["+14705550101"], content: "Your lights quote" });
     expect(quo[0]!.headers.get("authorization")).toBe("quo-key");
     expect(quo[0]!.headers.get("quo-api-version")).toBe("2026-03-30");
     expect(twilio()).toBe(0);

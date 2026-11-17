@@ -112,7 +112,7 @@ function ConnectForm({ state, onSaved, onCancel }: { state: QuoState | null; onS
   });
   const save = useMutation({
     meta: { inline: true, success: "Quo connected, test only" },
-    mutationFn: () => api.put(`/apps/quo/account`, { ...(key ? { api_key: key.trim() } : {}), washing_line_id: washing || null, lights_line_id: lights || null, test_numbers: numbers }),
+    mutationFn: () => api.put(`/apps/quo/account`, { ...(key ? { api_key: key.trim() } : {}), washing_line_id: washing || null, lights_line_id: lights || null, ...(state ? {} : { test_numbers: numbers }) }),
     onSuccess: onSaved,
   });
   return (
@@ -156,9 +156,12 @@ function ConnectForm({ state, onSaved, onCancel }: { state: QuoState | null; onS
             </Field>
           </div>
         )}
-        <Field label="Test numbers" hint="The only numbers Crewtavo texts or hears from. One per line, up to 10: your own cell, or a teammate's who agreed.">
-          <textarea className="input" rows={3} value={numbers} onChange={(e) => setNumbers(e.target.value)} placeholder="(470) 555-0101" />
-        </Field>
+        {/* Set up already: the test numbers stay as they are, and change on their own card. */}
+        {!state && (
+          <Field label="Test numbers" hint="The only numbers Crewtavo texts or hears from. One per line, up to 10: your own cell, or a teammate's who agreed.">
+            <textarea className="input" rows={3} value={numbers} onChange={(e) => setNumbers(e.target.value)} placeholder="(470) 555-0101" />
+          </Field>
+        )}
         <FormError error={save.error} />
         <div className="row wrap" style={{ gap: 8 }}>
           <Button type="submit" variant="primary" loading={save.isPending} disabled={!lines && !hasKey}>Save</Button>
