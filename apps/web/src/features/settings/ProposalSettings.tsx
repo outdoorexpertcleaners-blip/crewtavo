@@ -60,7 +60,11 @@ export function ProposalSettings() {
   if (loaded.error) return <div className="card"><ErrorState error={loaded.error} onRetry={() => loaded.refetch()} /></div>;
 
   const b = draft.brands[brand];
-  const change = (patch: Partial<BrandProposal>) => setDraft({ ...draft, brands: { ...draft.brands, [brand]: { ...b, ...patch } } });
+  // From the latest draft, not this render's: an upload or a second editor can finish after other
+  // changes, and building on an older copy would undo them. The brand is the one shown when the
+  // change started, so a picture still uploading lands on the brand it was added to.
+  const change = (patch: Partial<BrandProposal>, on: ProposalBrand = brand) =>
+    setDraft((d) => (d ? { ...d, brands: { ...d.brands, [on]: { ...d.brands[on], ...patch } } } : d));
   const src = (path: string) => previews.current.get(path) ?? pictureUrl(path);
   const upload = async (file: File): Promise<string> => {
     const body = await compressImage(file, 1600, 0.82);
@@ -83,7 +87,7 @@ export function ProposalSettings() {
           When it's on, a quote's link opens as your Big Proposal: your letterhead, an introduction, your insurance, photos, testimonials, the price and a closing letter, with Accept and Decline at the top. Accept asks for their preferred dates, then they sign as usual. A quote with a lighting job on it (roofline, lights, wreaths…) uses the Christmas lights look; every other quote uses pressure washing.
         </span>
         <label className="switch-row">
-          <input type="checkbox" className="switch" checked={draft.enabled} onChange={(e) => setDraft({ ...draft, enabled: e.target.checked })} />
+          <input type="checkbox" className="switch" checked={draft.enabled} onChange={(e) => { const enabled = e.target.checked; setDraft((d) => (d ? { ...d, enabled } : d)); }} />
           Use the Big Proposal for client quotes
         </label>
       </div>
