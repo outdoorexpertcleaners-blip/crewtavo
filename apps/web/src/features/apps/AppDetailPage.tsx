@@ -152,7 +152,7 @@ function AppListing({ app, all, ai }: { app: AppRow; all: AppRow[]; ai: AiState 
     // The company's own Anthropic or OpenAI key (or the person's ChatGPT plan) turns on Ask and the other AI buttons, a fal.ai key
     // Find paving on the measuring map, its Twilio account texting (lib/session.tsx), and the
     // website's editor puts Website in the menu.
-    if (app.id === "anthropic" || app.id === "chatgpt" || app.id === "fal" || app.id === "twilio" || app.auth === "site") session.refresh();
+    if (app.id === "anthropic" || app.id === "chatgpt" || app.id === "fal" || app.id === "twilio" || app.id === "quo" || app.auth === "site") session.refresh();
   };
   const connect = useMutation({
     mutationFn: () => api.post<{ authorization_url: string }>(`/apps/${app.id}/connect`),

@@ -124,7 +124,7 @@ account.get("/me", requireUser, async (c) => {
   // ...and, on Railway, whether the owner still has to connect it (services/railway.ts).
   const [connected, agreements, railways] = companyIds.length
     ? await Promise.all([
-        adminClient(c.env).from("integrations").select("company_id, provider, external_account_id").in("provider", ["email", "anthropic", "chatgpt", "fal", "twilio"]).neq("status", "disconnected").in("company_id", companyIds),
+        adminClient(c.env).from("integrations").select("company_id, provider, external_account_id").in("provider", ["email", "anthropic", "chatgpt", "fal", "twilio", "quo"]).neq("status", "disconnected").in("company_id", companyIds),
         adminClient(c.env).from("terms_acceptances").select("company_id").eq("version", TERMS_VERSION).in("company_id", companyIds),
         adminClient(c.env).from("integrations").select("company_id, status").eq("provider", "railway").in("company_id", companyIds),
       ]).then(([apps, terms, railway]) => [must(apps), must(terms), must(railway)] as const)
@@ -134,7 +134,8 @@ account.get("/me", requireUser, async (c) => {
   const withAiKey = new Set(connected.filter((r) => r.provider === "anthropic" || r.provider === "chatgpt").map((r) => r.company_id));
   const withFal = new Set(connected.filter((r) => r.provider === "fal").map((r) => r.company_id));
   // (One connected with its Account SID: a key saved the old way never sent anything.)
-  const withTwilio = new Set(connected.filter((r) => r.provider === "twilio" && r.external_account_id).map((r) => r.company_id));
+  // Quo (Apps → Quo) texts too, in practice mode as well.
+  const withTwilio = new Set(connected.filter((r) => (r.provider === "twilio" && r.external_account_id) || r.provider === "quo").map((r) => r.company_id));
   // ...and where this person connected their own ChatGPT plan (Apps → ChatGPT), which answers what
   // they ask the AI themselves: AI is on for them there whatever the company has.
   const plans = rows.length ? await connectedPlans(adminClient(c.env), c.var.userId) : [];
