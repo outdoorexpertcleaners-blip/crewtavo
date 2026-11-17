@@ -31,7 +31,7 @@ const WAITING = ["sent", "changes_requested"];
 export function bigProposalFor(data: QuoteView): { brand: ProposalBrand; look: HubBrandProposal } | null {
   const bp = data.company.big_proposal;
   if (!bp) return null;
-  const brand = proposalBrand(data.quote.lines);
+  const brand = data.quote.brand ?? proposalBrand(data.quote.lines);
   return { brand, look: bp[brand] };
 }
 
