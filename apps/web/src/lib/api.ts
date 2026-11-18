@@ -17,6 +17,8 @@ export interface AppConfig {
   supabaseKey: string;
   /** One business per instance: no sign-up; the first person to open it creates the owner account. */
   singleCompany?: boolean;
+  /** The one business on this copy, for the sign-in page and the browser tab: its name and logo. */
+  brand?: { name: string; logo: string | null } | null;
   /** Where the instance runs: on Railway, setup offers to connect it (features/setup/RailwaySetupPage). */
   platform?: "railway" | "compose" | "server";
   mapsBrowserKey: string | null;
@@ -67,6 +69,16 @@ import.meta.hot?.dispose((data) => Object.assign(data, { configPromise, client, 
 
 const CONFIG_KEY = "crewtavo.config";
 
+/** What the browser tab calls the app: the business's name once the config says it (AppConfig.brand). */
+let brandName = (() => {
+  try {
+    return (JSON.parse(localStorage.getItem(CONFIG_KEY) ?? "null") as AppConfig | null)?.brand?.name ?? globalThis.document?.title ?? "";
+  } catch {
+    return globalThis.document?.title ?? "";
+  }
+})();
+export const appName = () => brandName;
+
 export function loadConfig(): Promise<AppConfig> {
   configPromise ??= fetch("/api/config")
     .then(async (res) => {
@@ -75,6 +87,7 @@ export function loadConfig(): Promise<AppConfig> {
         throw new ApiError(body.error ?? msg("Couldn't connect to Crewtavo. Try again in a moment."), res.status);
       }
       const config = (await res.json()) as AppConfig;
+      if (config.brand?.name) brandName = config.brand.name;
       try {
         localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
       } catch {

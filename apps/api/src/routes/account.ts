@@ -16,7 +16,7 @@ import { connectedPlans } from "../integrations/chatgptPlan";
 import { timeRates } from "../services/payRates";
 import { saveLetterheadPicture } from "../services/letterhead";
 import { emailCodesOffered, textCodesOffered } from "../services/signInCodes";
-import { removeLogo, setLogo } from "../services/logo";
+import { logoImage, removeLogo, setLogo } from "../services/logo";
 import { currentProposal, proposalPictureUrl, proposalSchema, saveProposal, saveProposalPicture } from "../services/proposal";
 import { removePhoto, setPhoto } from "../services/photos";
 import { adminAccess, allowAdminGrant, invitePerson, inviteStatus, sendInvite, welcomeLink, type TeamScope } from "../services/team";
@@ -40,6 +40,18 @@ function googlePicker(env: Env): { clientId: string; apiKey: string; appId: stri
   return { clientId: env.GOOGLE_CLIENT_ID, apiKey: env.GOOGLE_PICKER_API_KEY, appId };
 }
 
+/**
+ * The business a single-business copy is for (its name and logo), for the sign-in page. Null on a
+ * copy that hosts several (nothing about any of them is shown before sign-in), or with none yet.
+ */
+async function instanceBrand(env: Env): Promise<{ name: string; logo: string | null } | null> {
+  if (env.CREWTAVO_SINGLE_COMPANY !== "1") return null;
+  const { data, error } = await adminClient(env).from("companies").select("id, name, settings").limit(2);
+  if (error || !data || data.length !== 1) return null;
+  const company = data[0]!;
+  return { name: company.name, logo: logoImage("", company.id, company.settings)?.src ?? null };
+}
+
 /** Everything the SPA needs at startup, so it has no build-time environment variables. */
 account.get("/config", async (c) =>
   c.json(
@@ -48,6 +60,9 @@ account.get("/config", async (c) =>
       supabaseUrl: c.env.CREWTAVO_GATEWAY ? "" : c.env.SUPABASE_URL,
       supabaseKey: publishableKey(c.env),
       singleCompany: c.env.CREWTAVO_SINGLE_COMPANY === "1",
+      // The business this copy is for, when it has just one: the sign-in page and the browser tab
+      // show its name and logo rather than Crewtavo's (NOTICE: names and logos).
+      brand: await instanceBrand(c.env),
       // Where the instance runs (railway, compose or server), for setup steps that depend on it.
       platform: platformOf(c.env),
       // The Crewtavo Terms version that setting up a business agrees to (packages/core/src/terms.ts).

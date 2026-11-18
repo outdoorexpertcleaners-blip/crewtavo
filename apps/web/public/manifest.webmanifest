@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Crewtavo",
-  "short_name": "Crewtavo",
+  "name": "Outdoor Expert",
+  "short_name": "Outdoor Expert",
   "description": "Quotes, scheduling, field work and invoicing for service businesses.",
   "lang": "en",
   "start_url": "/",
@@ -14,8 +14,7 @@
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
-    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
     {
