@@ -1124,7 +1124,7 @@ async function findForm(c: Parameters<typeof appUrl>[0]) {
   const form = must(
     await admin
       .from("intake_forms")
-      .select("id, name, kind, questions, service_area_zips, lead_time_days, slot_minutes, max_per_day, requires_approval, pick_time, crew_id")
+      .select("id, name, kind, questions, service_area_zips, lead_time_days, slot_minutes, max_per_day, requires_approval, pick_time, crew_id, brand, lead_source")
       .eq("company_id", company.id)
       .eq("slug", c.req.param("form") ?? "")
       .eq("active", true)
@@ -1205,6 +1205,8 @@ publicRoutes.post("/public/forms/:company/:form", async (c) => {
       answers: formAnswers.default({}),
       files: formFiles,
       promo_code: z.string().trim().max(40).optional(),
+      // Where the lead came from, from the form's link (?source=Facebook): over the form's own.
+      source: z.string().trim().max(60).optional(),
       turnstile_token: z.string().optional(),
       // The time picked, on a form with "Let clients pick a time" on. Without one (the web app from
       // before there were times, or a form with nothing open) it's a plain request, as it always was.
@@ -1275,6 +1277,12 @@ publicRoutes.post("/public/forms/:company/:form", async (c) => {
         .single(),
     );
   }
+  // The form's brand on the request (its pipeline and workflows), and where the lead came from on a
+  // client that has none yet: the link's ?source=, else the form's own.
+  const formBrand = (form as { brand?: string | null }).brand;
+  if (formBrand === "washing" || formBrand === "lights") await admin.from("requests").update({ brand: formBrand }).eq("id", request.id);
+  const leadSource = (body.source || (form as { lead_source?: string | null }).lead_source || "").slice(0, 60);
+  if (leadSource) await admin.from("clients").update({ lead_source: leadSource }).eq("id", found.client_id).is("lead_source", null);
   // The number they typed, under the line that says the business may text it: where their say-so came from.
   if (body.phone && (await smsReady(c.env, company.id))) await noteTextConsent(admin, company.id, found.client_id, body.phone, "booking_form");
   if (found.new_property && found.property_id) geocodeLater(c, found.property_id, body.address);

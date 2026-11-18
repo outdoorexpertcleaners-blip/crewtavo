@@ -109,6 +109,8 @@ export function BookingFormPage() {
         answers: { ...answers, ...Object.fromEntries(Object.entries(files).filter(([, list]) => list.length).map(([key, list]) => [key, list.map((f) => f.name)])) },
         files: picked.map(({ question, file }) => ({ question, name: file.name, size: file.size, type: file.type || undefined })),
         promo_code: promo.offer ? promo.code : undefined,
+        // Where the lead came from, when the link says (?source=Facebook).
+        source: params.get("source")?.slice(0, 60) || undefined,
         turnstile_token: turnstile.token || undefined,
         starts_at: (booking && time?.starts_at) || undefined,
       });

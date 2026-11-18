@@ -1186,14 +1186,14 @@ isOneToOne: false
                   ]
                 },"intake_forms": {
                   Row: {
-                    "active": boolean,"company_id": string,"created_at": string,"crew_id": string | null,"id": string,"kind": string,"lead_time_days": number,"max_per_day": number | null,"name": string,"pick_time": boolean,"questions": NonNullable<Json>,"requires_approval": boolean,"service_area_zips": (string)[],"service_ids": (string)[],"slot_minutes": number | null,"slug": string,"updated_at": string
+                    "active": boolean,"brand": string | null,"company_id": string,"created_at": string,"crew_id": string | null,"id": string,"kind": string,"lead_time_days": number,"lead_source": string | null,"max_per_day": number | null,"name": string,"pick_time": boolean,"questions": NonNullable<Json>,"requires_approval": boolean,"service_area_zips": (string)[],"service_ids": (string)[],"slot_minutes": number | null,"slug": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "active"?: boolean,"company_id": string,"created_at"?: string,"crew_id"?: string | null,"id"?: string,"kind"?: string,"lead_time_days"?: number,"max_per_day"?: number | null,"name": string,"pick_time"?: boolean,"questions"?: NonNullable<Json>,"requires_approval"?: boolean,"service_area_zips"?: (string)[],"service_ids"?: (string)[],"slot_minutes"?: number | null,"slug": string,"updated_at"?: string
+                    "active"?: boolean,"brand"?: string | null,"company_id": string,"created_at"?: string,"crew_id"?: string | null,"id"?: string,"kind"?: string,"lead_time_days"?: number,"lead_source"?: string | null,"max_per_day"?: number | null,"name": string,"pick_time"?: boolean,"questions"?: NonNullable<Json>,"requires_approval"?: boolean,"service_area_zips"?: (string)[],"service_ids"?: (string)[],"slot_minutes"?: number | null,"slug": string,"updated_at"?: string
                   }
                   Update: {
-                    "active"?: boolean,"company_id"?: string,"created_at"?: string,"crew_id"?: string | null,"id"?: string,"kind"?: string,"lead_time_days"?: number,"max_per_day"?: number | null,"name"?: string,"pick_time"?: boolean,"questions"?: NonNullable<Json>,"requires_approval"?: boolean,"service_area_zips"?: (string)[],"service_ids"?: (string)[],"slot_minutes"?: number | null,"slug"?: string,"updated_at"?: string
+                    "active"?: boolean,"brand"?: string | null,"company_id"?: string,"created_at"?: string,"crew_id"?: string | null,"id"?: string,"kind"?: string,"lead_time_days"?: number,"lead_source"?: string | null,"max_per_day"?: number | null,"name"?: string,"pick_time"?: boolean,"questions"?: NonNullable<Json>,"requires_approval"?: boolean,"service_area_zips"?: (string)[],"service_ids"?: (string)[],"slot_minutes"?: number | null,"slug"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
