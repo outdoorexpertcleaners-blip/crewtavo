@@ -20,7 +20,6 @@ import { signOutNote, subCodeWays } from "@/features/auth/textCode";
 import { createItems, mobileTabs, NAV_GROUP_LABELS, NAV_GROUPS, navVisible, settingsItem, subCanOpen, type NavItem } from "./nav";
 import { HelpButton } from "./Help";
 import { NotificationsButton } from "./Notifications";
-import { BrandLockup } from "./BrandMark";
 import { RestartBanner } from "./RestartBanner";
 import { getLocale, showScreenLang, t } from "@/lib/i18n";
 
@@ -48,6 +47,14 @@ function useNewRequests() {
     refetchInterval: 60_000,
     meta: { silent: true },
   });
+}
+
+/** The business's logo at the top of the menu, or its name when it has none (or it can't load). */
+function BusinessBrand({ name, settings }: { name: string; settings: Record<string, unknown> }) {
+  const logo = logoUrl(settings);
+  const [broken, setBroken] = useState<string | null>(null);
+  if (!logo || broken === logo) return <span className="brand-name brand-business-name">{name}</span>;
+  return <img className="brand-business-logo" src={logo} alt={name} draggable={false} onError={() => setBroken(logo)} />;
 }
 
 /** The business's logo on white, as clients see it, or its initials when it has none (or it can't load). */
@@ -209,8 +216,9 @@ export function AppShell() {
       <RestartBanner />
 
       <aside className="sidebar" aria-label={t("Primary")} lang={shellLang}>
-        <Link to={sub ? "/field" : "/"} className="brand" aria-label={t("Crewtavo home")} viewTransition>
-          <BrandLockup size={30} />
+        {/* This modified copy shows the business's own logo (Settings → Company), not Crewtavo's (NOTICE: names and logos). */}
+        <Link to={sub ? "/field" : "/"} className="brand brand-business" aria-label={t("Home")} viewTransition>
+          <BusinessBrand name={session.company.name} settings={session.company.settings} />
         </Link>
         <nav className="nav nav-scroll">
           <CreateMenu />

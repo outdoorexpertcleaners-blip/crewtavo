@@ -33,8 +33,10 @@ export const NAV_GROUPS: NavItem[][] = [
   ],
   [
     { to: "/clients", label: msg("Clients"), icon: "clients", keywords: "customers contacts properties addresses client hub portal" },
+    { to: "/messages", label: msg("Messages"), icon: "messages", roles: ["admin", "office", "estimator"], keywords: "texts sms email inbox conversations quo" },
+    { to: "/pipeline", label: msg("Pipeline"), icon: "pipeline", roles: ["admin", "office", "estimator"], keywords: "sales board pipeline leads deals opportunities" },
     { to: "/requests", label: msg("Requests"), icon: "requests", keywords: "inquiries leads assessments website form messages contact form" },
-    { to: "/quotes", label: msg("Quotes"), icon: "quote", roles: ["admin", "office", "estimator"], also: ["/pipeline", "/measure"], keywords: "estimates proposals bids" },
+    { to: "/quotes", label: msg("Quotes"), icon: "quote", roles: ["admin", "office", "estimator"], also: ["/measure"], keywords: "estimates proposals bids" },
     { to: "/jobs", label: msg("Jobs"), icon: "job", keywords: "work orders projects recurring visits job costing" },
     { to: "/invoices", label: msg("Invoices"), icon: "invoice", roles: ["admin", "office"], perm: "invoices", also: ["/payouts"], keywords: "billing bills payments batch invoicing collect payments" },
     { to: "/drive", label: msg("Drive"), icon: "folder", roles: ["admin", "office", "estimator"], feature: "drive", keywords: "files documents folders google drive upload pdf word docx trash" },
@@ -64,8 +66,6 @@ export const NAV_GROUP_LABELS: Array<string | null> = [null, msg("Work"), msg("T
 /** Screens that open from another one rather than the sidebar. Search lists them with the rest. */
 export const OTHER_SCREENS: NavItem[] = [
   { to: "/measure", label: msg("Measure"), icon: "area", roles: ["admin", "office", "estimator"], keywords: "measurement map draw area length count square feet acres satellite aerial property" },
-  { to: "/pipeline", label: msg("Sales board"), icon: "pipeline", roles: ["admin", "office", "estimator"], keywords: "pipeline leads deals" },
-  { to: "/messages", label: msg("Messages"), icon: "messages", keywords: "texts sms email inbox conversations" },
   { to: "/payouts", label: msg("Stripe deposits"), icon: "dollar", roles: ["admin", "office"], perm: "invoices", keywords: "payouts bank stripe fees" },
   // Marketing's own tabs, so searching for one opens it rather than Campaigns.
   { to: "/marketing?tab=reviews", label: msg("Reviews"), icon: "star", roles: ["admin", "office"], perm: "marketing", feature: "marketing", keywords: "marketing google reviews review requests ask for a review reminders ratings replies" },
