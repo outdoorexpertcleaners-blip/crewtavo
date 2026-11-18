@@ -2942,6 +2942,78 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"sequence_cursors": {
+                  Row: {
+                    "company_id": string,"last_activity_id": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "company_id": string,"last_activity_id"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "company_id"?: string,"last_activity_id"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sequence_cursors_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "companies"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"sequence_runs": {
+                  Row: {
+                    "brand": string | null,"client_id": string | null,"company_id": string,"created_at": string,"ended_reason": string | null,"id": string,"log": NonNullable<Json>,"next_at": string,"paused_at": string | null,"reply_at": string | null,"sequence_id": string,"status": string,"step": number,"subject_id": string,"subject_type": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "brand"?: string | null,"client_id"?: string | null,"company_id": string,"created_at"?: string,"ended_reason"?: string | null,"id"?: string,"log"?: NonNullable<Json>,"next_at"?: string,"paused_at"?: string | null,"reply_at"?: string | null,"sequence_id": string,"status"?: string,"step"?: number,"subject_id": string,"subject_type": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "brand"?: string | null,"client_id"?: string | null,"company_id"?: string,"created_at"?: string,"ended_reason"?: string | null,"id"?: string,"log"?: NonNullable<Json>,"next_at"?: string,"paused_at"?: string | null,"reply_at"?: string | null,"sequence_id"?: string,"status"?: string,"step"?: number,"subject_id"?: string,"subject_type"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sequence_runs_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "companies"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sequence_runs_company_id_sequence_id_fkey"
+      columns: ["company_id","sequence_id"]
+isOneToOne: false
+      referencedRelation: "sequences"
+      referencedColumns: ["company_id","id"]
+    },{
+      foreignKeyName: "sequence_runs_company_id_client_id_fkey"
+      columns: ["company_id","client_id"]
+isOneToOne: false
+      referencedRelation: "clients"
+      referencedColumns: ["company_id","id"]
+    }
+                  ]
+                },"sequences": {
+                  Row: {
+                    "brand": string | null,"company_id": string,"created_at": string,"created_by": string | null,"enabled": boolean,"id": string,"name": string,"on_reply": string,"send_window": Json | null,"steps": NonNullable<Json>,"template_key": string | null,"trigger": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "brand"?: string | null,"company_id": string,"created_at"?: string,"created_by"?: string | null,"enabled"?: boolean,"id"?: string,"name": string,"on_reply"?: string,"send_window"?: Json | null,"steps"?: NonNullable<Json>,"template_key"?: string | null,"trigger": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "brand"?: string | null,"company_id"?: string,"created_at"?: string,"created_by"?: string | null,"enabled"?: boolean,"id"?: string,"name"?: string,"on_reply"?: string,"send_window"?: Json | null,"steps"?: NonNullable<Json>,"template_key"?: string | null,"trigger"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sequences_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "companies"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"service_materials": {
                   Row: {
                     "company_id": string,"created_at": string,"id": string,"item_number": string,"length_ft": number | null,"name": string,"per_unit": number,"price_note": string | null,"priced_at": string | null,"service_id": string,"sort": number,"supplier": string,"unit_price": number | null,"uom": string,"uom_name": string | null,"updated_at": string

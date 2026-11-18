@@ -40,6 +40,7 @@ export default {
   "Business": "Negocio",
   "Measure": "Medir",
   "Pipeline": "Embudo de ventas",
+  "Workflows": "Flujos de trabajo",
   "Messages": "Mensajes",
   "Stripe deposits": "Depósitos de Stripe",
   "Reviews": "Reseñas",

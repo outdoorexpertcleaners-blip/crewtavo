@@ -35,6 +35,7 @@ export const NAV_GROUPS: NavItem[][] = [
     { to: "/clients", label: msg("Clients"), icon: "clients", keywords: "customers contacts properties addresses client hub portal" },
     { to: "/messages", label: msg("Messages"), icon: "messages", roles: ["admin", "office", "estimator"], keywords: "texts sms email inbox conversations quo" },
     { to: "/pipeline", label: msg("Pipeline"), icon: "pipeline", roles: ["admin", "office", "estimator"], keywords: "sales board pipeline leads deals opportunities" },
+    { to: "/workflows", label: msg("Workflows"), icon: "bolt", roles: ["admin", "office"], keywords: "automation workflows sequences follow-up texts drip gohighlevel" },
     { to: "/requests", label: msg("Requests"), icon: "requests", keywords: "inquiries leads assessments website form messages contact form" },
     { to: "/quotes", label: msg("Quotes"), icon: "quote", roles: ["admin", "office", "estimator"], also: ["/measure"], keywords: "estimates proposals bids" },
     { to: "/jobs", label: msg("Jobs"), icon: "job", keywords: "work orders projects recurring visits job costing" },

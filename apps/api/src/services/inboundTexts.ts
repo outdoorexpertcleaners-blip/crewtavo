@@ -29,6 +29,7 @@
  */
 import { phoneMatchKey } from "@crewtavo/core/recipients";
 import type { Db } from "../lib/supabase";
+import { noteSequenceReply } from "./sequences";
 import { clearStop, noteStop, phoneKey, type StopDetails } from "./textsOff";
 
 export interface InboundText {
@@ -87,6 +88,8 @@ export async function receiveText(admin: Db, text: InboundText, companies: reado
 
   for (const client of clients) {
     touched.add(client.company_id);
+    // Their running sequences hear they replied (services/sequences.ts).
+    await noteSequenceReply(admin, client.company_id, client.id);
     await admin.from("messages").insert({
       company_id: client.company_id, client_id: client.id, channel: "sms", direction: "in", status: "received",
       body, external_id: text.sid, sent_by: null, from_phone: text.from, ...(text.line ? { line: text.line } : {}),
@@ -127,6 +130,7 @@ export async function receiveText(admin: Db, text: InboundText, companies: reado
     const first = under.size === 0;
     under.add(contact.client_id);
     touched.add(contact.company_id);
+    await noteSequenceReply(admin, contact.company_id, contact.client_id);
     await admin.from("messages").insert({
       company_id: contact.company_id, client_id: contact.client_id, channel: "sms", direction: "in", status: "received",
       body, external_id: text.sid, sent_by: null, from_phone: text.from, from_name: contact.name.slice(0, 200), ...(text.line ? { line: text.line } : {}),

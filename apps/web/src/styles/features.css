@@ -1689,3 +1689,55 @@ button.hub-btn { width: 100%; border: 0; font: inherit; font-size: var(--fs-16);
 :root[data-theme="dark"] .cf-estimate > .card, :root[data-theme="dark"] .cf-estimate .line-edit, :root[data-theme="dark"] .cf-estimate .line-view { background: var(--surface); }
 /* Messages and the sales board use the whole width, as Quo's inbox and GoHighLevel's board do. */
 .content:has(> .messages-page.quo), .content:has(> .ghl-toolbar), .content:has(.ghl-toolbar) { max-width: none; }
+
+/* ---------------------------------------------------------------------------------------------
+ * Workflows as GoHighLevel's Automation → Workflows (features/workflows): the list, and the builder
+ * with its trigger card, step cards joined by a line, + between them, Draft / Publish.
+ * ------------------------------------------------------------------------------------------- */
+.ghl-wf-list { padding: 0; overflow-x: auto; }
+.ghl-wf-row { display: grid; grid-template-columns: minmax(240px, 2.4fr) 140px 120px 120px minmax(140px, 1fr); gap: 12px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--divider); min-width: 760px; }
+.ghl-wf-row:last-child { border-bottom: 0; }
+.ghl-wf-head { font-size: var(--fs-12); font-weight: 600; color: var(--text-3); background: var(--fill); }
+.ghl-wf-row .num { text-align: right; font-variant-numeric: tabular-nums; color: #1d4ed8; }
+.pill-brand { font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px; flex: none; }
+.pill-brand-washing { background: #e7efff; color: #1d4ed8; }
+.pill-brand-lights { background: #fdeee4; color: #c2410c; }
+.ghl-switch { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-13); cursor: pointer; }
+.ghl-switch input { appearance: none; width: 34px; height: 20px; border-radius: 999px; background: var(--fill-2); border: 1px solid var(--border); position: relative; cursor: pointer; transition: background var(--dur-fast); margin: 0; }
+.ghl-switch input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / 0.2); transition: transform var(--dur-fast); }
+.ghl-switch input:checked { background: #2563eb; border-color: #2563eb; }
+.ghl-switch input:checked::after { transform: translateX(14px); }
+.ghl-switch input:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+.ghl-builder-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); }
+.ghl-builder-name { max-width: 380px; font-weight: 600; }
+.ghl-canvas { display: flex; flex-direction: column; align-items: center; padding: 28px 12px 40px; border-radius: var(--radius-card); border: 1px solid var(--border);
+  background-color: var(--fill); background-image: radial-gradient(circle, var(--border) 1px, transparent 1px); background-size: 18px 18px; }
+.ghl-step-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; }
+.ghl-node { width: min(360px, 100%); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 1px 2px rgb(0 0 0 / 0.06); }
+.ghl-node[data-open] { width: min(520px, 100%); border-color: #2563eb; box-shadow: 0 0 0 3px rgb(37 99 235 / 0.15); }
+.ghl-trigger { display: flex; gap: 10px; align-items: center; padding: 12px; border-style: dashed; border-color: #2563eb; }
+.ghl-node-main { display: flex; gap: 10px; align-items: center; width: 100%; padding: 10px 12px; background: none; border: 0; text-align: left; cursor: pointer; color: var(--ink); }
+.ghl-node-num { font: 500 11px var(--font-mono, ui-monospace, monospace); color: var(--text-3); width: 18px; }
+.ghl-node-icon { width: 26px; height: 26px; border-radius: 6px; display: grid; place-items: center; flex: none; background: #e7efff; color: #1d4ed8; }
+.ghl-node[data-kind="wait"] .ghl-node-icon { background: #f3e8ff; color: #7c3aed; }
+.ghl-node[data-kind="text"] .ghl-node-icon { background: #dcfce7; color: #15803d; }
+.ghl-node[data-kind="alert"] .ghl-node-icon { background: #fef3c7; color: #b45309; }
+.ghl-node[data-kind="hours"] .ghl-node-icon, .ghl-node[data-kind="goto"] .ghl-node-icon { background: #e0f2fe; color: #0369a1; }
+.ghl-end { display: flex; gap: 8px; align-items: center; justify-content: center; padding: 8px; width: 120px; color: var(--text-3); font-size: var(--fs-13); }
+.ghl-editor { padding: 12px; border-top: 1px solid var(--divider); }
+.ghl-add { position: relative; display: flex; flex-direction: column; align-items: center; padding: 6px 0; }
+.ghl-add::before { content: ""; width: 1px; height: 14px; background: var(--text-3); opacity: 0.5; }
+.ghl-add::after { content: ""; width: 1px; height: 14px; background: var(--text-3); opacity: 0.5; }
+.ghl-plus { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); display: grid; place-items: center; cursor: pointer; color: var(--text-2); }
+.ghl-plus:hover { border-color: #2563eb; color: #2563eb; }
+.ghl-add-menu { position: absolute; top: 40px; z-index: 5; display: grid; min-width: 200px; padding: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgb(0 0 0 / 0.12); }
+.ghl-add-menu button { display: flex; gap: 8px; align-items: center; padding: 7px 8px; border: 0; background: none; text-align: left; border-radius: 6px; cursor: pointer; color: var(--ink); font-size: var(--fs-13); }
+.ghl-add-menu button:hover { background: var(--fill); }
+.ghl-day { display: inline-flex; gap: 4px; align-items: center; font-size: var(--fs-12); padding: 3px 8px; border: 1px solid var(--border); border-radius: 999px; }
+.ghl-run { border-bottom: 1px solid var(--divider); }
+.ghl-run summary { padding: 10px 16px; cursor: pointer; list-style: none; }
+.ghl-run-status { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--fill-2); color: var(--text-2); }
+.ghl-run-active { background: #dcfce7; color: #15803d; }
+.ghl-run-paused { background: #fef3c7; color: #b45309; }
+.ghl-log { margin: 0; padding: 0 16px 12px 32px; display: grid; gap: 4px; font-size: var(--fs-13); }
+.content:has(.ghl-builder) { max-width: none; }
