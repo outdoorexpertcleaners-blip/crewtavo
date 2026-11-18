@@ -17,6 +17,8 @@ import { appUrl, asJson, dbError, HttpError, isoDate, must, readJson, uuid } fro
 import { emailReady, sendEmail, sendingWorks } from "../lib/notify";
 import { checkTwilio, companyTwilio, forgetTwilio, serverTwilio, setSmsWebhook, TwilioProblem, type TwilioSettings } from "../lib/twilio";
 import { adminClient, type Db } from "../lib/supabase";
+import { deleteQuoWebhook, forgetQuo } from "../lib/quo";
+import { quoState } from "./quo";
 import { aiChoice, askerOf, complete, countAiAsk, teamPlans, type OpenAiSettings } from "../services/ai";
 import { analyticsSettings } from "../services/analytics";
 import { AbcProblem, chooseAbcAccount, connectAbc, settingsOf as abcSettingsOf } from "../integrations/abcSupply";
@@ -161,6 +163,7 @@ apps.get("/apps", requireUser, requireCompany(ADMINS, "apps"), async (c) => {
         ...(entry.id === "stripe" ? { ...(stripe ? { stripe } : {}), owners_emailed: ownersEmailed } : {}),
         ...(entry.id === "abc_supply" && abc ? { supplier: abc } : {}),
         ...(entry.id === "twilio" ? { twilio } : {}),
+        ...(entry.id === "quo" ? { quo: quoState(appUrl(c), c.var.companyId, integrations.find((r) => r.provider === "quo")) } : {}),
         ...(entry.id === "lob" ? { lob } : {}),
         ...(entry.id === "google_business" ? { google_business: business } : {}),
         ...(entry.id === "meta" ? { meta } : {}),
@@ -402,6 +405,12 @@ apps.post("/apps/:provider/disconnect", requireUser, requireCompany(ADMINS, "app
     await admin.from("outbox").update({ done_at: new Date().toISOString() }).match({ company_id: c.var.companyId, topic: "calendar.visit" }).is("done_at", null);
   }
   const secret = await loadSecret(c.env, admin, c.var.companyId, provider).catch(() => null);
+  // Quo: its webhook comes out of the Quo workspace too, so nothing is posted here anymore.
+  if (provider === "quo" && secret?.api_key) {
+    const { data } = await admin.from("integrations").select("settings").match({ company_id: c.var.companyId, provider }).maybeSingle();
+    const hook = (data?.settings as { webhook_id?: string } | null)?.webhook_id;
+    if (hook) await deleteQuoWebhook(secret.api_key, hook);
+  }
   // Stripe's open invoices are voided with the old key, which can finish after the response.
   if (secret && provider === "stripe") runInBackground(c, (await disconnectStripe(c.env, admin, c.var.companyId, secret)).settled);
   else if (secret && provider === "meta") await signOutMeta(c.env, secret);
@@ -426,6 +435,7 @@ apps.post("/apps/:provider/disconnect", requireUser, requireCompany(ADMINS, "app
   if (who && was) runInBackground(c, noteStripeChange(c, who, { before: was.label, after: null, from: was.id, to: null, moved: null }));
   // Texts go from the server's account again, if it has one, from the next one on.
   if (provider === "twilio") forgetTwilio(c.var.companyId);
+  if (provider === "quo") forgetQuo(c.var.companyId);
   return c.json({ provider, status: "disconnected", ...(provider === "google_business" ? { removed } : {}), ...(shared ? { revoked: false } : {}) });
 });
 

@@ -167,7 +167,7 @@ describe("the first paint", () => {
   });
 
   it("names the app on an iPhone's Home Screen and draws under the notch and home indicator", () => {
-    expect(head).toContain('<meta name="apple-mobile-web-app-title" content="Crewtavo" />');
+    expect(head).toContain('<meta name="apple-mobile-web-app-title" content="Outdoor Expert" />');
     expect(head).toMatch(/<meta name="apple-mobile-web-app-status-bar-style" content="default" \/>/);
     expect(head).toMatch(/<meta name="viewport" content="[^"]*viewport-fit=cover/);
     // With viewport-fit=cover, the bars and the screen keep clear of the safe areas themselves.

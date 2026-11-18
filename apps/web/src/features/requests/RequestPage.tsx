@@ -1,3 +1,4 @@
+import { BRANDS, LEAD_STAGES, isLeadStage, requestBrand, requestStage, stageLabel } from "@crewtavo/core/pipeline";
 import { SALES, type Role } from "@crewtavo/core/roles";
 import { fieldLabel, fieldRole } from "@crewtavo/core/websiteForms";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -27,6 +28,8 @@ import { VisitDialog, type VisitInput } from "../schedule/VisitDialog";
 import { askedFor, BookAskedTime } from "./AskedTime";
 import { memberName, requestSource, useTeam } from "./RequestsPage";
 
+const BRAND_NAME = { washing: "Washing", lights: "Christmas lights" } as const;
+
 export function RequestPage() {
   const { id = "" } = useParams();
   const session = useSession();
@@ -42,7 +45,7 @@ export function RequestPage() {
       unwrapOne(
         await supabase()
           .from("requests")
-          .select("id, number, title, details, status, source, website_form_id, assigned_to, answers, promo_code, rejected_promo_code, promo_problem, web_visit, created_at, asked_starts_at, asked_ends_at, client:clients(id, display_name, email, phone), property:properties(id, line1, city, region, postal_code, lat, lng), form:intake_forms(name, questions), visits(id, title, kind, status, scheduled_on, starts_at, ends_at, crew_id, notes, assignees:visit_assignees(user_id)), quotes(id, number, title, status, total, drafted)")
+          .select("id, number, title, details, status, stage, brand, source, website_form_id, assigned_to, answers, promo_code, rejected_promo_code, promo_problem, web_visit, created_at, asked_starts_at, asked_ends_at, client:clients(id, display_name, email, phone), property:properties(id, line1, city, region, postal_code, lat, lng), form:intake_forms(name, questions), visits(id, title, kind, status, scheduled_on, starts_at, ends_at, crew_id, notes, assignees:visit_assignees(user_id)), quotes(id, number, title, status, total, drafted)")
           .eq("id", id)
           .maybeSingle(),
         "This request",
@@ -99,6 +102,15 @@ export function RequestPage() {
     meta: { success: (_: unknown, userId: string | null) => (userId ? `Assigned to ${memberName(team.data?.find((m) => m.user_id === userId))}` : "Unassigned"), tone: "request" },
     mutationFn: async (userId: string | null) => unwrap(await supabase().from("requests").update({ assigned_to: userId }).eq("id", id)),
     onSuccess: refresh,
+  });
+  // Which brand it's for and where it sits on the sales board (core pipeline.ts); empty is "work it out".
+  const setLead = useMutation({
+    meta: { success: "Saved", tone: "request" },
+    mutationFn: async (change: { brand?: string | null; stage?: string | null }) => unwrap(await supabase().from("requests").update(change).eq("id", id)),
+    onSuccess: () => {
+      refresh();
+      queryClient.invalidateQueries({ queryKey: ["pipeline", session.company.id] });
+    },
   });
   const remove = useMutation({
     meta: { success: "Request deleted", tone: "request" },
@@ -279,6 +291,28 @@ export function RequestPage() {
                   memberName(team.data?.find((m) => m.user_id === r.assigned_to)) ?? "Nobody yet"
                 )}
               </dd>
+              {canSell && (
+                <>
+                  <dt>Brand</dt>
+                  <dd>
+                    <select className="select input-sm" aria-label="Brand" value={r.brand ?? ""} disabled={setLead.isPending} onChange={(e) => setLead.mutate({ brand: e.target.value || null })}>
+                      <option value="">Auto ({BRAND_NAME[requestBrand({ title: r.title, quoteBrand: null })]})</option>
+                      {BRANDS.map((b) => <option key={b} value={b}>{BRAND_NAME[b]}</option>)}
+                    </select>
+                  </dd>
+                  {requestStage({ status: r.status }) && (
+                    <>
+                      <dt>Stage</dt>
+                      <dd>
+                        <select className="select input-sm" aria-label="Stage" value={isLeadStage(r.stage) ? r.stage : ""} disabled={setLead.isPending} onChange={(e) => setLead.mutate({ stage: e.target.value || null })}>
+                          <option value="">Auto ({stageLabel(requestStage({ status: r.status })!)})</option>
+                          {LEAD_STAGES.map((st) => <option key={st} value={st}>{stageLabel(st)}</option>)}
+                        </select>
+                      </dd>
+                    </>
+                  )}
+                </>
+              )}
               <dt>Received</dt><dd>{formatDateTime(r.created_at)}{r.form ? ` via ${r.form.name}` : ""}</dd>
               {r.promo_code && <><dt>Promo code</dt><dd><span className="promo-code">{r.promo_code}</span></dd></>}
               {!r.promo_code && r.rejected_promo_code && (

@@ -1,3 +1,5 @@
+> **Modified version.** This is Outdoor Expert Cleaners' modified copy of [Crewtavo](https://github.com/jviars/crewtavo), not an official Crewtavo release. It adds the "Big Proposal" client quote page (Settings → Proposal). Licensed under the AGPL-3.0 with the terms in [NOTICE](NOTICE), as the original.
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/brand/crewtavo-logo-dark.png">

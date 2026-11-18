@@ -36,11 +36,12 @@ import { relocatePins } from "./services/properties";
 import { runAutopay } from "./services/bankLimit";
 import { sendScheduledPayments } from "./services/installments";
 import { tidyPlans } from "./integrations/chatgptPlan";
+import { processSequences } from "./services/sequences";
 
 export const TASKS = [
   "automations", "campaigns", "notify", "outbox", "autopay", "calendars", "recurrence", "followups", "weather", "snow", "address",
   "railway", "hosting", "plans", "trash", "storage", "routes", "website", "reviews", "inactive", "review_sync",
-  "social", "backups", "profits", "installments", "postcards", "pins", "review_tidy", "chatgpt_plans",
+  "social", "backups", "profits", "installments", "postcards", "pins", "review_tidy", "sequences", "chatgpt_plans",
 ] as const;
 export type TaskName = (typeof TASKS)[number];
 
@@ -49,7 +50,8 @@ export const CRON_TASKS: Record<string, TaskName[]> = {
   // Social posts whose time has come (services/social.ts), one claim at a time. Postcard campaigns
   // being mailed make their next cards, and Lob is asked once an hour whether any card it accepted
   // in the last week failed (services/postcards.ts).
-  "* * * * *": ["automations", "campaigns", "notify", "social", "postcards"],
+  // GoHighLevel-style sequences: start new runs, act on replies, do the steps that are due (services/sequences.ts).
+  "* * * * *": ["automations", "campaigns", "notify", "social", "postcards", "sequences"],
   "*/2 * * * *": ["address"],
   // Review reminders go at 1:30pm in each company's time zone (services/reviews.ts). Autopay charges
   // what's due (services/autopay.ts) and sends the invoices over a bank account's limit to their
@@ -97,6 +99,8 @@ export async function runTask(name: TaskName, env: Env): Promise<Record<string, 
   switch (name) {
     case "automations":
       return processAutomations(env, { limit: 50 });
+    case "sequences":
+      return processSequences(env);
     case "campaigns":
       return processCampaigns(env);
     case "notify":

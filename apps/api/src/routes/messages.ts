@@ -23,6 +23,7 @@ import { sendEmail, sendSms } from "../lib/notify";
 import { inboundAccounts } from "../lib/twilio";
 import { adminClient } from "../lib/supabase";
 import { companyAddress } from "../services/automations";
+import { brandFor } from "../services/brand";
 import { logoImage } from "../services/logo";
 import { receiveText } from "../services/inboundTexts";
 import { noteRefusedText, numberStopped, numberStoppedRefusal, phoneKey, setTexts, TextsRefusal, textsOffRefusal, textsOffTo } from "../services/textsOff";
@@ -43,7 +44,7 @@ messages.post("/messages/send", requireUser, requireCompany(SALES), async (c) =>
   const { db, companyId } = c.var;
   const client = must(await db.from("clients").select("id, display_name, email, phone, sms_opt_out_at").eq("id", body.client_id).eq("company_id", companyId).maybeSingle(), "Client not found.");
   const company = must(await db.from("companies").select("name, email, phone, address, settings").eq("id", companyId).maybeSingle());
-  let result: { sent: boolean; id?: string; reason?: string };
+  let result: { sent: boolean; id?: string; reason?: string; line?: "washing" | "lights" };
   let to: string;
   if (body.channel === "email") {
     to = body.to || client.email || "";
@@ -59,14 +60,16 @@ messages.post("/messages/send", requireUser, requireCompany(SALES), async (c) =>
     if (textsOffTo(client, to)) throw new HttpError(400, textsOffRefusal(client.display_name));
     if (await numberStopped(adminClient(c.env), companyId, to)) throw new HttpError(400, numberStoppedRefusal(to));
     if (body.body.length > 1600) throw new HttpError(400, "Texts are limited to 1,600 characters.");
-    result = await sendSms(c.env, { to, body: body.body, company: companyId });
+    // From the line for the client's brand (their latest quote or request), when texts go through Quo.
+    const brand = await brandFor(adminClient(c.env), companyId, { clientId: client.id });
+    result = await sendSms(c.env, { to, body: body.body, company: companyId, ...(brand ? { brand } : {}) });
     await noteRefusedText(adminClient(c.env), client, to, result, companyId);
   }
   const { data: row, error } = await db
     .from("messages")
     .insert({
       company_id: companyId, client_id: client.id, channel: body.channel, direction: "out", subject: body.channel === "email" ? body.subject : null,
-      body: body.body, status: result.sent ? "sent" : "failed", external_id: result.id ?? null,
+      body: body.body, status: result.sent ? "sent" : "failed", external_id: result.id ?? null, line: result.line ?? null,
       recipients: [{ to, name: sentToClient(body.channel, to, client) ? client.display_name : to, ...(result.sent ? {} : { failed: true }) }],
     })
     .select("id")

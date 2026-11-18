@@ -1,15 +1,18 @@
 /**
- * Sales pipeline: open requests and quotes as a board with value and age. Drag a request to
- * "Drafting quote" to start a quote, a draft to "Awaiting response" to send it, a sent quote to
- * "Approved" to mark it approved (keeping its template and contract, as "Mark approved" on the quote
- * does), or anything to "Lost". A quote that offers options (quote_options) is approved from its own
- * page, where the office says which option they chose; until it's signed, its value here is its
- * cheapest option's (quotes/options.ts listPrice), as on the quotes list.
+ * Sales pipeline: leads and quotes as a board in the business's GoHighLevel stages (core
+ * pipeline.ts), for one brand (washing or Christmas lights) or both. Drag a lead between the first
+ * five stages to say where it is, a lead to "Quote Sent" to start its quote, a draft there to send
+ * it, a sent quote to "Closed-Won" to mark it approved (keeping its template and contract, as "Mark
+ * approved" on the quote does), or anything open to "Closed-Lost". Won, lost and completed show the
+ * last 30 days. A quote that offers options (quote_options) is approved from its own page, where the
+ * office says which option they chose; until it's signed, its value here is its cheapest option's
+ * (quotes/options.ts listPrice), as on the quotes list.
  */
 import type { Json } from "@crewtavo/core/database";
+import { PIPELINE_STAGES, isLeadStage, quoteBrand, quoteStage, requestBrand, requestStage, type Brand, type PipelineStage } from "@crewtavo/core/pipeline";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type DragEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { confirm } from "@/components/ui/Confirm";
 import { Icon } from "@/components/ui/Icon";
 import { BackLink, PageHeader } from "@/components/ui/PageHeader";
@@ -41,8 +44,12 @@ interface Card {
   options: number;
   /** The option shown first; once it's signed, the one chosen, which its value is for. */
   option: { name: string; tier: string | null } | null;
+  stage: PipelineStage;
+  brand: Brand;
+  /** Where the lead came from (the client's lead source), as GoHighLevel's cards show it. */
+  source: string | null;
 }
-type ColumnKey = "new" | "assess" | "draft" | "sent" | "won";
+type ColumnKey = PipelineStage;
 
 const PICK_ON_QUOTE = "Open the quote to pick the option they chose.";
 
@@ -51,18 +58,25 @@ const PICK_ON_QUOTE = "Open the quote to pick the option they chose.";
  * offers options is approved on its own page, which asks which option they chose. (Options added
  * since the board was read are caught as it's approved.)
  */
-export function moveRefusal(card: Pick<Card, "kind" | "options">, to: ColumnKey | "lost"): string | null {
+export function moveRefusal(card: Pick<Card, "kind" | "options">, to: ColumnKey): string | null {
   return card.kind === "quote" && to === "won" && card.options > 0 ? PICK_ON_QUOTE : null;
 }
 
-const COLUMNS: Array<{ key: ColumnKey; label: string; statuses: string[]; kind: Card["kind"]; color: string }> = [
-  { key: "new", label: "New requests", statuses: ["new"], kind: "request", color: "var(--req)" },
-  { key: "assess", label: "Assessments", statuses: ["assessment_scheduled", "assessment_complete"], kind: "request", color: "var(--req)" },
-  { key: "draft", label: "Drafting quote", statuses: ["draft"], kind: "quote", color: "var(--quote)" },
-  { key: "sent", label: "Awaiting response", statuses: ["sent", "changes_requested"], kind: "quote", color: "var(--quote)" },
-  { key: "won", label: "Approved", statuses: ["approved"], kind: "quote", color: "var(--job)" },
-];
+/** Each stage's header color, as the business's GoHighLevel pipelines color them. */
+const STAGE_COLOR: Record<PipelineStage, string> = {
+  inbound: "#cddcf6", hot: "#f5cfd0", reached_out: "#fbdcc9", estimate_booked: "#cfe6d4", remote_quote: "#d8dce2",
+  quote_sent: "#d8dce2", won: "#cfe6d4", lost: "#d8dce2", completed: "#d8dce2",
+};
+/** GoHighLevel's names for the two pipelines, one per brand. */
+const PIPELINE_NAME: Record<Brand, string> = { washing: "Leads → Sales Pipeline", lights: "Leads → Sales Pipeline (Christmas)" };
+const REQUEST_SOURCE: Record<string, string> = { phone: "Phone", web_form: "Website", hub: "Client hub", email: "Email", assistant: "AI assistant", manual: "Added by the office" };
+/** Stages that show the last 30 days, newest first, rather than everything open. */
+const CLOSED: readonly PipelineStage[] = ["lost", "completed"];
+const OPEN_STATUSES = ["draft", "sent", "changes_requested", "approved"];
+const BRAND_LABEL: Record<Brand, string> = { washing: "Washing", lights: "Lights" };
+type BrandFilter = Brand | "all";
 
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 const daysOld = (iso: string) => Math.floor((Date.now() - Date.parse(iso)) / 86_400_000);
 
 export function PipelinePage() {
@@ -72,29 +86,36 @@ export function PipelinePage() {
   const [dragging, setDragging] = useState<Card | null>(null);
   const [over, setOver] = useState<string | null>(null);
   const [sending, setSending] = useState<Card | null>(null);
+  const [params, setParams] = useSearchParams();
+  // Opens on the washing pipeline, as GoHighLevel opens on one pipeline; "all" shows both.
+  const brand: BrandFilter = params.get("brand") === "lights" || params.get("brand") === "all" ? (params.get("brand") as BrandFilter) : "washing";
+  const setBrand = (b: BrandFilter) => setParams((p) => { const n = new URLSearchParams(p); if (b === "washing") n.delete("brand"); else n.set("brand", b); return n; }, { replace: true });
   const key = ["pipeline", company.id];
 
   const data = useQuery({
     queryKey: key,
     queryFn: async () => {
       const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
+      const quoteFields = "id, number, title, status, brand, total, tax_rate, discount_amount, promo:promo_codes(kind, value), updated_at, client:clients(display_name, email, phone, lead_source), options:quote_options!quote_options_quote_fkey(id), option:quote_options!quotes_option_fkey(name, tier), services:quote_line_items(name), request:requests(stage), jobs:jobs!jobs_company_id_quote_id_fkey(status)";
       const [requests, quotes, closed] = await Promise.all([
-        supabase().from("requests").select("id, number, title, status, updated_at, client:clients(display_name, email, phone)").eq("company_id", company.id).in("status", ["new", "assessment_scheduled", "assessment_complete"]),
-        supabase().from("quotes").select("id, number, title, status, total, tax_rate, discount_amount, promo:promo_codes(kind, value), updated_at, client:clients(display_name, email, phone), options:quote_options!quote_options_quote_fkey(id), option:quote_options!quotes_option_fkey(name, tier)").eq("company_id", company.id).in("status", ["draft", "sent", "changes_requested", "approved"]).eq("is_template", false),
-        supabase().from("quotes").select("id, status, total, tax_rate, discount_amount, promo:promo_codes(kind, value), options:quote_options!quote_options_quote_fkey(id)").eq("company_id", company.id).in("status", ["converted", "lost"]).gte("updated_at", since),
+        supabase().from("requests").select("id, number, title, status, stage, brand, source, updated_at, client:clients(display_name, email, phone, lead_source)").eq("company_id", company.id).in("status", ["new", "assessment_scheduled", "assessment_complete"]),
+        supabase().from("quotes").select(quoteFields).eq("company_id", company.id).in("status", OPEN_STATUSES).eq("is_template", false),
+        supabase().from("quotes").select(quoteFields).eq("company_id", company.id).in("status", ["converted", "lost"]).eq("is_template", false).gte("updated_at", since),
       ]);
       // Quotes that offer options are worth their cheapest option until they're signed.
-      const [open, c] = await Promise.all([withOptionLines(unwrap(quotes)), withOptionLines(unwrap(closed))]);
-      const cards: Card[] = [
-        ...unwrap(requests).map((x) => ({ kind: "request" as const, id: x.id, status: x.status, number: x.number, title: x.title, client: x.client?.display_name ?? "", email: x.client?.email ?? null, phone: x.client?.phone ?? null, value: null, from: false, updated: x.updated_at, options: 0, option: null })),
-        ...open.map((x) => {
-          const price = listPrice(x);
-          return { kind: "quote" as const, id: x.id, status: x.status, number: x.number, title: x.title, client: x.client?.display_name ?? "", email: x.client?.email ?? null, phone: x.client?.phone ?? null, value: price.amount, from: price.from, updated: x.updated_at, options: x.options.length, option: x.option };
-        }),
-      ];
-      const won = c.filter((q) => q.status === "converted");
-      const lost = c.filter((q) => q.status === "lost");
-      return { cards, won: { count: won.length, value: won.reduce((s, q) => s + listPrice(q).amount, 0) }, lost: { count: lost.length, value: lost.reduce((s, q) => s + listPrice(q).amount, 0) } };
+      const all = await withOptionLines([...unwrap(quotes), ...unwrap(closed)]);
+      const cards: Card[] = [];
+      for (const x of unwrap(requests)) {
+        const stage = requestStage(x);
+        if (stage) cards.push({ kind: "request", id: x.id, status: x.status, number: x.number, title: x.title, client: x.client?.display_name ?? "", email: x.client?.email ?? null, phone: x.client?.phone ?? null, value: null, from: false, updated: x.updated_at, options: 0, option: null, stage, brand: requestBrand(x), source: x.client?.lead_source || REQUEST_SOURCE[x.source] || null });
+      }
+      for (const x of all) {
+        const stage = quoteStage({ status: x.status, requestStage: x.request?.stage, jobStatus: x.jobs[0]?.status });
+        if (!stage) continue;
+        const price = listPrice(x);
+        cards.push({ kind: "quote", id: x.id, status: x.status, number: x.number, title: x.title, client: x.client?.display_name ?? "", email: x.client?.email ?? null, phone: x.client?.phone ?? null, value: price.amount, from: price.from, updated: x.updated_at, options: x.options.length, option: x.option, stage, brand: quoteBrand({ brand: x.brand, lines: x.services }), source: x.client?.lead_source || null });
+      }
+      return { cards };
     },
   });
 
@@ -104,15 +125,19 @@ export function PipelinePage() {
     queryClient.invalidateQueries({ queryKey: ["requests", company.id] });
   };
   const move = useMutation({
-    mutationFn: async ({ card, to }: { card: Card; to: ColumnKey | "lost" }): Promise<{ message: string; open?: string; refused?: boolean; tone?: ToastTone }> => {
+    mutationFn: async ({ card, to }: { card: Card; to: ColumnKey }): Promise<{ message: string; open?: string; refused?: boolean; tone?: ToastTone }> => {
       if (to === "lost") {
         if (card.kind === "quote") unwrap(await supabase().from("quotes").update({ status: "lost", lost_reason: "Marked lost from the pipeline" }).eq("id", card.id));
         else unwrap(await supabase().from("requests").update({ status: "archived" }).eq("id", card.id));
         return { message: card.kind === "quote" ? `Quote #${card.number} marked lost` : "Request archived", tone: card.kind };
       }
-      if (card.kind === "request" && to === "draft") {
+      if (card.kind === "request" && isLeadStage(to)) {
+        unwrap(await supabase().from("requests").update({ stage: to }).eq("id", card.id));
+        return { message: `Moved to ${PIPELINE_STAGES.find((s) => s.key === to)!.label}`, tone: "request" };
+      }
+      if (card.kind === "request" && to === "quote_sent") {
         const quote = await api.post<{ id: string }>(`/requests/${card.id}/quote`);
-        return { message: "Quote started", open: `/quotes/${quote.id}`, tone: "quote" };
+        return { message: "Quote started: add its prices, then send it", open: `/quotes/${quote.id}`, tone: "quote" };
       }
       if (card.kind === "quote" && to === "won") {
         // The quote page's own approval, loaded only once a quote is dropped here.
@@ -136,24 +161,26 @@ export function PipelinePage() {
     },
   });
 
-  const allowed = (card: Card, to: ColumnKey | "lost") =>
-    to === "lost" ? true
-    : card.kind === "request" ? to === "draft"
-    : card.status === "draft" ? to === "sent"
-    : ["sent", "changes_requested"].includes(card.status) ? to === "won"
-    : false;
-  const drop = async (to: ColumnKey | "lost") => {
+  const allowed = (card: Card, to: ColumnKey) => {
+    if (to === card.stage) return false;
+    if (to === "lost") return card.kind === "request" || OPEN_STATUSES.includes(card.status);
+    if (card.kind === "request") return isLeadStage(to) || to === "quote_sent";
+    if (card.status === "draft") return to === "quote_sent";
+    if (["sent", "changes_requested"].includes(card.status)) return to === "won";
+    return false;
+  };
+  const drop = async (to: ColumnKey) => {
     const card = dragging;
     setDragging(null);
     setOver(null);
     if (!card || !allowed(card, to)) return;
     const refusal = moveRefusal(card, to);
     if (refusal) return void toast.error(refusal, { action: { label: "Open", onClick: () => navigate(`/quotes/${card.id}`) } });
-    if (card.kind === "quote" && card.status === "draft" && to === "sent") return setSending(card);
+    if (card.kind === "quote" && card.status === "draft" && to === "quote_sent") return setSending(card);
     if (to === "lost" && !(await confirm({ title: card.kind === "quote" ? `Mark quote #${card.number} lost?` : "Archive this request?", body: card.kind === "quote" ? "You can reopen it later from the quote." : "It leaves the pipeline. You can reopen it from the request.", confirmLabel: card.kind === "quote" ? "Mark lost" : "Archive", danger: true }))) return;
     move.mutate({ card, to });
   };
-  const zone = (to: ColumnKey | "lost") => ({
+  const zone = (to: ColumnKey) => ({
     onDragOver: (e: DragEvent) => {
       if (dragging && allowed(dragging, to)) {
         e.preventDefault();
@@ -168,47 +195,55 @@ export function PipelinePage() {
     "data-drop": over === to || undefined,
   });
 
-  const cards = data.data?.cards ?? [];
-  const openValue = cards.reduce((s, c) => s + (c.value ?? 0), 0);
-  const winRate = data.data && data.data.won.count + data.data.lost.count ? Math.round((data.data.won.count / (data.data.won.count + data.data.lost.count)) * 100) : null;
+  const cards = (data.data?.cards ?? []).filter((c) => brand === "all" || c.brand === brand);
+  const open = cards.filter((c) => c.kind === "quote" && OPEN_STATUSES.includes(c.status));
+  const openValue = open.reduce((s, c) => s + (c.value ?? 0), 0);
+  const sum = (xs: Card[]) => xs.reduce((s, c) => s + (c.value ?? 0), 0);
+  const won = cards.filter((c) => c.status === "converted");
+  const lost = cards.filter((c) => c.status === "lost");
+  const winRate = won.length + lost.length ? Math.round((won.length / (won.length + lost.length)) * 100) : null;
 
   return (
     <>
       <BackLink to="/quotes">Quotes</BackLink>
       <PageHeader title="Sales board" />
-      {data.data && (
-        <div className="stat-row">
-          <div className="card stat"><div className="label">Open quotes</div><div className="value">{formatMoney(openValue)}</div><div className="hint">{cards.filter((c) => c.kind === "quote").length} quotes · {cards.filter((c) => c.kind === "request").length} requests</div></div>
-          <div className="card stat"><div className="label">Won (30 days)</div><div className="value">{formatMoney(data.data.won.value)}</div><div className="hint">{data.data.won.count} converted to jobs</div></div>
-          <div className="card stat"><div className="label">Lost (30 days)</div><div className="value">{formatMoney(data.data.lost.value)}</div><div className="hint">{data.data.lost.count} quotes</div></div>
-          <div className="card stat"><div className="label">Win rate (30 days)</div><div className="value">{winRate === null ? "—" : `${winRate}%`}</div></div>
-        </div>
-      )}
+      <div className="ghl-toolbar">
+        <select className="select ghl-pipeline" aria-label="Pipeline" value={brand} onChange={(e) => setBrand(e.target.value as BrandFilter)}>
+          <option value="washing">{PIPELINE_NAME.washing}</option>
+          <option value="lights">{PIPELINE_NAME.lights}</option>
+          <option value="all">All pipelines</option>
+        </select>
+        {data.data && <span className="ghl-count">{plural(cards.length, "opportunity").replace("opportunitys", "opportunities")}</span>}
+        <span className="grow" />
+        {data.data && <span className="muted small">Open {formatMoney(openValue)} · Won (30 days) {formatMoney(sum(won))} · Win rate {winRate === null ? "—" : `${winRate}%`}</span>}
+      </div>
       {data.error && <div className="card"><ErrorState error={data.error} onRetry={() => data.refetch()} /></div>}
       {data.isPending ? (
-        <Loading><div className="board">{COLUMNS.map((c) => <div key={c.key} className="board-col"><Skeleton width="60%" height={14} />{[0, 1].map((i) => <Skeleton key={i} height={70} radius={8} />)}</div>)}</div></Loading>
+        <Loading><div className="board">{PIPELINE_STAGES.map((c) => <div key={c.key} className="board-col"><Skeleton width="60%" height={14} />{[0, 1].map((i) => <Skeleton key={i} height={70} radius={8} />)}</div>)}</div></Loading>
       ) : (
         <div className="board">
-          {COLUMNS.map((col) => {
-            const items = cards.filter((c) => c.kind === col.kind && col.statuses.includes(c.status)).sort((a, b) => a.updated.localeCompare(b.updated));
+          {PIPELINE_STAGES.map((col) => {
+            const closed = CLOSED.includes(col.key);
+            const items = cards.filter((c) => c.stage === col.key).sort((a, b) => (closed ? b.updated.localeCompare(a.updated) : a.updated.localeCompare(b.updated)));
             const total = items.reduce((s, c) => s + (c.value ?? 0), 0);
             return (
-              <section key={col.key} className="board-col" style={{ ["--stage" as string]: col.color }} aria-label={col.label} {...zone(col.key)}>
-                <div className="board-col-head">
-                  <strong>{col.label}</strong>
-                  <span className="badge">{items.length}</span>
-                  {total > 0 && <span className="muted">{formatMoney(total)}</span>}
+              <section key={col.key} className="board-col ghl-col" style={{ ["--stage" as string]: STAGE_COLOR[col.key] }} aria-label={col.label} {...zone(col.key)}>
+                <div className="ghl-col-head">
+                  <strong className="ellipsis">{col.label}</strong>
+                  <span>{plural(items.length, "opportunity").replace("opportunitys", "opportunities")} <strong>{formatMoney(total)}</strong></span>
                 </div>
                 {items.map((c) => {
                   const age = daysOld(c.updated);
+                  const stale = !closed && c.status !== "approved" && c.status !== "converted";
                   return (
                     <Link
                       key={c.id}
                       to={`/${c.kind === "quote" ? "quotes" : "requests"}/${c.id}`}
-                      className="deal"
+                      className="deal ghl-card"
+                      data-won={c.status === "approved" || c.status === "converted" || undefined}
                       draggable
                       data-dragging={dragging?.id === c.id || undefined}
-                      data-stale={age >= 7 || undefined}
+                      data-stale={(stale && age >= 7) || undefined}
                       onDragStart={(e) => {
                         e.dataTransfer.effectAllowed = "move";
                         e.dataTransfer.setData("text/plain", c.id);
@@ -219,18 +254,23 @@ export function PipelinePage() {
                         setOver(null);
                       }}
                     >
-                      <span className="d-title">{c.title}</span>
-                      <span className="muted small ellipsis">{c.client}</span>
-                      <span className="d-meta">
-                        <span>{c.status === "changes_requested" ? <span className="text-danger strong">{statusText("quote", c.status)}</span> : `#${c.number}`}</span>
-                        <span style={age >= 14 ? { color: "var(--danger)", fontWeight: 600 } : age >= 7 ? { color: "var(--warning)", fontWeight: 600 } : undefined}>{age === 0 ? "Today" : `${age} ${age === 1 ? "day" : "days"}`}</span>
+                      <span className="ghl-card-top">
+                        <strong className="ellipsis">{c.client || c.title}</strong>
+                        {(c.status === "approved" || c.status === "converted") && <span className="ghl-won">WON</span>}
+                        {c.status === "lost" && <span className="ghl-lost">LOST</span>}
                       </span>
-                      {c.value != null && (
-                        <span className="d-value">
-                          {c.from ? `From ${formatMoney(c.value)}` : formatMoney(c.value)}
-                          {c.options > 0 && <span className="muted small" style={{ fontWeight: 600, overflowWrap: "anywhere" }}> · {optionsNote(c.status, c.options, c.option)}</span>}
+                      <span className="ghl-field"><span>Title:</span><span className="ellipsis">{c.title}</span></span>
+                      <span className="ghl-field"><span>Source:</span><span className="ellipsis">{c.source ?? "—"}</span></span>
+                      <span className="ghl-field"><span>Value:</span><span>{c.value != null ? (c.from ? `From ${formatMoney(c.value)}` : formatMoney(c.value)) : formatMoney(0)}{c.options > 0 && <span className="muted"> · {optionsNote(c.status, c.options, c.option)}</span>}</span></span>
+                      <span className="ghl-card-foot">
+                        <span className="ghl-icons" aria-hidden="true"><Icon name="phone" size={13} /><Icon name="messages" size={13} /><Icon name="mail" size={13} /><Icon name="note" size={13} /></span>
+                        <span className="small">
+                          {c.status === "changes_requested" ? <span className="text-danger strong">{statusText("quote", c.status)}</span> : c.kind === "request" ? "Lead" : `#${c.number}`}
+                          {c.status === "draft" && " · Draft"}
+                          {brand === "all" && ` · ${BRAND_LABEL[c.brand]}`}
+                          {" · "}<span style={!stale ? undefined : age >= 14 ? { color: "var(--danger)", fontWeight: 600 } : age >= 7 ? { color: "var(--warning)", fontWeight: 600 } : undefined}>{age === 0 ? "Today" : `${age}d`}</span>
                         </span>
-                      )}
+                      </span>
                     </Link>
                   );
                 })}
@@ -240,9 +280,9 @@ export function PipelinePage() {
           })}
         </div>
       )}
-      {dragging && (
+      {dragging && allowed(dragging, "lost") && (
         <div className="card row" style={{ justifyContent: "center", padding: 16, borderStyle: "dashed", borderColor: over === "lost" ? "var(--danger)" : undefined, background: over === "lost" ? "var(--danger-tint)" : undefined, color: "var(--danger)", fontWeight: 600, position: "sticky", bottom: 16, transition: "background 150ms" }} {...zone("lost")}>
-          <Icon name="x" size={16} />Drop here to mark {dragging.kind === "quote" ? "lost" : "archived"}
+          <Icon name="x" size={16} />Drop here for Closed-Lost ({dragging.kind === "quote" ? "marks the quote lost" : "archives the lead"})
         </div>
       )}
       {sending && <SendDialog kind="quote" id={sending.id} number={sending.number} email={sending.email} phone={sending.phone} onClose={() => setSending(null)} onSent={refresh} />}

@@ -255,17 +255,17 @@ const NOT_SIGNED_IN_ROUTES = [
   "GET /api/config", "GET /api/health", "GET /api/presets", "GET /api/setup", "POST /api/setup/owner",
   "POST /api/auth/email-link", "POST /api/auth/recover", ...PUBLIC_SUB_ROUTES,
   // Callbacks and webhooks, each checked its own way.
-  "GET /api/apps/:provider/callback", "GET /api/railway/callback", "POST /api/webhooks/twilio", "POST /api/webhooks/stripe", "POST /api/webhooks/stripe/:company",
+  "GET /api/apps/:provider/callback", "GET /api/railway/callback", "POST /api/webhooks/twilio", "POST /api/webhooks/quo/:company", "POST /api/webhooks/stripe", "POST /api/webhooks/stripe/:company",
   // Pages for people without an account, behind signed links: a sub's paperwork, the Client Hub,
   // booking forms, logos, unsubscribing, reviews, referrals and calendar feeds; and the pictures on
   // estimates (letterheads, packages, price list items), each under a name never reused.
   "GET /api/public/paperwork/:token", "POST /api/public/paperwork/:token/uploads", "POST /api/public/paperwork/:token/files",
-  "GET /api/hub/:token", "POST /api/hub/:token/approve", "POST /api/hub/:token/request-changes", "POST /api/hub/:token/accept-range", "POST /api/hub/:token/promo",
+  "GET /api/hub/:token", "POST /api/hub/:token/approve", "POST /api/hub/:token/request-changes", "POST /api/hub/:token/decline", "POST /api/hub/:token/preferred-dates", "POST /api/hub/:token/accept-range", "POST /api/hub/:token/promo",
   "DELETE /api/hub/:token/promo", "POST /api/hub/:token/pay", "POST /api/hub/:token/message", "GET /api/hub/:token/drawings/:file", "GET /api/hub/:token/visits/:file",
   "GET /api/hub/:token/visits/:id/slots", "POST /api/hub/:token/visits/:id/change",
   "POST /api/hub/:token/request", "POST /api/hub/:token/autopay/setup", "POST /api/hub/:token/autopay/finish", "POST /api/hub/:token/autopay/confirm",
   "POST /api/hub/:token/autopay/off", "POST /api/hub/:token/tip", "POST /api/public/forms/:company/:form/promo", "GET /api/public/forms/:company/:form", "GET /api/public/forms/:company/:form/openings", "POST /api/public/forms/:company/:form",
-  "POST /api/public/forms/:company/:form/files", "GET /api/public/logo/:company/:file", "GET /api/public/letterhead/:company/:file", "POST /api/public/documents/:file",
+  "POST /api/public/forms/:company/:form/files", "GET /api/public/logo/:company/:file", "GET /api/public/proposal/:company/:file", "GET /api/public/letterhead/:company/:file", "POST /api/public/documents/:file",
   "GET /api/public/package/:company/:file", "GET /api/public/service/:company/:file", "GET /api/public/unsubscribe/:token", "POST /api/public/unsubscribe/:token",
   "GET /api/public/r/:token", "GET /api/public/refer/:token", "POST /api/public/refer/:token",
   // A campaign email's tracking image and tracked links (routes/public.ts): a random token each.

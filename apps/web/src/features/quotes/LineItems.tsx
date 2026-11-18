@@ -333,11 +333,12 @@ export function LineItems({
       {editable ? (
         <div role="table" aria-label="Line items" ref={listRef}>
           <div className="lines-head" role="row">
-            <span role="columnheader">Item</span>
+            {/* On a quote, Customer Factor's words for the columns: Jobs, Each, Amount. */}
+            <span role="columnheader">{table === "quote_line_items" ? "Jobs" : "Item"}</span>
             <span role="columnheader" className="num">Qty</span>
             <span role="columnheader">Unit</span>
-            <span role="columnheader" className="num">Price</span>
-            <span role="columnheader" className="num">Total</span>
+            <span role="columnheader" className="num">{table === "quote_line_items" ? "Each" : "Price"}</span>
+            <span role="columnheader" className="num">{table === "quote_line_items" ? "Amount" : "Total"}</span>
             <span role="columnheader"><span className="sr-only">Actions</span></span>
           </div>
           {shown.map((line, i) => {

@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { appName } from "@/lib/api";
 import { Icon } from "./Icon";
 
 /** Sets the browser tab title, e.g. "Quotes · Crewtavo". */
@@ -7,7 +8,7 @@ export function useDocumentTitle(title: string | null | undefined) {
   useEffect(() => {
     if (!title) return;
     const previous = document.title;
-    document.title = `${title} · Crewtavo`;
+    document.title = appName() ? `${title} · ${appName()}` : title;
     return () => {
       document.title = previous;
     };

@@ -53,6 +53,8 @@ export interface AppRow {
   meta?: MetaState;
   /** Twilio: whose account texts go from, and where the number's incoming texts go (routes/apps.ts). */
   twilio?: TwilioState | null;
+  /** Quo, once set up (practice or connected): its lines, test numbers and whether replies come here (routes/quo.ts). */
+  quo?: QuoState | null;
   /** Lob, once connected: whether its key is a test key (nothing mailed) or a live one. */
   lob?: { mode: "test" | "live" | null } | null;
   /** ChatGPT, once the company's OpenAI key is saved: the model it uses and the ones to pick from. */
@@ -92,6 +94,20 @@ export interface TwilioState {
   /** Where the number sends incoming texts now, when that's somewhere else. */
   other_webhook: string | null;
   /** This Crewtavo has a public https address, which Twilio needs to reach it. */
+  reachable: boolean;
+}
+
+export interface QuoState {
+  /** No Quo account: texts are marked sent without leaving Crewtavo. */
+  practice: boolean;
+  /** Only the test numbers are texted or heard from. */
+  test_only: boolean;
+  test_numbers: string[];
+  lines: Partial<Record<"washing" | "lights", { id: string; number: string; name: string }>>;
+  /** Quo tells this Crewtavo when a text comes in (a webhook in the Quo workspace). */
+  webhook_set: boolean;
+  webhook_url: string;
+  /** This Crewtavo has a public https address, which Quo needs to reach it. */
   reachable: boolean;
 }
 
@@ -787,6 +803,21 @@ export const APP_INFO: Record<string, AppInfo> = {
     access: ["Send texts from your number", "Receive replies, and stop texting anyone who texts STOP", "Set where your number sends incoming texts, only when you ask"],
     connectsWith: "Your Twilio account",
     website: "https://www.twilio.com/",
+    open: "/messages",
+  },
+  quo: {
+    developer: "Quo",
+    tagline: "Text from your own business lines",
+    about:
+      "Text customers from the Quo lines they already know: your wash line for washing, your lighting line for Christmas lights. Texts show in the Quo app like any other, and replies come into Messages here. Quo is test only until you go live: Crewtavo texts only the test numbers you list and drops every other text without keeping it. Try it in practice mode first, with no Quo account at all. Calls stay in the Quo app.",
+    highlights: [
+      { icon: "messages", title: "Your own lines", text: "Each brand texts from its own number." },
+      { icon: "lock", title: "Test only", text: "Only your test numbers, until you go live." },
+      { icon: "check", title: "Practice mode", text: "Try everything before connecting Quo." },
+    ],
+    access: ["Read your workspace's lines", "Send texts from the lines you pick, only to your test numbers while it's test only", "Receive texts to those lines, only when you ask, keeping only your test numbers'"],
+    connectsWith: "Key from Quo",
+    website: "https://www.quo.com/",
     open: "/messages",
   },
   sveltia: {

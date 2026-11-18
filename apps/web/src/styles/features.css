@@ -1592,3 +1592,152 @@ button.hub-btn { width: 100%; border: 0; font: inherit; font-size: var(--fs-16);
 .google-notice { display: grid; gap: 4px; }
 .google-attribution { font-family: Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 13px; font-style: normal; font-weight: 400; letter-spacing: normal; line-height: 1.4; color: #5e5e5e; white-space: nowrap; }
 :root.dark .google-attribution { color: #fff; }
+
+/* ---------------------------------------------------------------------------------------------
+ * Messages as Quo's inbox (features/messages/MessagesPage.tsx): the lines, the conversations, the
+ * open one, and the contact beside it. White panels split by thin lines rather than cards.
+ * ------------------------------------------------------------------------------------------- */
+.quo-inbox { grid-template-columns: minmax(280px, 340px) minmax(0, 1fr); gap: 0; height: calc(100dvh - var(--topbar-height) - 64px); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); overflow: hidden; }
+.quo-inbox[data-rail] { grid-template-columns: 220px minmax(260px, 320px) minmax(0, 1fr); }
+.quo-rail { display: flex; flex-direction: column; gap: 2px; padding: 12px 8px; background: var(--fill); border-right: 1px solid var(--divider); overflow-y: auto; }
+.quo-rail-title { font-size: var(--fs-11); font-weight: 600; text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--text-3); padding: 6px 10px 4px; }
+.quo-rail-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-sm); text-align: left; font-size: var(--fs-13); color: var(--ink); background: none; border: 0; cursor: pointer; }
+.quo-rail-item:hover { background: var(--fill-2); }
+.quo-rail-item[aria-current="true"] { background: var(--surface); box-shadow: 0 0 0 1px var(--border); font-weight: 600; }
+.quo-line-icon { width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center; font-size: 13px; color: #fff; background: #2f9e44; flex: none; }
+.quo-line-icon[data-brand="lights"] { background: #e8590c; }
+.quo-count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: #e03131; color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center; }
+.quo-test-note { margin-top: auto; padding: 10px; font-size: var(--fs-11); color: var(--text-3); display: flex; gap: 6px; align-items: center; }
+.quo-list { gap: 0; border-right: 1px solid var(--divider); background: var(--surface); }
+.quo-list-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px 6px; }
+.quo-chips { display: flex; gap: 6px; padding: 4px 14px 8px; flex-wrap: wrap; }
+.quo-chip { padding: 4px 10px; border-radius: var(--radius-pill); border: 1px solid var(--border); background: var(--surface); font-size: var(--fs-12); color: var(--text-2); cursor: pointer; }
+.quo-chip[aria-pressed="true"] { background: #e7efff; border-color: #c5d6fb; color: #1d4ed8; font-weight: 600; }
+.quo-search { margin: 0 14px 8px; }
+.quo-rows { flex: 1; min-height: 0; overflow-y: auto; border-top: 1px solid var(--divider); }
+.quo-row { display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 10px 14px; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--divider); cursor: pointer; color: var(--ink); }
+.quo-row:hover { background: var(--fill); }
+.quo-row[aria-current="true"] { background: var(--fill-2); }
+.quo-avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--fill-2); color: var(--text-2); font-size: var(--fs-12); font-weight: 600; }
+.quo-avatar-lg { width: 64px; height: 64px; font-size: 20px; }
+.quo-preview { display: block; font-size: var(--fs-12); color: var(--text-2); margin-top: 2px; }
+.quo-unread { width: 9px; height: 9px; border-radius: 50%; background: #2563eb; flex: none; margin-top: 6px; }
+.quo-empty { height: 100%; display: grid; place-items: center; }
+.quo .inbox-thread .card, .quo .inbox-thread .thread { border: 0; border-radius: 0; box-shadow: none; }
+.quo-thread-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 260px; height: 100%; min-height: 0; }
+.quo-thread-wrap .thread { border-right: 1px solid var(--divider) !important; }
+.quo .thread-body { background: var(--surface); }
+.quo .msg-bubble { border-radius: 16px; border-bottom-left-radius: 4px; background: var(--fill-2); border-color: transparent; }
+.quo .msg[data-mine] .msg-bubble { background: #4c6ef5; border-color: #4c6ef5; color: #fff; border-radius: 16px; border-bottom-right-radius: 4px; }
+.quo .msg[data-note] .msg-bubble { background: var(--note); border-color: var(--note-border); color: var(--ink); }
+.quo .composer { margin: 10px 14px 14px; border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; background: var(--surface); }
+.quo .composer textarea { border: 0; box-shadow: none; background: transparent; padding-left: 2px; }
+.quo-contact { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 24px 16px; overflow-y: auto; background: var(--surface); }
+.quo-contact-name { font-size: var(--fs-16); }
+.quo-round { border-radius: 50%; border: 1px solid var(--border); width: 34px; height: 34px; display: grid; place-items: center; }
+.quo-contact-title { align-self: stretch; font-size: var(--fs-11); font-weight: 600; text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--text-3); margin-top: 8px; }
+.quo-contact-fields { align-self: stretch; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 10px; margin: 0; font-size: var(--fs-13); }
+.quo-contact-fields dt { display: flex; align-items: center; gap: 6px; color: var(--text-2); }
+.quo-contact-fields dd { margin: 0; min-width: 0; }
+@media (max-width: 1280px) { .quo-thread-wrap { grid-template-columns: minmax(0, 1fr); } .quo-contact { display: none; } }
+@media (max-width: 1100px) { .quo-inbox[data-rail] { grid-template-columns: minmax(260px, 320px) minmax(0, 1fr); } .quo-rail { display: none; } }
+@media (max-width: 900px) {
+  .quo-inbox, .quo-inbox[data-rail] { grid-template-columns: minmax(0, 1fr); border-radius: 0; height: calc(100dvh - var(--topbar-height) - var(--mobile-nav-height) - 24px); }
+}
+
+/* ---------------------------------------------------------------------------------------------
+ * The sales board as GoHighLevel's opportunities board (features/pipeline/PipelinePage.tsx):
+ * a pipeline picker, colored stage headers with a count and value, and white cards with the
+ * contact, source and value, won ones tinted green.
+ * ------------------------------------------------------------------------------------------- */
+.ghl-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.ghl-pipeline { width: auto; min-width: 240px; }
+.ghl-count { padding: 3px 10px; border-radius: var(--radius-pill); background: #e7efff; color: #1d4ed8; font-size: var(--fs-12); font-weight: 600; }
+.ghl-col { background: transparent; border: 0; padding: 0; gap: 8px; }
+.ghl-col-head { display: grid; gap: 2px; padding: 8px 10px; border-radius: 6px; background: var(--stage); color: #1f2937; font-size: var(--fs-12); }
+.ghl-col-head strong { font-size: var(--fs-13); }
+.ghl-col-head span { color: #4b5563; }
+.ghl-col-head span strong { color: #1f2937; font-size: var(--fs-12); margin-left: 4px; }
+.ghl-col[data-drop] { background: var(--green-tint); outline: 2px dashed var(--green); outline-offset: 2px; border-radius: 8px; }
+.ghl-card { display: grid !important; gap: 6px; padding: 10px 12px !important; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 1px 2px rgb(0 0 0 / 0.05); color: var(--ink); text-decoration: none; }
+.ghl-card[data-won] { background: #e9f5ec; border-color: #cfe6d4; }
+.ghl-card-top { display: flex; align-items: center; gap: 8px; }
+.ghl-card-top strong { flex: 1; font-size: var(--fs-13); }
+.ghl-won, .ghl-lost { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; color: #fff; background: #2f9e44; }
+.ghl-lost { background: #868e96; }
+.ghl-field { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 6px; font-size: var(--fs-12); }
+.ghl-field > span:first-child { color: var(--text-3); font-weight: 600; }
+.ghl-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 4px; border-top: 1px solid var(--divider); color: var(--text-3); }
+.ghl-icons { display: inline-flex; gap: 8px; }
+
+/* ---------------------------------------------------------------------------------------------
+ * A quote's lines as Customer Factor's "Create an Estimate" box (features/quotes/QuotePage.tsx):
+ * a navy bar, a warm grey panel, and the columns Jobs, Qty, Each, Amount.
+ * ------------------------------------------------------------------------------------------- */
+.cf-estimate { border: 1px solid #c9c8c2; border-radius: 4px; overflow: hidden; }
+.cf-estimate-head { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #0a0a7a; color: #fff; font-weight: 600; font-size: var(--fs-15, 15px); }
+.cf-estimate-box { width: 18px; height: 18px; background: #fff; color: #0a0a7a; border-radius: 2px; display: grid; place-items: center; font-weight: 800; line-height: 1; }
+.cf-estimate > .card { border: 0; border-radius: 0; box-shadow: none; background: #ecebe6; }
+.cf-estimate .lines-head { color: #111; font-weight: 600; border-bottom-color: #c9c8c2; }
+.cf-estimate .line-edit, .cf-estimate .line-view { background: #ecebe6; box-shadow: none; border-bottom-color: #d6d5cf; }
+.cf-estimate .input, .cf-estimate .select, .cf-estimate .textarea { border-color: #3a3ab5; border-radius: 2px; background: #fff; }
+.cf-estimate .btn:not(.btn-primary) { color: #f08c00; border-color: transparent; background: transparent; }
+.cf-estimate .btn-primary { background: #0a0a7a; border-color: #0a0a7a; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .cf-estimate > .card, :root:not([data-theme="light"]) .cf-estimate .line-edit, :root:not([data-theme="light"]) .cf-estimate .line-view { background: var(--surface); }
+}
+:root[data-theme="dark"] .cf-estimate > .card, :root[data-theme="dark"] .cf-estimate .line-edit, :root[data-theme="dark"] .cf-estimate .line-view { background: var(--surface); }
+/* Messages and the sales board use the whole width, as Quo's inbox and GoHighLevel's board do. */
+.content:has(> .messages-page.quo), .content:has(> .ghl-toolbar), .content:has(.ghl-toolbar) { max-width: none; }
+
+/* ---------------------------------------------------------------------------------------------
+ * Workflows as GoHighLevel's Automation → Workflows (features/workflows): the list, and the builder
+ * with its trigger card, step cards joined by a line, + between them, Draft / Publish.
+ * ------------------------------------------------------------------------------------------- */
+.ghl-wf-list { padding: 0; overflow-x: auto; }
+.ghl-wf-row { display: grid; grid-template-columns: minmax(240px, 2.4fr) 140px 120px 120px minmax(140px, 1fr); gap: 12px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--divider); min-width: 760px; }
+.ghl-wf-row:last-child { border-bottom: 0; }
+.ghl-wf-head { font-size: var(--fs-12); font-weight: 600; color: var(--text-3); background: var(--fill); }
+.ghl-wf-row .num { text-align: right; font-variant-numeric: tabular-nums; color: #1d4ed8; }
+.pill-brand { font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px; flex: none; }
+.pill-brand-washing { background: #e7efff; color: #1d4ed8; }
+.pill-brand-lights { background: #fdeee4; color: #c2410c; }
+.ghl-switch { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-13); cursor: pointer; }
+.ghl-switch input { appearance: none; width: 34px; height: 20px; border-radius: 999px; background: var(--fill-2); border: 1px solid var(--border); position: relative; cursor: pointer; transition: background var(--dur-fast); margin: 0; }
+.ghl-switch input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / 0.2); transition: transform var(--dur-fast); }
+.ghl-switch input:checked { background: #2563eb; border-color: #2563eb; }
+.ghl-switch input:checked::after { transform: translateX(14px); }
+.ghl-switch input:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+.ghl-builder-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); }
+.ghl-builder-name { max-width: 380px; font-weight: 600; }
+.ghl-canvas { display: flex; flex-direction: column; align-items: center; padding: 28px 12px 40px; border-radius: var(--radius-card); border: 1px solid var(--border);
+  background-color: var(--fill); background-image: radial-gradient(circle, var(--border) 1px, transparent 1px); background-size: 18px 18px; }
+.ghl-step-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; }
+.ghl-node { width: min(360px, 100%); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 1px 2px rgb(0 0 0 / 0.06); }
+.ghl-node[data-open] { width: min(520px, 100%); border-color: #2563eb; box-shadow: 0 0 0 3px rgb(37 99 235 / 0.15); }
+.ghl-trigger { display: flex; gap: 10px; align-items: center; padding: 12px; border-style: dashed; border-color: #2563eb; }
+.ghl-node-main { display: flex; gap: 10px; align-items: center; width: 100%; padding: 10px 12px; background: none; border: 0; text-align: left; cursor: pointer; color: var(--ink); }
+.ghl-node-num { font: 500 11px var(--font-mono, ui-monospace, monospace); color: var(--text-3); width: 18px; }
+.ghl-node-icon { width: 26px; height: 26px; border-radius: 6px; display: grid; place-items: center; flex: none; background: #e7efff; color: #1d4ed8; }
+.ghl-node[data-kind="wait"] .ghl-node-icon { background: #f3e8ff; color: #7c3aed; }
+.ghl-node[data-kind="text"] .ghl-node-icon { background: #dcfce7; color: #15803d; }
+.ghl-node[data-kind="alert"] .ghl-node-icon { background: #fef3c7; color: #b45309; }
+.ghl-node[data-kind="hours"] .ghl-node-icon, .ghl-node[data-kind="goto"] .ghl-node-icon { background: #e0f2fe; color: #0369a1; }
+.ghl-end { display: flex; gap: 8px; align-items: center; justify-content: center; padding: 8px; width: 120px; color: var(--text-3); font-size: var(--fs-13); }
+.ghl-editor { padding: 12px; border-top: 1px solid var(--divider); }
+.ghl-add { position: relative; display: flex; flex-direction: column; align-items: center; padding: 6px 0; }
+.ghl-add::before { content: ""; width: 1px; height: 14px; background: var(--text-3); opacity: 0.5; }
+.ghl-add::after { content: ""; width: 1px; height: 14px; background: var(--text-3); opacity: 0.5; }
+.ghl-plus { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); display: grid; place-items: center; cursor: pointer; color: var(--text-2); }
+.ghl-plus:hover { border-color: #2563eb; color: #2563eb; }
+.ghl-add-menu { position: absolute; top: 40px; z-index: 5; display: grid; min-width: 200px; padding: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgb(0 0 0 / 0.12); }
+.ghl-add-menu button { display: flex; gap: 8px; align-items: center; padding: 7px 8px; border: 0; background: none; text-align: left; border-radius: 6px; cursor: pointer; color: var(--ink); font-size: var(--fs-13); }
+.ghl-add-menu button:hover { background: var(--fill); }
+.ghl-day { display: inline-flex; gap: 4px; align-items: center; font-size: var(--fs-12); padding: 3px 8px; border: 1px solid var(--border); border-radius: 999px; }
+.ghl-run { border-bottom: 1px solid var(--divider); }
+.ghl-run summary { padding: 10px 16px; cursor: pointer; list-style: none; }
+.ghl-run-status { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--fill-2); color: var(--text-2); }
+.ghl-run-active { background: #dcfce7; color: #15803d; }
+.ghl-run-paused { background: #fef3c7; color: #b45309; }
+.ghl-log { margin: 0; padding: 0 16px 12px 32px; display: grid; gap: 4px; font-size: var(--fs-13); }
+.content:has(.ghl-builder) { max-width: none; }

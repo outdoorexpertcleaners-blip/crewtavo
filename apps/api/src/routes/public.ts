@@ -6,6 +6,7 @@
 import { autopaySettings, methodLabel, tipsAllowed } from "@crewtavo/core/autopay";
 import { lateFeeCouldApply, lateFeeSettings } from "@crewtavo/core/billing";
 import { contractValues, fillIn } from "@crewtavo/core/contracts";
+import { proposalSettings } from "@crewtavo/core/proposal";
 import { shownCustomFields } from "@crewtavo/core/customFields";
 import { pickTemplate, templateSettings, type TemplateSettings } from "@crewtavo/core/documents";
 import { hidesExactPrice, inRangeMode, isSiteAdjustment, notIncluded, optionsRange, priceRange, rangeSettings } from "@crewtavo/core/estimates";
@@ -64,6 +65,7 @@ import { saveLocation } from "../services/properties";
 import { draftArrivedRequest } from "../services/quoteDrafts";
 import { LETTERHEAD_MAX_BYTES } from "../services/letterhead";
 import { isDrawnPng, isPng, LOGO_MAX_BYTES, logoImage, logoOf } from "../services/logo";
+import { hubProposal, isProposalPath, PROPOSAL_PICTURE_MAX_BYTES, proposalUses } from "../services/proposal";
 import { PACKAGE_PICTURE_MAX_BYTES } from "../services/packagePictures";
 import { bookFormTime, bookingCalendar, bookingView, bookedVisitTitle, callOffBookedNotice, confirmBooking, firstOpenWeek, formOpenings, visitBusyTimes, type BookingForm } from "../services/onlineBooking";
 import { isJpeg } from "../services/photos";
@@ -210,7 +212,7 @@ async function verifyTurnstile(c: Parameters<typeof appUrl>[0], token: string | 
 // trade are read here but never sent: the room on top is the business's own, Roofing only decides
 // whether a preview shows a roofing range, autopay's only say whether a card is required, and the
 // trade only picks the starter terms.
-const BRANDING = "name, phone, email, website, timezone, currency, address, trade_preset, settings->branding, settings->hub_tips, settings->roofing, settings->roofing_app, settings->paving_app, settings->autopay, settings->privacy_url";
+const BRANDING = "name, phone, email, website, timezone, currency, address, trade_preset, settings->branding, settings->hub_tips, settings->roofing, settings->roofing_app, settings->paving_app, settings->autopay, settings->privacy_url, settings->big_proposal";
 
 /** The company as its clients see it, with where its logo loads from (null without one). */
 const withLogo = <T extends { branding?: unknown }>(companyId: string, company: T) => ({ ...company, logo: logoImage("", companyId, { branding: company.branding })?.src ?? null });
@@ -223,9 +225,10 @@ export { addressLines };
  * whether it has Roofing, whether it needs a card on file, and its trade for the server's own use.
  */
 async function hubCompany(admin: ReturnType<typeof adminClient>, companyId: string) {
-  const { address, roofing, roofing_app, paving_app, autopay, trade_preset: trade, privacy_url, ...row } = must(await admin.from("companies").select(BRANDING).eq("id", companyId).maybeSingle());
+  const { address, roofing, roofing_app, paving_app, autopay, trade_preset: trade, privacy_url, big_proposal, ...row } = must(await admin.from("companies").select(BRANDING).eq("id", companyId).maybeSingle());
   // privacy_url: the business's privacy policy link for the page's footer, when it set one (core privacyPolicy.ts).
-  return { company: withLogo(companyId, { ...row, address: addressLines(address), privacy_url: privacyUrl({ privacy_url }) }), roofing, roofer: roofingOn({ roofing_app }), apps: { roofing_app, paving_app }, cardRequired: autopaySettings({ autopay }).card_required, trade };
+  // big_proposal: the Big Proposal while it's on, with its pictures' addresses (services/proposal.ts), else null.
+  return { company: withLogo(companyId, { ...row, address: addressLines(address), privacy_url: privacyUrl({ privacy_url }), big_proposal: hubProposal(companyId, { big_proposal }) }), roofing, roofer: roofingOn({ roofing_app }), apps: { roofing_app, paving_app }, cardRequired: autopaySettings({ autopay }).card_required, trade };
 }
 
 /**
@@ -420,7 +423,7 @@ publicRoutes.get("/hub/:token", async (c) => {
       await admin
         .from("quotes")
         .select(
-          "id, number, status, title, message, subtotal, discount_amount, tax_rate, tax_amount, total, deposit_amount, deposit_percent, deposit_invoice_id, valid_until, sent_at, created_at, approved_at, approval, client_id, change_order_for, template_id, roof_package_id, work_kind, option_id, section_ids, recurrence_rule, active_months, range_low, range_high, range_sent_at, range_lines, range_accepted_at, priced_on_site_at, exact_sent_at, promo_code_id, promo_every_visit, promo:promo_codes(code, kind, value, description, min_subtotal, every_visit), client:clients(display_name, billing_address, tax_exempt, tax_exempt_note), property:properties(line1, city, region, postal_code), custom_fields, left_out, payment_schedule",
+          "id, number, status, title, message, subtotal, discount_amount, tax_rate, tax_amount, total, deposit_amount, deposit_percent, deposit_invoice_id, valid_until, sent_at, created_at, approved_at, approval, client_id, change_order_for, template_id, roof_package_id, work_kind, brand, option_id, section_ids, recurrence_rule, active_months, range_low, range_high, range_sent_at, range_lines, range_accepted_at, priced_on_site_at, exact_sent_at, promo_code_id, promo_every_visit, promo:promo_codes(code, kind, value, description, min_subtotal, every_visit), client:clients(display_name, billing_address, tax_exempt, tax_exempt_note), property:properties(line1, city, region, postal_code), custom_fields, left_out, payment_schedule",
         )
         .eq("company_id", l.c)
         .eq("id", l.id)
@@ -574,6 +577,8 @@ publicRoutes.get("/hub/:token", async (c) => {
         deposit_percent: exact ? quote.deposit_percent : null,
         valid_until: quote.valid_until, sent_at: quote.sent_at, created_at: quote.created_at, approved_at: quote.approved_at, client_id: quote.client_id, change_order_for: quote.change_order_for,
         recurrence_rule: quote.recurrence_rule, active_months: quote.active_months,
+        // The brand the office set by hand (washing or lights), else null: the proposal works it out from the lines.
+        brand: quote.brand === "washing" || quote.brand === "lights" ? quote.brand : null,
         // What the business shows as "Not included", by name: what it kept office only never leaves the office.
         left_out: notIncluded(quote.left_out),
         // How it's paid: never with a price range (its amounts would say the price). Signed, the
@@ -844,6 +849,55 @@ publicRoutes.post("/hub/:token/request-changes", async (c) => {
 });
 
 /**
+ * The Big Proposal's Decline (Outdoor Expert Cleaners' modification): the client turns the quote
+ * down, so it's marked lost (as the office's "Mark as lost"), with their reason, if they gave one,
+ * as its lost reason and as a note on their page. It lands in Lost on the sales board.
+ */
+publicRoutes.post("/hub/:token/decline", async (c) => {
+  const l = await link(c);
+  if (l.t !== "quote") throw new HttpError(400, "Only a quote can be declined.");
+  if (l.pv) throw new HttpError(400, "This is a preview, so nothing was sent.");
+  const body = await readJson(c, z.object({ reason: z.string().trim().max(2000).optional() }));
+  if (!(await allow(c.env, `hub-decline:${clientIp(c)}`, 20, 60 * 60))) throw new HttpError(429, "Too many tries. Try again later, or call us.");
+  const admin = adminClient(c.env);
+  const quote = must(await admin.from("quotes").select("client_id, status").eq("company_id", l.c).eq("id", l.id).maybeSingle(), "Quote not found.");
+  if (quote.status !== "sent" && quote.status !== "changes_requested") throw new HttpError(409, "This quote isn't waiting for a response.");
+  const reason = body.reason ? `Declined by the client: ${body.reason}` : "Declined by the client.";
+  const saved = await admin.from("quotes").update({ status: "lost", lost_reason: reason.slice(0, 500) }).eq("company_id", l.c).eq("id", l.id).in("status", ["sent", "changes_requested"]);
+  if (saved.error) throw dbError(saved.error);
+  await admin.from("messages").insert({
+    company_id: l.c, client_id: quote.client_id, channel: "note", direction: "in", status: "received",
+    subject: "Quote declined", body: body.reason || "The client declined the quote.", related_type: "quote", related_id: l.id, sent_by: null,
+  });
+  kickAutomations(c, l.c);
+  return c.json({ status: "lost" });
+});
+
+/**
+ * The Big Proposal's Accept asks first when they'd like the work done: up to three dates (as they
+ * wrote them), or no preference, and anything the crew should know. It goes on their page as a note
+ * for the office, then they sign as usual (/hub/:token/approve).
+ */
+publicRoutes.post("/hub/:token/preferred-dates", async (c) => {
+  const l = await link(c);
+  if (l.t !== "quote") throw new HttpError(400, "Only a quote takes preferred dates.");
+  if (l.pv) return c.json({ ok: true, preview: true });
+  const body = await readJson(c, z.object({ dates: z.array(z.string().trim().min(1).max(60)).max(3), no_preference: z.boolean(), notes: z.string().trim().max(2000) }));
+  if (!body.dates.length && !body.no_preference) throw new HttpError(400, "Pick at least one date, or tick 'I have no date preference'.");
+  if (!(await allow(c.env, `hub-dates:${clientIp(c)}`, 20, 60 * 60))) throw new HttpError(429, "Too many tries. Try again later, or call us.");
+  const admin = adminClient(c.env);
+  const quote = must(await admin.from("quotes").select("client_id, status").eq("company_id", l.c).eq("id", l.id).maybeSingle(), "Quote not found.");
+  if (quote.status !== "sent" && quote.status !== "changes_requested") throw new HttpError(409, "This quote isn't waiting for a response.");
+  const text = [body.dates.length ? `Preferred dates:\n${body.dates.map((d) => `• ${d}`).join("\n")}` : "No date preference.", body.notes ? `Notes: ${body.notes}` : ""].filter(Boolean).join("\n\n");
+  const { error } = await admin.from("messages").insert({
+    company_id: l.c, client_id: quote.client_id, channel: "note", direction: "in", status: "received",
+    subject: "Preferred dates", body: text, related_type: "quote", related_id: l.id, sent_by: null,
+  });
+  if (error) throw dbError(error);
+  return c.json({ ok: true });
+});
+
+/**
  * "Yes, send someone out": the client says yes to the price range, and the office is told to book
  * the site visit (the quote.range_accepted automation). It commits the client to nothing; they sign
  * once they've seen the exact price.
@@ -1071,7 +1125,7 @@ async function findForm(c: Parameters<typeof appUrl>[0]) {
   const form = must(
     await admin
       .from("intake_forms")
-      .select("id, name, kind, questions, service_area_zips, lead_time_days, slot_minutes, max_per_day, requires_approval, pick_time, crew_id")
+      .select("id, name, kind, questions, service_area_zips, lead_time_days, slot_minutes, max_per_day, requires_approval, pick_time, crew_id, brand, lead_source")
       .eq("company_id", company.id)
       .eq("slug", c.req.param("form") ?? "")
       .eq("active", true)
@@ -1090,11 +1144,18 @@ publicRoutes.post("/public/forms/:company/:form/promo", async (c) => {
   return c.json({ code: code.toUpperCase().replace(/\s/g, ""), offer: data });
 });
 
+/** The brand's own letterhead name and phone for a brand's form (Settings → Proposal), or null. */
+const formBrandOf = (company: { settings: unknown }, form: { brand?: string | null }) =>
+  form.brand === "washing" || form.brand === "lights" ? proposalSettings(company.settings).brands[form.brand] : null;
+const formBrandName = (company: { settings: unknown }, form: { brand?: string | null }) => formBrandOf(company, form)?.name.trim() || null;
+const formBrandPhone = (company: { settings: unknown }, form: { brand?: string | null }) => formBrandOf(company, form)?.phone.trim() || null;
+
 publicRoutes.get("/public/forms/:company/:form", async (c) => {
   const { company, form } = await findForm(c);
   return c.json({
     // `texts`: the business can text, so the phone box says what giving a number agrees to.
-    company: { name: company.name, phone: company.phone, texts: await smsReady(c.env, company.id), privacy_url: privacyUrl(company.settings as Record<string, unknown> | null) },
+    // A brand's form (intake_forms.brand) is that brand's: its name and phone from Settings → Proposal, when set.
+    company: { name: formBrandName(company, form) ?? company.name, phone: formBrandPhone(company, form) ?? company.phone, texts: await smsReady(c.env, company.id), privacy_url: privacyUrl(company.settings as Record<string, unknown> | null) },
     form: { name: form.name, kind: form.kind, questions: form.questions },
     // With "Let clients pick a time" on: what the page needs to offer times (the openings themselves come from /openings).
     ...(form.pick_time && { booking: bookingView(company, form as BookingForm, (form.service_area_zips ?? []) as string[]) }),
@@ -1152,6 +1213,8 @@ publicRoutes.post("/public/forms/:company/:form", async (c) => {
       answers: formAnswers.default({}),
       files: formFiles,
       promo_code: z.string().trim().max(40).optional(),
+      // Where the lead came from, from the form's link (?source=Facebook): over the form's own.
+      source: z.string().trim().max(60).optional(),
       turnstile_token: z.string().optional(),
       // The time picked, on a form with "Let clients pick a time" on. Without one (the web app from
       // before there were times, or a form with nothing open) it's a plain request, as it always was.
@@ -1222,6 +1285,12 @@ publicRoutes.post("/public/forms/:company/:form", async (c) => {
         .single(),
     );
   }
+  // The form's brand on the request (its pipeline and workflows), and where the lead came from on a
+  // client that has none yet: the link's ?source=, else the form's own.
+  const formBrand = (form as { brand?: string | null }).brand;
+  if (formBrand === "washing" || formBrand === "lights") await admin.from("requests").update({ brand: formBrand }).eq("id", request.id);
+  const leadSource = (body.source || (form as { lead_source?: string | null }).lead_source || "").slice(0, 60);
+  if (leadSource) await admin.from("clients").update({ lead_source: leadSource }).eq("id", found.client_id).or("lead_source.is.null,lead_source.eq.");
   // The number they typed, under the line that says the business may text it: where their say-so came from.
   if (body.phone && (await smsReady(c.env, company.id))) await noteTextConsent(admin, company.id, found.client_id, body.phone, "booking_form");
   if (found.new_property && found.property_id) geocodeLater(c, found.property_id, body.address);
@@ -1638,6 +1707,25 @@ publicRoutes.get("/public/logo/:company/:file", async (c) => {
   if (!bytes || !isPng(bytes)) throw new HttpError(404, "Logo not found.");
   const current = path === `${companyId}/logo/${file}.png`;
   return c.body(bytes, 200, { "Content-Type": "image/png", "Cache-Control": current ? "public, max-age=31536000, immutable" : "public, max-age=3600" });
+});
+
+// A picture of the Big Proposal (services/proposal.ts): only one its settings use now, so a removed
+// picture stops loading and nothing else in the files bucket can be asked for. Its name is never
+// reused, so it can be kept for good.
+publicRoutes.get("/public/proposal/:company/:file", async (c) => {
+  const companyId = c.req.param("company");
+  const file = c.req.param("file") ?? "";
+  if (!z.uuid().safeParse(companyId).success || !/^[0-9a-f-]{36}\.(jpg|png)$/.test(file)) throw new HttpError(404, "Picture not found.");
+  const path = `${companyId}/proposal/${file}`;
+  if (!isProposalPath(path, companyId)) throw new HttpError(404, "Picture not found.");
+  const admin = adminClient(c.env);
+  const { data: company } = await admin.from("companies").select("settings").eq("id", companyId).maybeSingle();
+  if (!company || !proposalUses(companyId, company.settings, path)) throw new HttpError(404, "Picture not found.");
+  const bytes = await storedFile(admin, path, PROPOSAL_PICTURE_MAX_BYTES);
+  if (!bytes) throw new HttpError(404, "Picture not found.");
+  const png = file.endsWith(".png");
+  if (png ? !isPng(bytes) : !(bytes[0] === 0xff && bytes[1] === 0xd8)) throw new HttpError(404, "Picture not found.");
+  return c.body(bytes, 200, { "Content-Type": png ? "image/png" : "image/jpeg", "X-Content-Type-Options": "nosniff", "Cache-Control": "public, max-age=31536000, immutable" });
 });
 
 // A social post's picture (services/social.ts), fetched by Meta and Google when they post it: by its

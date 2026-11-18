@@ -369,7 +369,7 @@ describe("the sales board and the quote list", () => {
     expect(moveRefusal({ kind: "quote", options: 3 }, "won")).toBe("Open the quote to pick the option they chose.");
     expect(moveRefusal({ kind: "quote", options: 0 }, "won")).toBeNull();
     expect(moveRefusal({ kind: "quote", options: 2 }, "lost")).toBeNull();
-    expect(moveRefusal({ kind: "request", options: 0 }, "draft")).toBeNull();
+    expect(moveRefusal({ kind: "request", options: 0 }, "quote_sent")).toBeNull();
   });
 
   it("says how many options a quote offers, whichever is shown first", () => {

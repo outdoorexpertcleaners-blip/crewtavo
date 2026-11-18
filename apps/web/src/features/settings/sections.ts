@@ -9,7 +9,7 @@ import type { IconName } from "@/components/ui/Icon";
 import { msg } from "@/lib/i18n";
 import { can, hasRole, isSub, type Session } from "@/lib/session";
 
-export type SettingsTab = "profile" | "company" | "payments" | "schedule" | "address" | "hosting" | "storage" | "team" | "roles" | "crews" | "sales-areas" | "prices" | "templates" | "contracts" | "checklists" | "custom-fields" | "client-notifications" | "email" | "calendars" | "assistants" | "maps" | "data" | "license" | "weather";
+export type SettingsTab = "profile" | "company" | "payments" | "schedule" | "address" | "hosting" | "storage" | "team" | "roles" | "crews" | "sales-areas" | "prices" | "templates" | "proposal" | "contracts" | "checklists" | "custom-fields" | "client-notifications" | "email" | "calendars" | "assistants" | "maps" | "data" | "license" | "weather";
 export type SettingsItem = { label: string; icon: IconName; keywords: string } & ({ tab: SettingsTab } | { to: string });
 
 export function settingsGroups(session: Session): Array<{ title: string; items: SettingsItem[] }> {
@@ -41,6 +41,8 @@ export function settingsGroups(session: Session): Array<{ title: string; items: 
         managesSettings && { tab: "weather", label: "Weather rules", icon: "sun", keywords: "weather rain wind temperature hold forecast cold heat dry time sealcoat asphalt" },
         managesSettings && { tab: "templates", label: "Document style", icon: "palette", keywords: "estimate template quote proposal invoice template letterhead logo color font lettering terms warranty signature signatures license insurance insurer footer print pdf paper look" },
         managesSettings && { tab: "contracts", label: "Contract terms", icon: "file", keywords: "contract builder terms and conditions clauses sections disclaimers fine print agreement warranty payment right to cancel liens permits initials fill-ins legal attorney" },
+        // The Big Proposal (ProposalSettings.tsx, Outdoor Expert Cleaners' modification): owners and admins, as the logo.
+        isAdmin && { tab: "proposal", label: "Proposal", icon: "file", keywords: "big proposal customer factor introduction insurance certificate photos before after testimonials agreement in closing accept decline preferred dates brand lights washing" },
         managesSettings && { tab: "custom-fields", label: "Custom fields", icon: "table", keywords: "custom fields extra fields your own fields gate code permit number unit model clients properties jobs quotes invoices" },
         isAdmin && { tab: "maps", label: "Maps", icon: "map", keywords: "imagery satellite aerial google esri measure key api cloud default map" },
         session.role === "owner" && { tab: "data", label: "Your data", icon: "download", keywords: "export download backup all data everything spreadsheet spreadsheets csv excel google sheets zip copy move switch leave another app crm jobber housecall pro" },

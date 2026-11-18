@@ -49,6 +49,7 @@ import { sanitizeContractHtml } from "@/lib/html";
 import { ClientPortal, hubZone, MessageDialog, type ClientView, type PortalVisit } from "./ClientPortal";
 import { CARD_REQUIRED } from "./HubAutopay";
 import { HubReviews } from "./HubReviews";
+import { BigProposal, bigProposalFor } from "./BigProposal";
 import {
   autopayPayNote,
   contrastOnWhite,
@@ -220,6 +221,29 @@ export function HubPage() {
   const preview = Boolean(d && "preview" in d && d.preview);
   const home = d && d.kind !== "client" ? d.home : null;
   const clientName = d ? (d.kind === "client" ? d.client.name : d.kind === "quote" ? d.quote.client?.display_name : d.invoice.client?.display_name) : null;
+
+  // The Big Proposal (BigProposal.tsx), when the business has it on: the quote as CF's proposal, with
+  // Crewtavo's own approval after Accept. Printing still prints the estimate itself: Print opens this
+  // link with ?print=1, which is the usual page, and it prints itself (`printable` is true whenever the
+  // quote has loaded, as the page keeps its printable document ready, so it can't say this).
+  const big = d?.kind === "quote" && !d.quote.range ? bigProposalFor(d) : null;
+  if (d?.kind === "quote" && big && !printing) {
+    const approval = (
+      <div className="hub" style={{ ["--brand" as string]: brand, ["--on-brand" as string]: onBrand, ["--brand-text" as string]: contrastOnWhite(brand) >= 4.5 ? brand : "var(--ink)" }}>
+        <QuoteHub token={token} data={d} onChanged={() => view.refetch()} printing={printable} onPrint={print} />
+      </div>
+    );
+    return (
+      <>
+        <BigProposal token={token} data={d} brand={big.brand} look={big.look} hubFetch={hubFetch} onChanged={() => view.refetch()} onPrint={() => {
+          const url = new URL(window.location.href);
+          url.searchParams.set("print", "1");
+          window.location.assign(url.toString());
+        }} approval={approval} />
+        {messaging && <MessageDialog token={token} company={d.company.name} hubFetch={hubFetch} onClose={() => setMessaging(null)} />}
+      </>
+    );
+  }
 
   // A roof estimate out as a price range is a page of its own, on the business's letterhead.
   if (d?.kind === "quote" && d.quote.range) {

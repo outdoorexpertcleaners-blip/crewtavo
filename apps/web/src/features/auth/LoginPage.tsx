@@ -9,7 +9,6 @@ import { api, loadConfig, supabase, type AppConfig } from "@/lib/api";
 import { KEY_FILE_NAME, readKeyFile } from "@/lib/keyFile";
 import { formatPhoneTyping } from "@/lib/validate";
 import styles from "./auth.module.css";
-import { BrandLockup } from "@/components/shell/BrandMark";
 import { afterAsking, ASK_THE_OFFICE, askFor, codeDigits, codeProblem, emailInstead, filledAtOnce, newPhoneOffers, NOTHING_CAME, readAddress, resendIn, resendLabel, sentTo, signInWith, TEXTING_OFF, wholeCode, type CodeStep, type CodeWay } from "./textCode";
 import { getLocale, LOCALE_NAMES, msg, pickAtSignIn, showScreenLang, T, t } from "@/lib/i18n";
 import { LOCALES } from "@crewtavo/core/i18n";
@@ -56,11 +55,21 @@ export function authMessage(error: { message: string; status?: number; code?: st
   return translateError(getLocale(), error.message);
 }
 
+/** The business's logo (or name) over the sign-in form, from the config (AppConfig.brand). */
+function SignInBrand() {
+  const config = useQuery({ queryKey: ["config"], queryFn: loadConfig, staleTime: Infinity });
+  const brand = config.data?.brand;
+  const [broken, setBroken] = useState(false);
+  if (!brand) return null;
+  if (brand.logo && !broken) return <img src={brand.logo} alt={brand.name} style={{ maxHeight: 72, maxWidth: 260, objectFit: "contain" }} onError={() => setBroken(true)} />;
+  return <strong style={{ fontSize: 22 }}>{brand.name}</strong>;
+}
+
 export function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <div className={styles.brand}><BrandLockup size={34} /></div>
+        <div className={styles.brand}><SignInBrand /></div>
         {children}
         <LanguageSwitch />
       </main>

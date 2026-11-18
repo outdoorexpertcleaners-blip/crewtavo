@@ -16,7 +16,8 @@ import { connectedPlans } from "../integrations/chatgptPlan";
 import { timeRates } from "../services/payRates";
 import { saveLetterheadPicture } from "../services/letterhead";
 import { emailCodesOffered, textCodesOffered } from "../services/signInCodes";
-import { removeLogo, setLogo } from "../services/logo";
+import { logoImage, removeLogo, setLogo } from "../services/logo";
+import { currentProposal, proposalPictureUrl, proposalSchema, saveProposal, saveProposalPicture } from "../services/proposal";
 import { removePhoto, setPhoto } from "../services/photos";
 import { adminAccess, allowAdminGrant, invitePerson, inviteStatus, sendInvite, welcomeLink, type TeamScope } from "../services/team";
 import { clientIp } from "../lib/visitor";
@@ -39,6 +40,18 @@ function googlePicker(env: Env): { clientId: string; apiKey: string; appId: stri
   return { clientId: env.GOOGLE_CLIENT_ID, apiKey: env.GOOGLE_PICKER_API_KEY, appId };
 }
 
+/**
+ * The business a single-business copy is for (its name and logo), for the sign-in page. Null on a
+ * copy that hosts several (nothing about any of them is shown before sign-in), or with none yet.
+ */
+async function instanceBrand(env: Env): Promise<{ name: string; logo: string | null } | null> {
+  if (env.CREWTAVO_SINGLE_COMPANY !== "1") return null;
+  const { data, error } = await adminClient(env).from("companies").select("id, name, settings").limit(2);
+  if (error || !data || data.length !== 1) return null;
+  const company = data[0]!;
+  return { name: company.name, logo: logoImage("", company.id, company.settings)?.src ?? null };
+}
+
 /** Everything the SPA needs at startup, so it has no build-time environment variables. */
 account.get("/config", async (c) =>
   c.json(
@@ -47,6 +60,9 @@ account.get("/config", async (c) =>
       supabaseUrl: c.env.CREWTAVO_GATEWAY ? "" : c.env.SUPABASE_URL,
       supabaseKey: publishableKey(c.env),
       singleCompany: c.env.CREWTAVO_SINGLE_COMPANY === "1",
+      // The business this copy is for, when it has just one: the sign-in page and the browser tab
+      // show its name and logo rather than Crewtavo's (NOTICE: names and logos).
+      brand: await instanceBrand(c.env),
       // Where the instance runs (railway, compose or server), for setup steps that depend on it.
       platform: platformOf(c.env),
       // The Crewtavo Terms version that setting up a business agrees to (packages/core/src/terms.ts).
@@ -123,7 +139,7 @@ account.get("/me", requireUser, async (c) => {
   // ...and, on Railway, whether the owner still has to connect it (services/railway.ts).
   const [connected, agreements, railways] = companyIds.length
     ? await Promise.all([
-        adminClient(c.env).from("integrations").select("company_id, provider, external_account_id").in("provider", ["email", "anthropic", "chatgpt", "fal", "twilio"]).neq("status", "disconnected").in("company_id", companyIds),
+        adminClient(c.env).from("integrations").select("company_id, provider, external_account_id").in("provider", ["email", "anthropic", "chatgpt", "fal", "twilio", "quo"]).neq("status", "disconnected").in("company_id", companyIds),
         adminClient(c.env).from("terms_acceptances").select("company_id").eq("version", TERMS_VERSION).in("company_id", companyIds),
         adminClient(c.env).from("integrations").select("company_id, status").eq("provider", "railway").in("company_id", companyIds),
       ]).then(([apps, terms, railway]) => [must(apps), must(terms), must(railway)] as const)
@@ -133,7 +149,8 @@ account.get("/me", requireUser, async (c) => {
   const withAiKey = new Set(connected.filter((r) => r.provider === "anthropic" || r.provider === "chatgpt").map((r) => r.company_id));
   const withFal = new Set(connected.filter((r) => r.provider === "fal").map((r) => r.company_id));
   // (One connected with its Account SID: a key saved the old way never sent anything.)
-  const withTwilio = new Set(connected.filter((r) => r.provider === "twilio" && r.external_account_id).map((r) => r.company_id));
+  // Quo (Apps → Quo) texts too, in practice mode as well.
+  const withTwilio = new Set(connected.filter((r) => (r.provider === "twilio" && r.external_account_id) || r.provider === "quo").map((r) => r.company_id));
   // ...and where this person connected their own ChatGPT plan (Apps → ChatGPT), which answers what
   // they ask the AI themselves: AI is on for them there whatever the company has.
   const plans = rows.length ? await connectedPlans(adminClient(c.env), c.var.userId) : [];
@@ -659,6 +676,28 @@ account.put("/company/logo", requireUser, requireCompany(ADMINS), async (c) => {
 account.delete("/company/logo", requireUser, requireCompany(ADMINS), async (c) => {
   await removeLogo(adminClient(c.env), c.var.companyId);
   return c.json({ ok: true });
+});
+
+/**
+ * The Big Proposal (services/proposal.ts; Outdoor Expert Cleaners' modification), from Settings →
+ * Proposal: its settings, and a picture for it uploaded on its own (base64 JPEG or PNG), which goes
+ * into use when the settings that name it are saved. Owners and admins change it, as the logo.
+ */
+account.get("/company/proposal", requireUser, requireCompany(ADMINS), async (c) => {
+  const { proposal } = await currentProposal(adminClient(c.env), c.var.companyId);
+  return c.json({ proposal });
+});
+
+account.put("/company/proposal", requireUser, requireCompany(ADMINS), async (c) => {
+  const body = await readJson(c, proposalSchema);
+  return c.json({ proposal: await saveProposal(adminClient(c.env), c.var.companyId, body) });
+});
+
+account.put("/company/proposal/picture", requireUser, requireCompany(ADMINS), async (c) => {
+  const body = await readJson(c, z.object({ picture: z.string().min(100).max(1_990_000).regex(/^[A-Za-z0-9+/]+={0,2}$/) }));
+  if (!(await allow(c.env, `proposal-picture:${c.var.companyId}`, 120, 3600))) throw new HttpError(429, "Too many pictures at once. Wait a while and try again.");
+  const path = await saveProposalPicture(adminClient(c.env), c.var.companyId, body.picture);
+  return c.json({ path, url: proposalPictureUrl(path) });
 });
 
 /**

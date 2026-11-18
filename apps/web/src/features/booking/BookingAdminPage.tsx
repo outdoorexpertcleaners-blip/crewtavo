@@ -31,6 +31,8 @@ interface FormRow {
   id: string; slug: string; name: string; kind: string; active: boolean; questions: Question[]; service_area_zips: string[];
   // Picking a time: whether clients can, how long a visit is, how soon and how many a day, whose time it books, and whether the office confirms first.
   pick_time: boolean; slot_minutes: number | null; lead_time_days: number; max_per_day: number | null; crew_id: string | null; requires_approval: boolean;
+  /** The brand its leads are (washing or lights), and the lead source a new client gets. */
+  brand: "washing" | "lights" | null; lead_source: string | null;
 }
 /** How long a visit booked online can be, as the form offers them. */
 const LENGTHS: Array<[number, string]> = [[30, "30 minutes"], [45, "45 minutes"], [60, "1 hour"], [90, "1 hour 30 minutes"], [120, "2 hours"], [180, "3 hours"], [240, "4 hours"]];
@@ -46,7 +48,7 @@ export function BookingAdminPage() {
   const canEdit = hasRole(session, "admin", "office") && can(session, "settings");
   const forms = useQuery({
     queryKey: ["intake-forms", company.id],
-    queryFn: async () => unwrap(await supabase().from("intake_forms").select("id, slug, name, kind, active, questions, service_area_zips, pick_time, slot_minutes, lead_time_days, max_per_day, crew_id, requires_approval").eq("company_id", company.id).order("name")) as unknown as FormRow[],
+    queryFn: async () => unwrap(await supabase().from("intake_forms").select("id, slug, name, kind, active, questions, service_area_zips, pick_time, slot_minutes, lead_time_days, max_per_day, crew_id, requires_approval, brand, lead_source").eq("company_id", company.id).order("name")) as unknown as FormRow[],
   });
   const counts = useQuery({
     queryKey: ["intake-forms", company.id, "counts"],
@@ -149,6 +151,8 @@ function FormEditor({ form, taken, onClose }: { form: FormRow | null; taken: str
   const [mostADay, setMostADay] = useState(form?.max_per_day ? String(form.max_per_day) : "");
   const [crewId, setCrewId] = useState(form?.crew_id ?? "");
   const [needsOk, setNeedsOk] = useState(form?.requires_approval ?? false);
+  const [brand, setBrand] = useState<string>(form?.brand ?? "");
+  const [leadSource, setLeadSource] = useState(form?.lead_source ?? "Website");
   const books = kind !== "request";
   const lead = Math.min(Math.max(Math.round(Number(leadDays)) || 0, 0), 30);
   const most = mostADay.trim() ? Math.min(Math.max(Math.round(Number(mostADay)) || 1, 1), 50) : null;
@@ -172,7 +176,7 @@ function FormEditor({ form, taken, onClose }: { form: FormRow | null; taken: str
       const clean = normalizeIntakeForm({ name, slug, zips: zipList, questions }, taken.filter((s) => s !== form?.slug));
       // A request form never offers times; its other booking settings are left as they were.
       const timing = books ? { pick_time: pickTime, slot_minutes: minutes, lead_time_days: lead, max_per_day: most, crew_id: crewId || null, requires_approval: needsOk } : { pick_time: false };
-      const row = { ...clean, kind, questions: clean.questions as never, ...timing };
+      const row = { ...clean, kind, questions: clean.questions as never, ...timing, brand: (brand || null) as FormRow["brand"], lead_source: leadSource.trim().slice(0, 60) || null };
       if (form) unwrap(await supabase().from("intake_forms").update(row).eq("id", form.id));
       else unwrap(await supabase().from("intake_forms").insert({ ...row, company_id: company.id }));
     },
@@ -191,6 +195,18 @@ function FormEditor({ form, taken, onClose }: { form: FormRow | null; taken: str
             <select className="select" value={kind} onChange={(e) => setKind(e.target.value)}>
               {Object.entries(KIND).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
             </select>
+          </Field>
+        </div>
+        <div className="form-grid">
+          <Field label="Brand" hint="Its leads go in this brand's pipeline and workflows.">
+            <select className="select" value={brand} onChange={(e) => setBrand(e.target.value)}>
+              <option value="">Work it out from what they ask for</option>
+              <option value="washing">Outdoor Expert Cleaners (washing)</option>
+              <option value="lights">Outdoor Expert Lighting (Christmas lights)</option>
+            </select>
+          </Field>
+          <Field label="Lead source" hint="For a link in an ad, add ?source=Facebook (or Google Ads, TikTok) to the link.">
+            <input className="input" value={leadSource} maxLength={60} onChange={(e) => setLeadSource(e.target.value)} placeholder="Website" />
           </Field>
         </div>
         <Field label="Link" error={clash ? "Another form uses this link" : null} hint={`${window.location.origin}/book/${company.slug}/${finalSlug}`}>

@@ -1186,14 +1186,14 @@ isOneToOne: false
                   ]
                 },"intake_forms": {
                   Row: {
-                    "active": boolean,"company_id": string,"created_at": string,"crew_id": string | null,"id": string,"kind": string,"lead_time_days": number,"max_per_day": number | null,"name": string,"pick_time": boolean,"questions": NonNullable<Json>,"requires_approval": boolean,"service_area_zips": (string)[],"service_ids": (string)[],"slot_minutes": number | null,"slug": string,"updated_at": string
+                    "active": boolean,"brand": string | null,"company_id": string,"created_at": string,"crew_id": string | null,"id": string,"kind": string,"lead_time_days": number,"lead_source": string | null,"max_per_day": number | null,"name": string,"pick_time": boolean,"questions": NonNullable<Json>,"requires_approval": boolean,"service_area_zips": (string)[],"service_ids": (string)[],"slot_minutes": number | null,"slug": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "active"?: boolean,"company_id": string,"created_at"?: string,"crew_id"?: string | null,"id"?: string,"kind"?: string,"lead_time_days"?: number,"max_per_day"?: number | null,"name": string,"pick_time"?: boolean,"questions"?: NonNullable<Json>,"requires_approval"?: boolean,"service_area_zips"?: (string)[],"service_ids"?: (string)[],"slot_minutes"?: number | null,"slug": string,"updated_at"?: string
+                    "active"?: boolean,"brand"?: string | null,"company_id": string,"created_at"?: string,"crew_id"?: string | null,"id"?: string,"kind"?: string,"lead_time_days"?: number,"lead_source"?: string | null,"max_per_day"?: number | null,"name": string,"pick_time"?: boolean,"questions"?: NonNullable<Json>,"requires_approval"?: boolean,"service_area_zips"?: (string)[],"service_ids"?: (string)[],"slot_minutes"?: number | null,"slug": string,"updated_at"?: string
                   }
                   Update: {
-                    "active"?: boolean,"company_id"?: string,"created_at"?: string,"crew_id"?: string | null,"id"?: string,"kind"?: string,"lead_time_days"?: number,"max_per_day"?: number | null,"name"?: string,"pick_time"?: boolean,"questions"?: NonNullable<Json>,"requires_approval"?: boolean,"service_area_zips"?: (string)[],"service_ids"?: (string)[],"slot_minutes"?: number | null,"slug"?: string,"updated_at"?: string
+                    "active"?: boolean,"brand"?: string | null,"company_id"?: string,"created_at"?: string,"crew_id"?: string | null,"id"?: string,"kind"?: string,"lead_time_days"?: number,"lead_source"?: string | null,"max_per_day"?: number | null,"name"?: string,"pick_time"?: boolean,"questions"?: NonNullable<Json>,"requires_approval"?: boolean,"service_area_zips"?: (string)[],"service_ids"?: (string)[],"slot_minutes"?: number | null,"slug"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -1752,14 +1752,14 @@ isOneToOne: false
                   ]
                 },"messages": {
                   Row: {
-                    "body": string,"channel": string,"client_id": string | null,"company_id": string,"created_at": string,"direction": string,"external_id": string | null,"from_name": string | null,"from_phone": string | null,"id": string,"recipients": Json | null,"related_id": string | null,"related_type": string | null,"sent_by": string | null,"status": string,"subject": string | null
+                    "body": string,"channel": string,"client_id": string | null,"company_id": string,"created_at": string,"direction": string,"external_id": string | null,"from_name": string | null,"from_phone": string | null,"id": string,"line": string | null,"recipients": Json | null,"related_id": string | null,"related_type": string | null,"sent_by": string | null,"status": string,"subject": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "body": string,"channel": string,"client_id"?: string | null,"company_id": string,"created_at"?: string,"direction"?: string,"external_id"?: string | null,"from_name"?: string | null,"from_phone"?: string | null,"id"?: string,"recipients"?: Json | null,"related_id"?: string | null,"related_type"?: string | null,"sent_by"?: string | null,"status"?: string,"subject"?: string | null
+                    "body": string,"channel": string,"client_id"?: string | null,"company_id": string,"created_at"?: string,"direction"?: string,"external_id"?: string | null,"from_name"?: string | null,"from_phone"?: string | null,"id"?: string,"line"?: string | null,"recipients"?: Json | null,"related_id"?: string | null,"related_type"?: string | null,"sent_by"?: string | null,"status"?: string,"subject"?: string | null
                   }
                   Update: {
-                    "body"?: string,"channel"?: string,"client_id"?: string | null,"company_id"?: string,"created_at"?: string,"direction"?: string,"external_id"?: string | null,"from_name"?: string | null,"from_phone"?: string | null,"id"?: string,"recipients"?: Json | null,"related_id"?: string | null,"related_type"?: string | null,"sent_by"?: string | null,"status"?: string,"subject"?: string | null
+                    "body"?: string,"channel"?: string,"client_id"?: string | null,"company_id"?: string,"created_at"?: string,"direction"?: string,"external_id"?: string | null,"from_name"?: string | null,"from_phone"?: string | null,"id"?: string,"line"?: string | null,"recipients"?: Json | null,"related_id"?: string | null,"related_type"?: string | null,"sent_by"?: string | null,"status"?: string,"subject"?: string | null
                   }
                   Relationships: [
                     {
@@ -2392,14 +2392,14 @@ isOneToOne: false
                   ]
                 },"quotes": {
                   Row: {
-                    "active_months": (number)[] | null,"approval": Json | null,"approved_at": string | null,"change_order_for": string | null,"client_id": string | null,"company_id": string,"converted_at": string | null,"created_at": string,"created_by": string | null,"custom_fields": NonNullable<Json>,"deposit_amount": number,"deposit_invoice_id": string | null,"deposit_percent": number | null,"deposit_told_at": string | null,"discount_amount": number,"drafted": Json | null,"ends_on": string | null,"every_job_items_added": boolean,"every_job_items_left_off": (string)[],"exact_sent_at": string | null,"id": string,"is_template": boolean,"left_out": NonNullable<Json>,"lost_reason": string | null,"measure_on_site_at": string | null,"measure_on_site_reason": string | null,"message": string | null,"number": number | null,"option_id": string | null,"payment_schedule": Json | null,"pipeline_stage": string | null,"priced_on_site_at": string | null,"promo_code_id": string | null,"promo_every_visit": boolean | null,"property_id": string | null,"range_accepted_at": string | null,"range_high": number | null,"range_lines": Json | null,"range_low": number | null,"range_sent_at": string | null,"recurrence_rule": string | null,"request_id": string | null,"roof_package_id": string | null,"salesperson_id": string | null,"section_ids": (string)[],"sent_at": string | null,"source_id": string | null,"starts_on": string | null,"status": string,"subtotal": number,"tax_amount": number,"tax_rate": number,"template_id": string | null,"title": string,"total": number,"updated_at": string,"valid_until": string | null,"work_kind": string | null
+                    "active_months": (number)[] | null,"approval": Json | null,"approved_at": string | null,"brand": string | null,"change_order_for": string | null,"client_id": string | null,"company_id": string,"converted_at": string | null,"created_at": string,"created_by": string | null,"custom_fields": NonNullable<Json>,"deposit_amount": number,"deposit_invoice_id": string | null,"deposit_percent": number | null,"deposit_told_at": string | null,"discount_amount": number,"drafted": Json | null,"ends_on": string | null,"every_job_items_added": boolean,"every_job_items_left_off": (string)[],"exact_sent_at": string | null,"id": string,"is_template": boolean,"left_out": NonNullable<Json>,"lost_reason": string | null,"measure_on_site_at": string | null,"measure_on_site_reason": string | null,"message": string | null,"number": number | null,"option_id": string | null,"payment_schedule": Json | null,"pipeline_stage": string | null,"priced_on_site_at": string | null,"promo_code_id": string | null,"promo_every_visit": boolean | null,"property_id": string | null,"range_accepted_at": string | null,"range_high": number | null,"range_lines": Json | null,"range_low": number | null,"range_sent_at": string | null,"recurrence_rule": string | null,"request_id": string | null,"roof_package_id": string | null,"salesperson_id": string | null,"section_ids": (string)[],"sent_at": string | null,"source_id": string | null,"starts_on": string | null,"status": string,"subtotal": number,"tax_amount": number,"tax_rate": number,"template_id": string | null,"title": string,"total": number,"updated_at": string,"valid_until": string | null,"work_kind": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "active_months"?: (number)[] | null,"approval"?: Json | null,"approved_at"?: string | null,"change_order_for"?: string | null,"client_id"?: string | null,"company_id": string,"converted_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"custom_fields"?: NonNullable<Json>,"deposit_amount"?: number,"deposit_invoice_id"?: string | null,"deposit_percent"?: number | null,"deposit_told_at"?: string | null,"discount_amount"?: number,"drafted"?: Json | null,"ends_on"?: string | null,"every_job_items_added"?: boolean,"every_job_items_left_off"?: (string)[],"exact_sent_at"?: string | null,"id"?: string,"is_template"?: boolean,"left_out"?: NonNullable<Json>,"lost_reason"?: string | null,"measure_on_site_at"?: string | null,"measure_on_site_reason"?: string | null,"message"?: string | null,"number"?: number | null,"option_id"?: string | null,"payment_schedule"?: Json | null,"pipeline_stage"?: string | null,"priced_on_site_at"?: string | null,"promo_code_id"?: string | null,"promo_every_visit"?: boolean | null,"property_id"?: string | null,"range_accepted_at"?: string | null,"range_high"?: number | null,"range_lines"?: Json | null,"range_low"?: number | null,"range_sent_at"?: string | null,"recurrence_rule"?: string | null,"request_id"?: string | null,"roof_package_id"?: string | null,"salesperson_id"?: string | null,"section_ids"?: (string)[],"sent_at"?: string | null,"source_id"?: string | null,"starts_on"?: string | null,"status"?: string,"subtotal"?: number,"tax_amount"?: number,"tax_rate"?: number,"template_id"?: string | null,"title": string,"total"?: number,"updated_at"?: string,"valid_until"?: string | null,"work_kind"?: string | null
+                    "active_months"?: (number)[] | null,"approval"?: Json | null,"approved_at"?: string | null,"brand"?: string | null,"change_order_for"?: string | null,"client_id"?: string | null,"company_id": string,"converted_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"custom_fields"?: NonNullable<Json>,"deposit_amount"?: number,"deposit_invoice_id"?: string | null,"deposit_percent"?: number | null,"deposit_told_at"?: string | null,"discount_amount"?: number,"drafted"?: Json | null,"ends_on"?: string | null,"every_job_items_added"?: boolean,"every_job_items_left_off"?: (string)[],"exact_sent_at"?: string | null,"id"?: string,"is_template"?: boolean,"left_out"?: NonNullable<Json>,"lost_reason"?: string | null,"measure_on_site_at"?: string | null,"measure_on_site_reason"?: string | null,"message"?: string | null,"number"?: number | null,"option_id"?: string | null,"payment_schedule"?: Json | null,"pipeline_stage"?: string | null,"priced_on_site_at"?: string | null,"promo_code_id"?: string | null,"promo_every_visit"?: boolean | null,"property_id"?: string | null,"range_accepted_at"?: string | null,"range_high"?: number | null,"range_lines"?: Json | null,"range_low"?: number | null,"range_sent_at"?: string | null,"recurrence_rule"?: string | null,"request_id"?: string | null,"roof_package_id"?: string | null,"salesperson_id"?: string | null,"section_ids"?: (string)[],"sent_at"?: string | null,"source_id"?: string | null,"starts_on"?: string | null,"status"?: string,"subtotal"?: number,"tax_amount"?: number,"tax_rate"?: number,"template_id"?: string | null,"title": string,"total"?: number,"updated_at"?: string,"valid_until"?: string | null,"work_kind"?: string | null
                   }
                   Update: {
-                    "active_months"?: (number)[] | null,"approval"?: Json | null,"approved_at"?: string | null,"change_order_for"?: string | null,"client_id"?: string | null,"company_id"?: string,"converted_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"custom_fields"?: NonNullable<Json>,"deposit_amount"?: number,"deposit_invoice_id"?: string | null,"deposit_percent"?: number | null,"deposit_told_at"?: string | null,"discount_amount"?: number,"drafted"?: Json | null,"ends_on"?: string | null,"every_job_items_added"?: boolean,"every_job_items_left_off"?: (string)[],"exact_sent_at"?: string | null,"id"?: string,"is_template"?: boolean,"left_out"?: NonNullable<Json>,"lost_reason"?: string | null,"measure_on_site_at"?: string | null,"measure_on_site_reason"?: string | null,"message"?: string | null,"number"?: number | null,"option_id"?: string | null,"payment_schedule"?: Json | null,"pipeline_stage"?: string | null,"priced_on_site_at"?: string | null,"promo_code_id"?: string | null,"promo_every_visit"?: boolean | null,"property_id"?: string | null,"range_accepted_at"?: string | null,"range_high"?: number | null,"range_lines"?: Json | null,"range_low"?: number | null,"range_sent_at"?: string | null,"recurrence_rule"?: string | null,"request_id"?: string | null,"roof_package_id"?: string | null,"salesperson_id"?: string | null,"section_ids"?: (string)[],"sent_at"?: string | null,"source_id"?: string | null,"starts_on"?: string | null,"status"?: string,"subtotal"?: number,"tax_amount"?: number,"tax_rate"?: number,"template_id"?: string | null,"title"?: string,"total"?: number,"updated_at"?: string,"valid_until"?: string | null,"work_kind"?: string | null
+                    "active_months"?: (number)[] | null,"approval"?: Json | null,"approved_at"?: string | null,"brand"?: string | null,"change_order_for"?: string | null,"client_id"?: string | null,"company_id"?: string,"converted_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"custom_fields"?: NonNullable<Json>,"deposit_amount"?: number,"deposit_invoice_id"?: string | null,"deposit_percent"?: number | null,"deposit_told_at"?: string | null,"discount_amount"?: number,"drafted"?: Json | null,"ends_on"?: string | null,"every_job_items_added"?: boolean,"every_job_items_left_off"?: (string)[],"exact_sent_at"?: string | null,"id"?: string,"is_template"?: boolean,"left_out"?: NonNullable<Json>,"lost_reason"?: string | null,"measure_on_site_at"?: string | null,"measure_on_site_reason"?: string | null,"message"?: string | null,"number"?: number | null,"option_id"?: string | null,"payment_schedule"?: Json | null,"pipeline_stage"?: string | null,"priced_on_site_at"?: string | null,"promo_code_id"?: string | null,"promo_every_visit"?: boolean | null,"property_id"?: string | null,"range_accepted_at"?: string | null,"range_high"?: number | null,"range_lines"?: Json | null,"range_low"?: number | null,"range_sent_at"?: string | null,"recurrence_rule"?: string | null,"request_id"?: string | null,"roof_package_id"?: string | null,"salesperson_id"?: string | null,"section_ids"?: (string)[],"sent_at"?: string | null,"source_id"?: string | null,"starts_on"?: string | null,"status"?: string,"subtotal"?: number,"tax_amount"?: number,"tax_rate"?: number,"template_id"?: string | null,"title"?: string,"total"?: number,"updated_at"?: string,"valid_until"?: string | null,"work_kind"?: string | null
                   }
                   Relationships: [
                     {
@@ -2620,14 +2620,14 @@ isOneToOne: false
                   ]
                 },"requests": {
                   Row: {
-                    "answers": NonNullable<Json>,"asked_ends_at": string | null,"asked_starts_at": string | null,"assigned_to": string | null,"client_id": string,"company_id": string,"created_at": string,"created_by": string | null,"details": string | null,"id": string,"intake_form_id": string | null,"number": number | null,"preferred_times": NonNullable<Json>,"promo_code": string | null,"promo_problem": string | null,"property_id": string | null,"rejected_promo_code": string | null,"source": string,"status": string,"title": string,"updated_at": string,"web_visit": Json | null,"website_form_id": string | null
+                    "answers": NonNullable<Json>,"asked_ends_at": string | null,"asked_starts_at": string | null,"assigned_to": string | null,"brand": string | null,"client_id": string,"company_id": string,"created_at": string,"created_by": string | null,"details": string | null,"id": string,"intake_form_id": string | null,"number": number | null,"preferred_times": NonNullable<Json>,"promo_code": string | null,"promo_problem": string | null,"property_id": string | null,"rejected_promo_code": string | null,"source": string,"stage": string | null,"status": string,"title": string,"updated_at": string,"web_visit": Json | null,"website_form_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "answers"?: NonNullable<Json>,"asked_ends_at"?: string | null,"asked_starts_at"?: string | null,"assigned_to"?: string | null,"client_id": string,"company_id": string,"created_at"?: string,"created_by"?: string | null,"details"?: string | null,"id"?: string,"intake_form_id"?: string | null,"number"?: number | null,"preferred_times"?: NonNullable<Json>,"promo_code"?: string | null,"promo_problem"?: string | null,"property_id"?: string | null,"rejected_promo_code"?: string | null,"source"?: string,"status"?: string,"title": string,"updated_at"?: string,"web_visit"?: Json | null,"website_form_id"?: string | null
+                    "answers"?: NonNullable<Json>,"asked_ends_at"?: string | null,"asked_starts_at"?: string | null,"assigned_to"?: string | null,"brand"?: string | null,"client_id": string,"company_id": string,"created_at"?: string,"created_by"?: string | null,"details"?: string | null,"id"?: string,"intake_form_id"?: string | null,"number"?: number | null,"preferred_times"?: NonNullable<Json>,"promo_code"?: string | null,"promo_problem"?: string | null,"property_id"?: string | null,"rejected_promo_code"?: string | null,"source"?: string,"stage"?: string | null,"status"?: string,"title": string,"updated_at"?: string,"web_visit"?: Json | null,"website_form_id"?: string | null
                   }
                   Update: {
-                    "answers"?: NonNullable<Json>,"asked_ends_at"?: string | null,"asked_starts_at"?: string | null,"assigned_to"?: string | null,"client_id"?: string,"company_id"?: string,"created_at"?: string,"created_by"?: string | null,"details"?: string | null,"id"?: string,"intake_form_id"?: string | null,"number"?: number | null,"preferred_times"?: NonNullable<Json>,"promo_code"?: string | null,"promo_problem"?: string | null,"property_id"?: string | null,"rejected_promo_code"?: string | null,"source"?: string,"status"?: string,"title"?: string,"updated_at"?: string,"web_visit"?: Json | null,"website_form_id"?: string | null
+                    "answers"?: NonNullable<Json>,"asked_ends_at"?: string | null,"asked_starts_at"?: string | null,"assigned_to"?: string | null,"brand"?: string | null,"client_id"?: string,"company_id"?: string,"created_at"?: string,"created_by"?: string | null,"details"?: string | null,"id"?: string,"intake_form_id"?: string | null,"number"?: number | null,"preferred_times"?: NonNullable<Json>,"promo_code"?: string | null,"promo_problem"?: string | null,"property_id"?: string | null,"rejected_promo_code"?: string | null,"source"?: string,"stage"?: string | null,"status"?: string,"title"?: string,"updated_at"?: string,"web_visit"?: Json | null,"website_form_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -2936,6 +2936,78 @@ isOneToOne: false
                   Relationships: [
                     {
       foreignKeyName: "sending_health_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "companies"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"sequence_cursors": {
+                  Row: {
+                    "company_id": string,"last_activity_id": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "company_id": string,"last_activity_id"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "company_id"?: string,"last_activity_id"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sequence_cursors_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "companies"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"sequence_runs": {
+                  Row: {
+                    "brand": string | null,"client_id": string | null,"company_id": string,"created_at": string,"ended_reason": string | null,"id": string,"log": NonNullable<Json>,"next_at": string,"paused_at": string | null,"reply_at": string | null,"sequence_id": string,"status": string,"step": number,"subject_id": string,"subject_type": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "brand"?: string | null,"client_id"?: string | null,"company_id": string,"created_at"?: string,"ended_reason"?: string | null,"id"?: string,"log"?: NonNullable<Json>,"next_at"?: string,"paused_at"?: string | null,"reply_at"?: string | null,"sequence_id": string,"status"?: string,"step"?: number,"subject_id": string,"subject_type": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "brand"?: string | null,"client_id"?: string | null,"company_id"?: string,"created_at"?: string,"ended_reason"?: string | null,"id"?: string,"log"?: NonNullable<Json>,"next_at"?: string,"paused_at"?: string | null,"reply_at"?: string | null,"sequence_id"?: string,"status"?: string,"step"?: number,"subject_id"?: string,"subject_type"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sequence_runs_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "companies"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sequence_runs_company_id_sequence_id_fkey"
+      columns: ["company_id","sequence_id"]
+isOneToOne: false
+      referencedRelation: "sequences"
+      referencedColumns: ["company_id","id"]
+    },{
+      foreignKeyName: "sequence_runs_company_id_client_id_fkey"
+      columns: ["company_id","client_id"]
+isOneToOne: false
+      referencedRelation: "clients"
+      referencedColumns: ["company_id","id"]
+    }
+                  ]
+                },"sequences": {
+                  Row: {
+                    "brand": string | null,"company_id": string,"created_at": string,"created_by": string | null,"enabled": boolean,"id": string,"name": string,"on_reply": string,"send_window": Json | null,"steps": NonNullable<Json>,"template_key": string | null,"trigger": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "brand"?: string | null,"company_id": string,"created_at"?: string,"created_by"?: string | null,"enabled"?: boolean,"id"?: string,"name": string,"on_reply"?: string,"send_window"?: Json | null,"steps"?: NonNullable<Json>,"template_key"?: string | null,"trigger": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "brand"?: string | null,"company_id"?: string,"created_at"?: string,"created_by"?: string | null,"enabled"?: boolean,"id"?: string,"name"?: string,"on_reply"?: string,"send_window"?: Json | null,"steps"?: NonNullable<Json>,"template_key"?: string | null,"trigger"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sequences_company_id_fkey"
       columns: ["company_id"]
 isOneToOne: false
       referencedRelation: "companies"
