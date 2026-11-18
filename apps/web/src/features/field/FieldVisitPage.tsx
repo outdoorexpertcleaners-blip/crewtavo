@@ -47,6 +47,7 @@ import { MaterialsCard } from "../jobs/JobMaterials";
 import { ScopeOfWork } from "../jobs/ScopeOfWork";
 import { FieldPlans } from "../plans/FieldPlans";
 import { PropertyEquipment } from "../clients/PropertyEquipment";
+import { Timeline } from "../clients/Timeline";
 import { guideQuery } from "../kb/kbData";
 import { contactLinks, visitContact, type VisitContact } from "./contact";
 import { canText, OnMyWayNote, TextClientDialog, useTextLines } from "./FieldText";
@@ -280,8 +281,9 @@ export function FieldVisitPage() {
         {contactLinks(client).filter((link) => sub || link.label === "Call").map((link) => (
           <a key={link.label} className="btn big-action" href={link.href}><Icon name={link.label === "Call" ? "phone" : "messages"} size={20} />{link.label === "Call" ? t("Call") : t("Text", { context: "message" })}</a>
         ))}
-        {/* The team's Text goes through the business's line, once texting is set up. */}
-        {!sub && !looking && teamClient?.phone && canText(textLines.data, session.config.features.sms) && (
+        {/* The team's Text goes through the business's line, once texting is set up: on any visit they
+            can see, their own or a teammate's (the owner wants techs able to reach any client). */}
+        {!sub && teamClient?.phone && canText(textLines.data, session.config.features.sms) && (
           <Button icon="messages" className="big-action" onClick={() => setTexting(true)}>{t("Text", { context: "message" })}</Button>
         )}
         {place && <MapsLink className="btn big-action" place={place}><Icon name="navigation" size={20} />{t("Directions")}</MapsLink>}
@@ -302,6 +304,10 @@ export function FieldVisitPage() {
         {v.hold_reason && <span style={{ color: "var(--warning)", fontWeight: 600 }}><Icon name="cloud" size={14} /> {t("Weather: {reason}", { reason: v.hold_reason })}</span>}
       </section>
 
+      {/* The client's texts, emails and notes (Clients → their page shows the same), so the crew can
+          see what was said before they knock. Not a sub's: they deal with the job, not the client. */}
+      {!sub && teamClient && <Timeline clientId={teamClient.id} />}
+
       {(v.job?.instructions || v.request?.details) && (
         <section className="card card-pad stack-sm" style={{ background: "var(--note)", borderColor: "var(--note-border)" }}>
           <strong>{t("Instructions")}</strong>
@@ -318,7 +324,8 @@ export function FieldVisitPage() {
           </dl>
         </section>
       )}
-      {v.job && (
+      {/* The work: the job's lines are readable by the people on it, so someone just looking would see an empty card. */}
+      {v.job && !looking && (
         <section className="card card-pad stack-sm">
           <ScopeOfWork jobId={v.job.id} title={t("The work")} bare />
           {/* A repeating job's work is the same every visit; this is what's extra on this one. */}
