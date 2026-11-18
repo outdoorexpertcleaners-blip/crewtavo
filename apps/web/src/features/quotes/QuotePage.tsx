@@ -730,6 +730,8 @@ export function QuotePage() {
             </div>
             <div id={panelId} role={offers ? "tabpanel" : undefined} aria-label={viewedRow ? viewedRow.name : undefined}>
               {view === "lines" && (
+                <div className="cf-estimate">
+                <div className="cf-estimate-head"><span className="cf-estimate-box" aria-hidden="true">–</span>{isTemplate ? "Estimate template" : "Estimate"}</div>
                 <LineItems
                   table="quote_line_items"
                   parent="quote_id"
@@ -746,6 +748,7 @@ export function QuotePage() {
                   propertyId={q.property?.id}
                   onOfferOptions={!offers && optionsOpen(q.status) ? () => setOffering(true) : undefined}
                 />
+                </div>
               )}
               {(view === "paper" || printer.request > 0) && <QuotePaper quote={q} options={options} viewed={viewed} sheet={view === "paper"} print={printer.request} />}
             </div>

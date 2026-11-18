@@ -1669,3 +1669,21 @@ button.hub-btn { width: 100%; border: 0; font: inherit; font-size: var(--fs-16);
 .ghl-field > span:first-child { color: var(--text-3); font-weight: 600; }
 .ghl-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 4px; border-top: 1px solid var(--divider); color: var(--text-3); }
 .ghl-icons { display: inline-flex; gap: 8px; }
+
+/* ---------------------------------------------------------------------------------------------
+ * A quote's lines as Customer Factor's "Create an Estimate" box (features/quotes/QuotePage.tsx):
+ * a navy bar, a warm grey panel, and the columns Jobs, Qty, Each, Amount.
+ * ------------------------------------------------------------------------------------------- */
+.cf-estimate { border: 1px solid #c9c8c2; border-radius: 4px; overflow: hidden; }
+.cf-estimate-head { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #0a0a7a; color: #fff; font-weight: 600; font-size: var(--fs-15, 15px); }
+.cf-estimate-box { width: 18px; height: 18px; background: #fff; color: #0a0a7a; border-radius: 2px; display: grid; place-items: center; font-weight: 800; line-height: 1; }
+.cf-estimate > .card { border: 0; border-radius: 0; box-shadow: none; background: #ecebe6; }
+.cf-estimate .lines-head { color: #111; font-weight: 600; border-bottom-color: #c9c8c2; }
+.cf-estimate .line-edit, .cf-estimate .line-view { background: #ecebe6; box-shadow: none; border-bottom-color: #d6d5cf; }
+.cf-estimate .input, .cf-estimate .select, .cf-estimate .textarea { border-color: #3a3ab5; border-radius: 2px; background: #fff; }
+.cf-estimate .btn:not(.btn-primary) { color: #f08c00; border-color: transparent; background: transparent; }
+.cf-estimate .btn-primary { background: #0a0a7a; border-color: #0a0a7a; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .cf-estimate > .card, :root:not([data-theme="light"]) .cf-estimate .line-edit, :root:not([data-theme="light"]) .cf-estimate .line-view { background: var(--surface); }
+}
+:root[data-theme="dark"] .cf-estimate > .card, :root[data-theme="dark"] .cf-estimate .line-edit, :root[data-theme="dark"] .cf-estimate .line-view { background: var(--surface); }
