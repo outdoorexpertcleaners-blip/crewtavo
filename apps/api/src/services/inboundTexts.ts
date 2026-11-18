@@ -89,7 +89,7 @@ export async function receiveText(admin: Db, text: InboundText, companies: reado
     touched.add(client.company_id);
     await admin.from("messages").insert({
       company_id: client.company_id, client_id: client.id, channel: "sms", direction: "in", status: "received",
-      body, external_id: text.sid, sent_by: null, from_phone: text.from, line: text.line ?? null,
+      body, external_id: text.sid, sent_by: null, from_phone: text.from, ...(text.line ? { line: text.line } : {}),
     });
     // Texts off from now, or back on: only a change is news (a YES that's an ordinary reply isn't).
     let changed = false;
@@ -129,7 +129,7 @@ export async function receiveText(admin: Db, text: InboundText, companies: reado
     touched.add(contact.company_id);
     await admin.from("messages").insert({
       company_id: contact.company_id, client_id: contact.client_id, channel: "sms", direction: "in", status: "received",
-      body, external_id: text.sid, sent_by: null, from_phone: text.from, from_name: contact.name.slice(0, 200), line: text.line ?? null,
+      body, external_id: text.sid, sent_by: null, from_phone: text.from, from_name: contact.name.slice(0, 200), ...(text.line ? { line: text.line } : {}),
     });
     // STOP or START is about the number, once for the company; the office hears once too.
     let changed = false;
