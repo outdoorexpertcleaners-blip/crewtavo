@@ -47,7 +47,7 @@ import {
 } from "@crewtavo/core";
 import { daysSinceVisit, type AutomatedCampaign } from "@crewtavo/core/campaigns";
 import { hidesExactPrice } from "@crewtavo/core/estimates";
-import { brandName, firstName as firstWord } from "@crewtavo/core/proposal";
+import { brandName, firstName as firstWord, spokenName } from "@crewtavo/core/proposal";
 import { inTextQuietHours, marketingOn, REFERRAL_GAP_DAYS, REVIEW_GAP_DAYS, textQuietHoursEnd, textsOffReason } from "@crewtavo/core/marketing";
 import { clientRecipients, type Recipient } from "@crewtavo/core/recipients";
 import { countsOn } from "@crewtavo/core/money";
@@ -431,7 +431,7 @@ export async function loadContext(admin: Db, companyId: string, subjectType: str
       client: { name: client?.display_name ?? "", first_name: firstName(client?.display_name), email: client?.email ?? "", phone: client?.phone ?? "" },
       company: { name: co.name, phone: co.phone ?? "", email: co.email ?? "", website: co.website ?? "" },
       // Nothing says which brand: the text goes from the wash line (core/quo.ts quoLineFor), so it says that brand.
-      brand: { name: brandName(co.settings, brand ?? "washing", co.name) },
+      brand: { name: spokenName(brandName(co.settings, brand ?? "washing", co.name)) },
     },
     appPath,
     jobId,

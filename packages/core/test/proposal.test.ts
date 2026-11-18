@@ -65,3 +65,14 @@ describe("the business's words", () => {
     expect(proposalDate("2026-12-02T00:00:00Z")).toBe("Dec 02, 2026");
   });
 });
+
+describe("a brand's name in a text", () => {
+  it("leaves off the legal ending and the last period", async () => {
+    const { spokenName } = await import("../src/proposal");
+    expect(spokenName("Outdoor Expert Cleaners LLC.")).toBe("Outdoor Expert Cleaners");
+    expect(spokenName("Outdoor Expert Lighting, LLC")).toBe("Outdoor Expert Lighting");
+    expect(spokenName("Green Lawn Inc.")).toBe("Green Lawn");
+    expect(spokenName("Outdoor Expert Cleaners")).toBe("Outdoor Expert Cleaners");
+    expect(spokenName("LLC")).toBe("LLC");
+  });
+});

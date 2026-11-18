@@ -69,7 +69,7 @@ export function LocationNotice() {
     void send();
   };
   return (
-    <Dialog open onClose={() => setLater(true)} title={t("Before Crewtavo uses your location")} focusField={false}>
+    <Dialog open onClose={() => setLater(true)} title={t("Before the app uses your location")} focusField={false}>
       <div className="dialog-body stack">
         {has("clock_location") && (
           <p style={{ margin: 0 }}>

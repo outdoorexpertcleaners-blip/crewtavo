@@ -337,11 +337,13 @@ export function FieldVisitPage() {
           </div>
         </section>
       )}
-      {/* The client's own equipment here is the team's to see, not a sub's. */}
-      {!sub && <PropertyEquipment propertyId={v.property?.id ?? v.job?.property_id ?? null} visitId={v.id} />}
+      {/* The client's own equipment here is the team's to see, not a sub's. Checklists, materials,
+          photos and equipment are the work of the people on the visit: someone just looking at
+          another's visit can't save them (their rules are the visit's people's), so they aren't offered. */}
+      {!sub && !looking && <PropertyEquipment propertyId={v.property?.id ?? v.job?.property_id ?? null} visitId={v.id} />}
 
-      <VisitWork visitId={v.id} visitStatus={v.status} checklist={checklist} onProgress={setProgress} jobId={v.job?.id ?? null} materials={!sub}
-        clientOptOut={Boolean(v.job?.client?.social_photos_opt_out ?? v.request?.client?.social_photos_opt_out)} />
+      {!looking && <VisitWork visitId={v.id} visitStatus={v.status} checklist={checklist} onProgress={setProgress} jobId={v.job?.id ?? null} materials={!sub}
+        clientOptOut={Boolean(v.job?.client?.social_photos_opt_out ?? v.request?.client?.social_photos_opt_out)} />}
 
       <section className="card card-pad stack-sm">
         <div className="row-between">
