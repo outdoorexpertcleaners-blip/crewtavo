@@ -1290,7 +1290,15 @@ publicRoutes.post("/public/forms/:company/:form", async (c) => {
   const formBrand = (form as { brand?: string | null }).brand;
   if (formBrand === "washing" || formBrand === "lights") await admin.from("requests").update({ brand: formBrand }).eq("id", request.id);
   const leadSource = (body.source || (form as { lead_source?: string | null }).lead_source || "").slice(0, 60);
-  if (leadSource) await admin.from("clients").update({ lead_source: leadSource }).eq("id", found.client_id).or("lead_source.is.null,lead_source.eq.");
+  if (leadSource) {
+    // A client this form just made (public.booking_form_client says "Website form") takes the form's
+    // own; a client already here only when they have none.
+    if (!found.matched) await admin.from("clients").update({ lead_source: leadSource }).eq("id", found.client_id);
+    else {
+      await admin.from("clients").update({ lead_source: leadSource }).eq("id", found.client_id).is("lead_source", null);
+      await admin.from("clients").update({ lead_source: leadSource }).eq("id", found.client_id).eq("lead_source", "");
+    }
+  }
   // The number they typed, under the line that says the business may text it: where their say-so came from.
   if (body.phone && (await smsReady(c.env, company.id))) await noteTextConsent(admin, company.id, found.client_id, body.phone, "booking_form");
   if (found.new_property && found.property_id) geocodeLater(c, found.property_id, body.address);
