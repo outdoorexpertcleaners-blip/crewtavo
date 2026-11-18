@@ -1,5 +1,6 @@
 /**
- * Light, dark, or follow the device. The choice is kept per device and applied as a `dark` class on
+ * Light, dark, or follow the device; light unless someone picks another (the business wants the app
+ * white even on a phone in dark mode). The choice is kept per device and applied as a `dark` class on
  * <html>; index.html does the same before first paint so there's no flash. Pages clients see (their
  * hub, booking forms, referral and unsubscribe links, a job showcase) always stay light: they carry
  * the business's own branding. The same pages are listed in index.html, lib/i18n.tsx, lib/install.ts
@@ -17,9 +18,9 @@ const listeners = new Set<() => void>();
 function stored(): ThemeChoice {
   try {
     const value = localStorage.getItem(KEY);
-    return value === "light" || value === "dark" ? value : "system";
+    return value === "dark" || value === "system" ? value : "light";
   } catch {
-    return "system";
+    return "light";
   }
 }
 
@@ -38,7 +39,7 @@ function changed() {
 export function setTheme(next: ThemeChoice) {
   choice = next;
   try {
-    if (next === "system") localStorage.removeItem(KEY);
+    if (next === "light") localStorage.removeItem(KEY);
     else localStorage.setItem(KEY, next);
   } catch {
     // Private mode: the choice lasts until the tab closes.

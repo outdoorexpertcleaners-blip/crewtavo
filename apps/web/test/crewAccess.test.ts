@@ -47,17 +47,17 @@ describe("field crew's menus", () => {
     expect(mobileTabs(person("subcontractor"))).toBe(SUB_TABS);
   });
 
-  it("put the Clock in front of crew leads too, and nobody else", () => {
+  it("put Clock in in front of the whole team, but not subs", () => {
     const clock = NAV_GROUPS.flat().find((item) => item.to === "/clock")!;
     expect(clock.icon).toBe("history");
-    expect(ROLES.filter((role) => navVisible(person(role, ["timesheets"]), clock))).toEqual(["crew_lead", "field_crew"]);
+    expect(ROLES.filter((role) => navVisible(person(role, ["timesheets"]), clock))).toEqual(ROLES.filter((role) => role !== "subcontractor"));
   });
 
   it("leave the other levels' sidebars as they were", () => {
     // Crew leads keep Home, Requests, Jobs, Timesheets and the rest, and gain the Clock.
-    expect(shown("crew_lead", ["schedule", "timesheets", "equipment"])).toEqual(expect.arrayContaining(["/", "/field", "/clock", "/schedule", "/requests", "/jobs", "/timesheets", "/equipment", "/kb"]));
-    expect(shown("office", ["invoices", "reports"])).toEqual(expect.arrayContaining(["/", "/schedule", "/clients", "/messages", "/pipeline", "/quotes", "/invoices", "/finance", "/timesheets"]));
-    expect(shown("office")).not.toContain("/clock");
+    expect(shown("crew_lead", ["schedule", "timesheets", "equipment"])).toEqual(expect.arrayContaining(["/", "/field", "/clock", "/schedule", "/requests", "/jobs", "/clock", "/equipment", "/kb"]));
+    expect(shown("office", ["invoices", "reports"])).toEqual(expect.arrayContaining(["/", "/schedule", "/clients", "/messages", "/pipeline", "/quotes", "/invoices", "/finance", "/clock"]));
+    expect(shown("office")).toContain("/clock");
   });
 });
 

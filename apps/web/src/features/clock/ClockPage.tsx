@@ -19,6 +19,7 @@ import { localDate } from "@crewtavo/core/time";
 import { CLOCK_KIND_LABELS, hoursAndMinutes, hoursCell, payPeriodStart, PAY_PERIOD_DAYS, periodDays, sumTallies, tally, tallyByDay, timesheetCsvRows, weekStart, type ClockKind, type Tally } from "@crewtavo/core/timeclock";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Button, cx } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -71,7 +72,10 @@ export function ClockPage() {
   const showTeam = isOffice && view === "team";
   return (
     <div className={styles.page}>
-      <PageHeader title={showTeam ? t("Timesheets") : t("Clock")} />
+      <PageHeader
+        title={t("Clock in")}
+        actions={isOffice ? <Link className="btn btn-sm" to="/timesheets"><Icon name="clock" size={14} />{t("Approvals and pay")}</Link> : undefined}
+      />
       {isOffice && keepsTime(session) && (
         <div className="segmented" role="group" aria-label={t("Whose time")}>
           <button type="button" aria-pressed={view === "team"} onClick={() => setView("team")}>{t("Team")}</button>

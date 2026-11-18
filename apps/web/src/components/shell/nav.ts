@@ -28,19 +28,22 @@ export const NAV_GROUPS: NavItem[][] = [
     { to: "/field", label: msg("My day"), icon: "clock", only: ["crew_lead", "field_crew", "subcontractor"], except: ["/field/paperwork", "/field/jobs"], keywords: "today my visits route" },
     { to: "/field/jobs", label: msg("My jobs"), icon: "job", only: ["subcontractor"], keywords: "offers accept decline take turn down price owed paid 1099 total" },
     { to: "/field/paperwork", label: msg("My paperwork"), icon: "file", only: ["subcontractor"], keywords: "w-9 w9 insurance certificate liability workers comp upload send" },
-    { to: "/clock", label: msg("Clock"), icon: "history", only: ["crew_lead", "field_crew"], keywords: "time clock clock in clock out punch hours break lunch my time" },
-    { to: "/schedule", label: msg("Schedule"), icon: "calendar", keywords: "calendar visits appointments dispatch route crews tasks" },
     { to: "/chat", label: msg("Team chat"), icon: "chat", feature: "team_chat", keywords: "chat channels messages talk team crew announcements" },
   ],
   [
-    { to: "/clients", label: msg("Clients"), icon: "clients", keywords: "customers contacts properties addresses client hub portal" },
-    { to: "/messages", label: msg("Messages"), icon: "messages", roles: ["admin", "office", "estimator"], keywords: "texts sms email inbox conversations quo" },
+    // The owner's order: the clock, then sales (pipeline, messages), the calendar, then quotes, jobs
+    // and invoices, then the rest. The clock is everyone's own; the office's view is the team's
+    // pay period (features/clock/ClockPage.tsx), with approvals and pay a tap away on Timesheets.
+    { to: "/clock", label: msg("Clock in"), icon: "history", roles: ["admin", "office", "estimator", "crew_lead", "field_crew"], also: ["/timesheets"], keywords: "time clock clock in clock out punch hours break lunch my time timesheets timesheet pay period payroll" },
     { to: "/pipeline", label: msg("Pipeline"), icon: "pipeline", roles: ["admin", "office", "estimator"], keywords: "sales board pipeline leads deals opportunities" },
-    { to: "/workflows", label: msg("Workflows"), icon: "bolt", roles: ["admin", "office"], keywords: "automation workflows sequences follow-up texts drip gohighlevel" },
-    { to: "/requests", label: msg("Requests"), icon: "requests", keywords: "inquiries leads assessments website form messages contact form" },
+    { to: "/messages", label: msg("Messages"), icon: "messages", roles: ["admin", "office", "estimator"], keywords: "texts sms email inbox conversations quo" },
+    { to: "/schedule", label: msg("Schedule"), icon: "calendar", keywords: "calendar google calendar visits appointments dispatch route crews tasks" },
     { to: "/quotes", label: msg("Quotes"), icon: "quote", roles: ["admin", "office", "estimator"], also: ["/measure"], keywords: "estimates proposals bids" },
     { to: "/jobs", label: msg("Jobs"), icon: "job", keywords: "work orders projects recurring visits job costing" },
     { to: "/invoices", label: msg("Invoices"), icon: "invoice", roles: ["admin", "office"], perm: "invoices", also: ["/payouts"], keywords: "billing bills payments batch invoicing collect payments" },
+    { to: "/clients", label: msg("Clients"), icon: "clients", keywords: "customers contacts properties addresses client hub portal" },
+    { to: "/requests", label: msg("Requests"), icon: "requests", keywords: "inquiries leads assessments website form messages contact form" },
+    { to: "/workflows", label: msg("Workflows"), icon: "bolt", roles: ["admin", "office"], keywords: "automation workflows sequences follow-up texts drip gohighlevel" },
     { to: "/drive", label: msg("Drive"), icon: "folder", roles: ["admin", "office", "estimator"], feature: "drive", keywords: "files documents folders google drive upload pdf word docx trash" },
   ],
   [
@@ -53,7 +56,6 @@ export const NAV_GROUPS: NavItem[][] = [
     { to: "/website", label: msg("Website"), icon: "globe", roles: ["admin", "office"], perm: "marketing", feature: "website", keywords: "site web page blog posts edit content cms sveltia decap" },
     { to: "/finance", label: msg("Finance"), icon: "finance", roles: ["admin", "office"], perm: ["reports", "invoices"], keywords: "reports revenue profit payments money collected net volume fees deposits owed goal job costing expenses" },
     { to: "/metrics", label: msg("Metrics"), icon: "metrics", roles: ["admin", "office"], perm: "reports", keywords: "reports analytics numbers sales conversion lead sources visits hours team clients" },
-    { to: "/timesheets", label: msg("Timesheets"), icon: "clock", keywords: "time clock hours payroll time tracking timesheet" },
     { to: "/applicants", label: msg("Applicants"), icon: "user", roles: ["admin", "office"], perm: "hiring", feature: "careers", keywords: "careers jobs hiring applications apply candidates resumes cv interviews employment" },
     { to: "/subs", label: msg("Subcontractors"), icon: "users", roles: ["admin", "office"], perm: "subs", keywords: "subs contractors 1099 w-9 w9 insurance certificates coi liability workers comp audit paperwork vendors" },
     { to: "/equipment", label: msg("Equipment"), icon: "truck", keywords: "trucks mowers trailers tools fleet maintenance" },
@@ -67,6 +69,8 @@ export const NAV_GROUP_LABELS: Array<string | null> = [null, msg("Work"), msg("T
 
 /** Screens that open from another one rather than the sidebar. Search lists them with the rest. */
 export const OTHER_SCREENS: NavItem[] = [
+  // Approvals, pay and payroll exports; the sidebar's Clock in leads here too.
+  { to: "/timesheets", label: msg("Timesheets"), icon: "clock", keywords: "time clock hours payroll time tracking timesheet approve approvals pay overtime" },
   { to: "/measure", label: msg("Measure"), icon: "area", roles: ["admin", "office", "estimator"], keywords: "measurement map draw area length count square feet acres satellite aerial property" },
   { to: "/payouts", label: msg("Stripe deposits"), icon: "dollar", roles: ["admin", "office"], perm: "invoices", keywords: "payouts bank stripe fees" },
   // Marketing's own tabs, so searching for one opens it rather than Campaigns.
@@ -117,7 +121,7 @@ export const SUB_TABS: NavItem[] = [
 export const CREW_TABS: NavItem[] = [
   { to: "/field", label: msg("My day"), icon: "clock" },
   { to: "/schedule", label: msg("Schedule"), icon: "calendar" },
-  { to: "/clock", label: msg("Clock"), icon: "history" },
+  { to: "/clock", label: msg("Clock in"), icon: "history" },
   { to: "/clients", label: msg("Clients"), icon: "clients" },
 ];
 

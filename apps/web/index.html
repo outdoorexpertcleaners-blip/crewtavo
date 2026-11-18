@@ -21,10 +21,11 @@
       html.embedded .boot { display: none; }
     </style>
     <script>
-      // Light or dark before first paint (src/lib/theme.ts keeps it up to date). Client pages stay light.
+      // Light or dark before first paint (src/lib/theme.ts keeps it up to date): light unless dark or
+      // "follow the device" was picked. Client pages stay light.
       try {
         var theme = localStorage.getItem("crewtavo.theme");
-        if (!/^\/(hub|book|u|refer|s)\//.test(location.pathname) && (theme === "dark" || (theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches))) {
+        if (!/^\/(hub|book|u|refer|s)\//.test(location.pathname) && (theme === "dark" || (theme === "system" && matchMedia("(prefers-color-scheme: dark)").matches))) {
           document.documentElement.classList.add("dark");
           document.querySelector('meta[name="theme-color"]').setAttribute("content", "#191918");
         }

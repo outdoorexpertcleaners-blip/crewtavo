@@ -6,6 +6,7 @@
 import type { Catalog } from "../index";
 
 export default {
+  "Approvals and pay": "Aprobaciones y pago",
   // The kinds of work (the owner's names)
   "Pressure washing": "Lavado a presión",
   "Christmas lights": "Luces de Navidad",

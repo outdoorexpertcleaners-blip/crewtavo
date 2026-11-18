@@ -5,6 +5,7 @@
  */
 import { marketingOn } from "@crewtavo/core/marketing";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
@@ -19,6 +20,7 @@ import { addressLine, formatTime } from "@/lib/format";
 import { visitPlace } from "@/lib/maps";
 import { can, hasRole, useSession } from "@/lib/session";
 import { useVisitExtraScope } from "../field/FieldExtras";
+import { canText, TextClientDialog, useTextLines } from "../field/FieldText";
 import { usePendingChanges } from "./changeRequests";
 import { lengthLabel } from "./VisitDialog";
 import { intlLocale, msg, t } from "@/lib/i18n";
@@ -45,6 +47,10 @@ export function VisitDetails({ visitId, onClose, onEdit }: { visitId: string; on
       ),
   });
   const v = visit.data;
+  // Text goes from the business's Quo line for this visit's brand (FieldText.tsx), not the phone's own app.
+  const [texting, setTexting] = useState(false);
+  const textClient = v?.job?.client ?? v?.request?.client ?? null;
+  const textLines = useTextLines(visitId, textClient?.id ?? null, Boolean(textClient?.phone));
   // A client's request to move or cancel it: Edit answers it.
   const asked = usePendingChanges(Boolean(onEdit)).data?.some((r) => r.visit_id === visitId);
   const people = useQuery({
@@ -71,6 +77,7 @@ export function VisitDetails({ visitId, onClose, onEdit }: { visitId: string; on
   const names = (people.data ?? []).map((p) => p.full_name).filter(Boolean);
 
   return (
+    <>
     <Dialog open onClose={onClose} title={v?.title ?? t("Visit")} description={v?.job ? <>Job #{v.job.number}{client ? ` · ${client.display_name}` : ""}</> : client?.display_name}>
       <div className="dialog-body">
         {visit.error && <ErrorState error={visit.error} onRetry={() => visit.refetch()} />}
@@ -179,7 +186,7 @@ export function VisitDetails({ visitId, onClose, onEdit }: { visitId: string; on
               {onEdit && <Button variant="primary" icon="edit" onClick={onEdit}>{t("Edit")}</Button>}
               {place && <MapsLink className="btn" place={place}><Icon name="navigation" size={16} />{t("Directions")}</MapsLink>}
               {client?.phone && <a className="btn" href={`tel:${client.phone}`}><Icon name="phone" size={16} />{t("Call")}</a>}
-              {client?.phone && <a className="btn" href={`sms:${client.phone}`}><Icon name="messages" size={16} />{t("Text")}</a>}
+              {client?.phone && canText(textLines.data, session.config.features.sms) && <Button icon="messages" onClick={() => setTexting(true)}>{t("Text")}</Button>}
               {office && v.job && <Link className="btn" to={`/jobs/${v.job.id}`} onClick={onClose}><Icon name="job" size={16} />{t("Open job")}</Link>}
               {/* A finished visit's before and after photos, on a page to share (Marketing → Showcases). */}
               {showcases && v.job && v.status === "completed" && (
@@ -191,5 +198,7 @@ export function VisitDetails({ visitId, onClose, onEdit }: { visitId: string; on
         )}
       </div>
     </Dialog>
+    {texting && client && <TextClientDialog client={client} visitId={visitId} lines={textLines.data} onClose={() => setTexting(false)} />}
+    </>
   );
 }

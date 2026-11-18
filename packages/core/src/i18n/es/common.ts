@@ -15,7 +15,6 @@ export default {
   "Roofing": "Techos",
   "Snow": "Nieve",
   "My day": "Mi día",
-  "Clock": "Reloj",
   "My jobs": "Mis trabajos",
   "My paperwork": "Mis documentos",
   "Schedule": "Agenda",
