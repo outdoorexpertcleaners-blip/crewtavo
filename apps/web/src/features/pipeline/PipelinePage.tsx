@@ -46,6 +46,8 @@ interface Card {
   option: { name: string; tier: string | null } | null;
   stage: PipelineStage;
   brand: Brand;
+  /** Where the lead came from (the client's lead source), as GoHighLevel's cards show it. */
+  source: string | null;
 }
 type ColumnKey = PipelineStage;
 
@@ -60,10 +62,14 @@ export function moveRefusal(card: Pick<Card, "kind" | "options">, to: ColumnKey)
   return card.kind === "quote" && to === "won" && card.options > 0 ? PICK_ON_QUOTE : null;
 }
 
+/** Each stage's header color, as the business's GoHighLevel pipelines color them. */
 const STAGE_COLOR: Record<PipelineStage, string> = {
-  inbound: "var(--req)", hot: "var(--req)", reached_out: "var(--req)", estimate_booked: "var(--req)", remote_quote: "var(--req)",
-  quote_sent: "var(--quote)", won: "var(--job)", lost: "var(--danger)", completed: "var(--job)",
+  inbound: "#cddcf6", hot: "#f5cfd0", reached_out: "#fbdcc9", estimate_booked: "#cfe6d4", remote_quote: "#d8dce2",
+  quote_sent: "#d8dce2", won: "#cfe6d4", lost: "#d8dce2", completed: "#d8dce2",
 };
+/** GoHighLevel's names for the two pipelines, one per brand. */
+const PIPELINE_NAME: Record<Brand, string> = { washing: "Leads → Sales Pipeline", lights: "Leads → Sales Pipeline (Christmas)" };
+const REQUEST_SOURCE: Record<string, string> = { phone: "Phone", web_form: "Website", hub: "Client hub", email: "Email", assistant: "AI assistant", manual: "Added by the office" };
 /** Stages that show the last 30 days, newest first, rather than everything open. */
 const CLOSED: readonly PipelineStage[] = ["lost", "completed"];
 const OPEN_STATUSES = ["draft", "sent", "changes_requested", "approved"];
@@ -81,17 +87,18 @@ export function PipelinePage() {
   const [over, setOver] = useState<string | null>(null);
   const [sending, setSending] = useState<Card | null>(null);
   const [params, setParams] = useSearchParams();
-  const brand: BrandFilter = params.get("brand") === "washing" || params.get("brand") === "lights" ? (params.get("brand") as Brand) : "all";
-  const setBrand = (b: BrandFilter) => setParams((p) => { const n = new URLSearchParams(p); if (b === "all") n.delete("brand"); else n.set("brand", b); return n; }, { replace: true });
+  // Opens on the washing pipeline, as GoHighLevel opens on one pipeline; "all" shows both.
+  const brand: BrandFilter = params.get("brand") === "lights" || params.get("brand") === "all" ? (params.get("brand") as BrandFilter) : "washing";
+  const setBrand = (b: BrandFilter) => setParams((p) => { const n = new URLSearchParams(p); if (b === "washing") n.delete("brand"); else n.set("brand", b); return n; }, { replace: true });
   const key = ["pipeline", company.id];
 
   const data = useQuery({
     queryKey: key,
     queryFn: async () => {
       const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
-      const quoteFields = "id, number, title, status, brand, total, tax_rate, discount_amount, promo:promo_codes(kind, value), updated_at, client:clients(display_name, email, phone), options:quote_options!quote_options_quote_fkey(id), option:quote_options!quotes_option_fkey(name, tier), services:quote_line_items(name), request:requests(stage), jobs:jobs!jobs_company_id_quote_id_fkey(status)";
+      const quoteFields = "id, number, title, status, brand, total, tax_rate, discount_amount, promo:promo_codes(kind, value), updated_at, client:clients(display_name, email, phone, lead_source), options:quote_options!quote_options_quote_fkey(id), option:quote_options!quotes_option_fkey(name, tier), services:quote_line_items(name), request:requests(stage), jobs:jobs!jobs_company_id_quote_id_fkey(status)";
       const [requests, quotes, closed] = await Promise.all([
-        supabase().from("requests").select("id, number, title, status, stage, brand, updated_at, client:clients(display_name, email, phone)").eq("company_id", company.id).in("status", ["new", "assessment_scheduled", "assessment_complete"]),
+        supabase().from("requests").select("id, number, title, status, stage, brand, source, updated_at, client:clients(display_name, email, phone, lead_source)").eq("company_id", company.id).in("status", ["new", "assessment_scheduled", "assessment_complete"]),
         supabase().from("quotes").select(quoteFields).eq("company_id", company.id).in("status", OPEN_STATUSES).eq("is_template", false),
         supabase().from("quotes").select(quoteFields).eq("company_id", company.id).in("status", ["converted", "lost"]).eq("is_template", false).gte("updated_at", since),
       ]);
@@ -100,13 +107,13 @@ export function PipelinePage() {
       const cards: Card[] = [];
       for (const x of unwrap(requests)) {
         const stage = requestStage(x);
-        if (stage) cards.push({ kind: "request", id: x.id, status: x.status, number: x.number, title: x.title, client: x.client?.display_name ?? "", email: x.client?.email ?? null, phone: x.client?.phone ?? null, value: null, from: false, updated: x.updated_at, options: 0, option: null, stage, brand: requestBrand(x) });
+        if (stage) cards.push({ kind: "request", id: x.id, status: x.status, number: x.number, title: x.title, client: x.client?.display_name ?? "", email: x.client?.email ?? null, phone: x.client?.phone ?? null, value: null, from: false, updated: x.updated_at, options: 0, option: null, stage, brand: requestBrand(x), source: x.client?.lead_source || REQUEST_SOURCE[x.source] || null });
       }
       for (const x of all) {
         const stage = quoteStage({ status: x.status, requestStage: x.request?.stage, jobStatus: x.jobs[0]?.status });
         if (!stage) continue;
         const price = listPrice(x);
-        cards.push({ kind: "quote", id: x.id, status: x.status, number: x.number, title: x.title, client: x.client?.display_name ?? "", email: x.client?.email ?? null, phone: x.client?.phone ?? null, value: price.amount, from: price.from, updated: x.updated_at, options: x.options.length, option: x.option, stage, brand: quoteBrand({ brand: x.brand, lines: x.services }) });
+        cards.push({ kind: "quote", id: x.id, status: x.status, number: x.number, title: x.title, client: x.client?.display_name ?? "", email: x.client?.email ?? null, phone: x.client?.phone ?? null, value: price.amount, from: price.from, updated: x.updated_at, options: x.options.length, option: x.option, stage, brand: quoteBrand({ brand: x.brand, lines: x.services }), source: x.client?.lead_source || null });
       }
       return { cards };
     },
@@ -200,19 +207,16 @@ export function PipelinePage() {
     <>
       <BackLink to="/quotes">Quotes</BackLink>
       <PageHeader title="Sales board" />
-      <div className="segmented" role="group" aria-label="Brand" style={{ marginBottom: 12 }}>
-        {(["all", "washing", "lights"] as const).map((b) => (
-          <button key={b} type="button" aria-pressed={b === brand} onClick={() => setBrand(b)}>{b === "all" ? "All" : BRAND_LABEL[b]}</button>
-        ))}
+      <div className="ghl-toolbar">
+        <select className="select ghl-pipeline" aria-label="Pipeline" value={brand} onChange={(e) => setBrand(e.target.value as BrandFilter)}>
+          <option value="washing">{PIPELINE_NAME.washing}</option>
+          <option value="lights">{PIPELINE_NAME.lights}</option>
+          <option value="all">All pipelines</option>
+        </select>
+        {data.data && <span className="ghl-count">{plural(cards.length, "opportunity").replace("opportunitys", "opportunities")}</span>}
+        <span className="grow" />
+        {data.data && <span className="muted small">Open {formatMoney(openValue)} · Won (30 days) {formatMoney(sum(won))} · Win rate {winRate === null ? "—" : `${winRate}%`}</span>}
       </div>
-      {data.data && (
-        <div className="stat-row">
-          <div className="card stat"><div className="label">Open quotes</div><div className="value">{formatMoney(openValue)}</div><div className="hint">{plural(open.length, "quote")} · {plural(cards.filter((c) => c.kind === "request").length, "lead")}</div></div>
-          <div className="card stat"><div className="label">Won (30 days)</div><div className="value">{formatMoney(sum(won))}</div><div className="hint">{won.length} converted to jobs</div></div>
-          <div className="card stat"><div className="label">Lost (30 days)</div><div className="value">{formatMoney(sum(lost))}</div><div className="hint">{plural(lost.length, "quote")}</div></div>
-          <div className="card stat"><div className="label">Win rate (30 days)</div><div className="value">{winRate === null ? "—" : `${winRate}%`}</div></div>
-        </div>
-      )}
       {data.error && <div className="card"><ErrorState error={data.error} onRetry={() => data.refetch()} /></div>}
       {data.isPending ? (
         <Loading><div className="board">{PIPELINE_STAGES.map((c) => <div key={c.key} className="board-col"><Skeleton width="60%" height={14} />{[0, 1].map((i) => <Skeleton key={i} height={70} radius={8} />)}</div>)}</div></Loading>
@@ -223,11 +227,10 @@ export function PipelinePage() {
             const items = cards.filter((c) => c.stage === col.key).sort((a, b) => (closed ? b.updated.localeCompare(a.updated) : a.updated.localeCompare(b.updated)));
             const total = items.reduce((s, c) => s + (c.value ?? 0), 0);
             return (
-              <section key={col.key} className="board-col" style={{ ["--stage" as string]: STAGE_COLOR[col.key] }} aria-label={col.label} {...zone(col.key)}>
-                <div className="board-col-head">
-                  <strong>{col.label}</strong>
-                  <span className="badge">{items.length}</span>
-                  {total > 0 && <span className="muted">{formatMoney(total)}</span>}
+              <section key={col.key} className="board-col ghl-col" style={{ ["--stage" as string]: STAGE_COLOR[col.key] }} aria-label={col.label} {...zone(col.key)}>
+                <div className="ghl-col-head">
+                  <strong className="ellipsis">{col.label}</strong>
+                  <span>{plural(items.length, "opportunity").replace("opportunitys", "opportunities")} <strong>{formatMoney(total)}</strong></span>
                 </div>
                 {items.map((c) => {
                   const age = daysOld(c.updated);
@@ -236,7 +239,8 @@ export function PipelinePage() {
                     <Link
                       key={c.id}
                       to={`/${c.kind === "quote" ? "quotes" : "requests"}/${c.id}`}
-                      className="deal"
+                      className="deal ghl-card"
+                      data-won={c.status === "approved" || c.status === "converted" || undefined}
                       draggable
                       data-dragging={dragging?.id === c.id || undefined}
                       data-stale={(stale && age >= 7) || undefined}
@@ -250,22 +254,23 @@ export function PipelinePage() {
                         setOver(null);
                       }}
                     >
-                      <span className="d-title">{c.title}</span>
-                      <span className="muted small ellipsis">{c.client}</span>
-                      <span className="d-meta">
-                        <span>
-                          {c.status === "changes_requested" ? <span className="text-danger strong">{statusText("quote", c.status)}</span> : c.kind === "request" ? "Lead" : `#${c.number}`}
-                          {c.status === "draft" && <span className="badge" style={{ marginLeft: 6 }}>Draft</span>}
-                          {brand === "all" && <span className="badge" style={{ marginLeft: 6 }}>{BRAND_LABEL[c.brand]}</span>}
-                        </span>
-                        <span style={!stale ? undefined : age >= 14 ? { color: "var(--danger)", fontWeight: 600 } : age >= 7 ? { color: "var(--warning)", fontWeight: 600 } : undefined}>{age === 0 ? "Today" : `${age} ${age === 1 ? "day" : "days"}`}</span>
+                      <span className="ghl-card-top">
+                        <strong className="ellipsis">{c.client || c.title}</strong>
+                        {(c.status === "approved" || c.status === "converted") && <span className="ghl-won">WON</span>}
+                        {c.status === "lost" && <span className="ghl-lost">LOST</span>}
                       </span>
-                      {c.value != null && (
-                        <span className="d-value">
-                          {c.from ? `From ${formatMoney(c.value)}` : formatMoney(c.value)}
-                          {c.options > 0 && <span className="muted small" style={{ fontWeight: 600, overflowWrap: "anywhere" }}> · {optionsNote(c.status, c.options, c.option)}</span>}
+                      <span className="ghl-field"><span>Title:</span><span className="ellipsis">{c.title}</span></span>
+                      <span className="ghl-field"><span>Source:</span><span className="ellipsis">{c.source ?? "—"}</span></span>
+                      <span className="ghl-field"><span>Value:</span><span>{c.value != null ? (c.from ? `From ${formatMoney(c.value)}` : formatMoney(c.value)) : formatMoney(0)}{c.options > 0 && <span className="muted"> · {optionsNote(c.status, c.options, c.option)}</span>}</span></span>
+                      <span className="ghl-card-foot">
+                        <span className="ghl-icons" aria-hidden="true"><Icon name="phone" size={13} /><Icon name="messages" size={13} /><Icon name="mail" size={13} /><Icon name="note" size={13} /></span>
+                        <span className="small">
+                          {c.status === "changes_requested" ? <span className="text-danger strong">{statusText("quote", c.status)}</span> : c.kind === "request" ? "Lead" : `#${c.number}`}
+                          {c.status === "draft" && " · Draft"}
+                          {brand === "all" && ` · ${BRAND_LABEL[c.brand]}`}
+                          {" · "}<span style={!stale ? undefined : age >= 14 ? { color: "var(--danger)", fontWeight: 600 } : age >= 7 ? { color: "var(--warning)", fontWeight: 600 } : undefined}>{age === 0 ? "Today" : `${age}d`}</span>
                         </span>
-                      )}
+                      </span>
                     </Link>
                   );
                 })}
