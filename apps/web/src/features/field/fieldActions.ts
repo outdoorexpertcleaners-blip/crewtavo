@@ -9,7 +9,8 @@ import { api, supabase, unwrap } from "@/lib/api";
 import { ApiError } from "@/lib/errors";
 import { toast } from "@/lib/toast";
 import { clockLost, showClockTap, startedBefore, type ClockChange } from "./clockTaps";
-import { clockTravel, clockVisit, type ClockPlace } from "./fieldData";
+import { clockTravel, clockVisit, jobBrand, type ClockPlace } from "./fieldData";
+import type { Brand } from "@crewtavo/core/pipeline";
 
 export interface VisitStatusChange {
   companyId: string;
@@ -34,6 +35,13 @@ export interface VisitStatusChange {
    * their clock on travel, and Complete moves it back to travel instead of stopping it.
    */
   day?: boolean;
+  /**
+   * A team member's brand clock (fieldData.statusChange): their clock goes on the job's brand,
+   * washing or lights, instead of "On a visit" or Driving. Taps saved before it existed clock as before.
+   */
+  brandClock?: boolean;
+  /** The job's brand, when the phone knew it at the tap; otherwise it's asked for as the tap is sent. */
+  brand?: Brand;
 }
 
 /**
@@ -105,10 +113,14 @@ export async function setVisitStatus(v: VisitStatusChange) {
   const day = clocks && v.day === true && !v.sub;
   let clockOff = false as boolean;
   let travel = false as boolean;
+  // The brand clock: the job's brand in place of "On a visit" and Driving (asked for now if the tap didn't know it).
+  const brandClock = clocks && v.brandClock === true && !v.sub;
   const clock = async (action: "start" | "stop" | "travel" | "travel from visit") => {
     try {
-      if (action === "start" || action === "stop") await clockVisit(v.companyId, v.userId, { id: v.visitId, job_id: v.jobId }, action, v.at, v.place);
-      else travel = await clockTravel(v.companyId, v.userId, v.at, v.place, action === "travel" ? undefined : v.visitId);
+      // A brand the server can't say (an older server) is washing, rather than time not kept at all.
+      const work = brandClock ? (v.brand ?? (await jobBrand(v.jobId).catch((): Brand => "washing"))) : null;
+      if (action === "start" || action === "stop") await clockVisit(v.companyId, v.userId, { id: v.visitId, job_id: v.jobId }, action, v.at, v.place, work ?? "visit");
+      else travel = await clockTravel(v.companyId, v.userId, v.at, v.place, action === "travel" ? undefined : v.visitId, work ? { category: work, jobId: v.jobId } : undefined);
     } catch (error) {
       // A sub whose clock the office turned off after this phone last heard (the database refuses
       // their time now): the visit moved on, and there's simply no clock.
@@ -124,7 +136,9 @@ export async function setVisitStatus(v: VisitStatusChange) {
   // tap sent again after later ones went out (the app closed before it heard back) is skipped.
   const result = await api.patch<{ skipped?: boolean; status?: string }>(`/visits/${v.visitId}`, visitStatusBody(v), { companyId: v.companyId });
   const cancelled = Boolean(result.skipped) && result.status === "cancelled";
-  if (clocks && v.status === "in_progress" && !cancelled) await clock("start");
+  // On the whole-day brand clock Start visit goes onto the job's brand like On my way, not onto the
+  // visit, so it keeps running through the visit and after it.
+  if (clocks && v.status === "in_progress" && !cancelled) await clock(day && brandClock ? "travel" : "start");
   // On my way starts the day's clock. Not when the visit had already moved on: that's this tap sent
   // again after the ones that followed it, and their time since is already there.
   if (day && v.status === "en_route" && !result.skipped) await clock("travel");

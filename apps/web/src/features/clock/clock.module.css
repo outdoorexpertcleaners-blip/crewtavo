@@ -1,0 +1,109 @@
+/* The Clock: a tech's clock and the office's pay-period timesheet, in the owner's own colors
+   (his "OEC Time Clock" page): blue for Pressure washing, red for Christmas lights, gray for the shop
+   and amber for a break. Big buttons, and one column at a phone's width. */
+
+.page { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-content: start; min-width: 0; max-width: 760px; }
+.page > :global(.page-header) { margin-bottom: 0; }
+
+/* Each kind's colors, on anything with .kind and its data-kind: a button, a chip, a tile. */
+.kind { --kind-ink: #566277; --kind-bg: #E9EDF3; }
+.kind[data-kind="washing"] { --kind-ink: #0058C8; --kind-bg: #E0EEFE; }
+.kind[data-kind="lights"] { --kind-ink: #C40008; --kind-bg: #FDE6E6; }
+.kind[data-kind="break"] { --kind-ink: #8A5A00; --kind-bg: #FDF0DC; }
+:global(:root.dark) .kind { --kind-ink: #B7C1D1; --kind-bg: #2A303A; }
+:global(:root.dark) .kind[data-kind="washing"] { --kind-ink: #8EC0FF; --kind-bg: #10294A; }
+:global(:root.dark) .kind[data-kind="lights"] { --kind-ink: #FF9A9E; --kind-bg: #4A1416; }
+:global(:root.dark) .kind[data-kind="break"] { --kind-ink: #F2C46D; --kind-bg: #3F2E0B; }
+
+/* ----- The status card ----- */
+.status { display: grid; gap: 4px; padding: 20px; }
+.eyebrow { color: var(--text-3); font-size: var(--fs-13); font-weight: 700; }
+.state { font-size: 20px; font-weight: 800; letter-spacing: var(--tracking-tight); }
+.state.kind { color: var(--kind-ink); }
+.timer { font-size: 44px; line-height: 1.1; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.since { color: var(--text-3); font-size: var(--fs-14); }
+.pickHint { margin-top: 12px; color: var(--text-2); font-weight: 600; }
+.groupLabel { margin-top: 14px; color: var(--text-3); font-size: var(--fs-12); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+
+.kinds { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 8px; }
+.kindButton {
+  display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 64px; padding: 10px 14px;
+  border: 2px solid transparent; border-radius: var(--radius-card); background: var(--kind-bg); color: var(--kind-ink);
+  font: inherit; font-size: var(--fs-16); font-weight: 800; text-align: center; cursor: pointer;
+  transition: border-color var(--dur-fast), transform var(--dur-fast);
+}
+.kindButton:hover:not(:disabled) { border-color: var(--kind-ink); }
+.kindButton:active:not(:disabled) { transform: scale(0.98); }
+.kindButton:disabled { opacity: 0.6; cursor: default; }
+.kindButton:focus-visible { outline: 2px solid var(--kind-ink); outline-offset: 2px; }
+.small .kindButton { min-height: 44px; font-size: var(--fs-14); }
+
+.clockOut {
+  display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 56px; margin-top: 10px;
+  border: 0; border-radius: var(--radius-card); background: #C40008; color: #fff; font: inherit; font-size: var(--fs-16); font-weight: 800; cursor: pointer;
+}
+.clockOut:hover:not(:disabled) { background: #A30007; }
+.clockOut:disabled { opacity: 0.6; cursor: default; }
+.clockOut:focus-visible { outline: 2px solid #C40008; outline-offset: 2px; }
+.small .clockOut { min-height: 44px; font-size: var(--fs-14); }
+
+/* Still clocked in from a day that's over. */
+.stale { display: grid; gap: 10px; padding: 14px 16px; border-radius: var(--radius-card); background: #FDF0DC; color: #8A5A00; font-weight: 600; }
+:global(:root.dark) .stale { background: #3F2E0B; color: #F2C46D; }
+.stale > button { justify-self: start; }
+
+/* ----- Today, and the week's totals ----- */
+.cardTitle { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.blocks { display: grid; }
+.block { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 20px; border-top: 1px solid var(--row-divider); }
+.chip { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: var(--radius-pill); background: var(--kind-bg); color: var(--kind-ink); font-size: var(--fs-12); font-weight: 700; white-space: nowrap; }
+.span { flex: 1; min-width: 0; font-variant-numeric: tabular-nums; }
+.length { font-weight: 700; font-variant-numeric: tabular-nums; }
+.worked { padding: 12px 20px; border-top: 1px solid var(--divider); font-weight: 700; }
+.empty { padding: 16px 20px; color: var(--text-3); }
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; padding: 16px 20px 20px; }
+.tile { display: grid; gap: 2px; padding: 12px 14px; border-radius: var(--radius-card); background: var(--fill); }
+.tile.kind { background: var(--kind-bg); color: var(--kind-ink); }
+.tileLabel { font-size: var(--fs-12); font-weight: 700; }
+.tileValue { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+/* ----- The office's pay period ----- */
+.periodNav { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.periodRange { font-size: var(--fs-16); font-weight: 800; }
+.hint { color: var(--text-3); font-size: var(--fs-13); }
+.person { display: grid; gap: 12px; padding: 16px 20px 20px; }
+.personHead { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.personName { flex: 1; min-width: 0; font-size: var(--fs-16); font-weight: 800; overflow-wrap: anywhere; }
+.periodTotal { font-weight: 700; }
+
+.sheet { width: 100%; border-collapse: collapse; font-size: var(--fs-14); font-variant-numeric: tabular-nums; }
+.sheet th { padding: 6px 6px; border-bottom: 1px solid var(--divider); color: var(--text-3); font-size: var(--fs-12); font-weight: 700; text-align: right; white-space: nowrap; }
+.sheet th:first-child, .sheet td:first-child { text-align: left; }
+.sheet td { padding: 0; border-bottom: 1px solid var(--row-divider); text-align: right; white-space: nowrap; }
+.sheet td > button { display: block; width: 100%; min-height: 40px; padding: 8px 6px; border: 0; background: none; color: inherit; font: inherit; text-align: inherit; cursor: pointer; }
+.sheet tr:hover td > button { background: var(--fill); }
+.sheet td.total { font-weight: 700; }
+.sheet tr[data-today] td { background: var(--green-tint); }
+.sheet tr.week td { padding: 8px 6px; border-bottom: 1px solid var(--divider); background: var(--fill); font-weight: 800; }
+.dash { color: var(--text-4); }
+.dot { margin-left: 4px; color: var(--text-3); font-weight: 800; }
+.live { display: inline-block; width: 8px; height: 8px; margin-left: 6px; border-radius: 50%; background: var(--green); vertical-align: middle; }
+
+/* ----- Fix times ----- */
+.fixRow { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; align-items: end; padding: 8px 0; border-bottom: 1px solid var(--row-divider); }
+.fixRow[data-problem] { border-bottom-color: var(--danger); }
+.fixRow label { display: grid; gap: 4px; min-width: 0; font-size: var(--fs-12); font-weight: 600; color: var(--text-3); }
+.fixRow :global(.input), .fixRow :global(.select) { min-width: 0; }
+
+@media (max-width: 520px) {
+  .status, .person { padding: 16px; }
+  .timer { font-size: 38px; }
+  .block, .worked, .empty { padding-inline: 16px; }
+  .tiles { padding-inline: 16px; }
+  .kinds { grid-template-columns: minmax(0, 1fr); }
+  .small .kinds { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fixRow { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }
+  .fixRow > :first-child { grid-column: 1 / -1; }
+  .sheet { font-size: var(--fs-13); }
+}

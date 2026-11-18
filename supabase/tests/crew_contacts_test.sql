@@ -1,6 +1,7 @@
 -- Database tests for what field crew read of clients' contacts, files and news
--- (20261112000110_crew_contacts.sql): only their own work's, as with clients themselves, while crew
--- leads and the office read all of it.
+-- (20261112000110_crew_contacts.sql): files and news only for their own work, while crew leads and
+-- the office read all of it. Contacts are every client's, as clients themselves are, since field
+-- crew look any client up (20261119000100_crew_sees_team.sql).
 -- Run with scripts/test-db.sh (plain Postgres + prelude.sql). Any failed check stops with an error.
 \set ON_ERROR_STOP on
 \set QUIET on
@@ -89,7 +90,7 @@ select tcrc.check((select count(*) from public.activity where company_id = :'co'
 begin;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "cc5e0000-0000-0000-0000-000000000003", "role": "authenticated"}', true);
-select tcrc.check((select array_agg(name) from public.client_contacts) = '{"Ann''s husband"}', 'field crew read the contacts of the client they work for, not another client''s');
+select tcrc.check((select count(*) from public.client_contacts) = 2, 'field crew read every client''s contacts, to look any client up');
 select tcrc.check((select array_agg(file_name order by file_name) from public.attachments)
   = '{"ann assessment.jpg","ann client.jpg","ann job.jpg","ann property.jpg","ann quote.jpg","ann request.jpg","ann visit.jpg"}',
   'and the files on their visits, and on the job, quote, client, property and request behind them: '
@@ -112,9 +113,9 @@ select tcrc.check((select count(*) from gone) = 1, 'they add a photo to their vi
 
 -- With no visits, none of it but the photo they added themselves.
 select set_config('request.jwt.claims', '{"sub": "cc5e0000-0000-0000-0000-000000000004", "role": "authenticated"}', true);
-select tcrc.check(not exists (select 1 from public.client_contacts) and not exists (select 1 from public.activity)
+select tcrc.check((select count(*) from public.client_contacts) = 2 and not exists (select 1 from public.activity)
   and (select array_agg(file_name) from public.attachments) = '{"nell photo.jpg"}',
-  'field crew with no visits read no contacts or news, and no files but one they added themselves');
+  'field crew with no visits read the contacts but no news, and no files but one they added themselves');
 with gone as (delete from public.attachments where file_name = 'nell photo.jpg' returning 1)
 select tcrc.check((select count(*) from gone) = 1, 'which they can still take back');
 rollback;
@@ -124,8 +125,8 @@ begin;
 delete from public.visit_assignees where company_id = :'co' and user_id = 'cc5e0000-0000-0000-0000-000000000003';
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "cc5e0000-0000-0000-0000-000000000003", "role": "authenticated"}', true);
-select tcrc.check(not exists (select 1 from public.client_contacts) and not exists (select 1 from public.attachments) and not exists (select 1 from public.activity),
-  'taken off their visits, they read none of it any more');
+select tcrc.check((select count(*) from public.client_contacts) = 2 and not exists (select 1 from public.attachments) and not exists (select 1 from public.activity),
+  'taken off their visits, they read none of the files or news any more (the contacts, as before)');
 rollback;
 
 -- ===== Crew leads and the office keep what they had =============================================

@@ -1,7 +1,7 @@
 /**
  * Settings → Client notifications, Jobber's list of what a business sends its clients by itself.
  * Each switch is one automation rule: the starter rule every business gets
- * (private.install_default_automations, latest in 20261105000210_on_my_way_eta.sql, and for a visit
+ * (private.install_default_automations, latest in 20261119000200_on_my_way_from_the_tech.sql, and for a visit
  * booked, moved or cancelled private.install_visit_notice_rules in
  * 20261113000510_visit_notice_rules.sql), so a deleted one comes back from the recipe here, word
  * for word.
@@ -140,8 +140,10 @@ export const CLIENT_NOTIFICATIONS: ClientNotification[] = [
       trigger: "visit.en_route",
       delay_minutes: 0,
       conditions: [],
-      // {{eta}}: " and should arrive in about 20 minutes", or nothing when that isn't known.
-      actions: [{ type: "send_sms", body: "Hi {{client.first_name}}, this is {{company.name}}. Our crew is on the way to {{address}} now{{eta}}." }],
+      // From the person who tapped it and the job's brand, from that brand's line. {{eta_there}}: " and
+      // should be there in about 20 minutes", or nothing when that isn't known. With no name it reads
+      // "this is Outdoor Expert Cleaners" (core renderTemplate).
+      actions: [{ type: "send_sms", body: "Hi {{client.first_name}}, this is {{tech.first_name}} with {{brand.name}}. I'm on my way{{eta_there}}." }],
       enabled: false,
     },
   },

@@ -8,6 +8,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import type { AppEnv } from "../env";
 import { requireCompany, requireUser } from "../lib/auth";
+import { kickAutomations } from "../lib/background";
 import { appUrl, dbError, HttpError, isoDate, must, param, readJson, uuid } from "../lib/http";
 import { allow } from "../lib/limit";
 import { adminClient } from "../lib/supabase";
@@ -138,7 +139,11 @@ schedule.get("/schedule", requireUser, requireCompany(WITH_SUBS), async (c) => {
 
 /** Changes a visit. The crew and subs change their own visit's status and notes (services/schedule.ts). */
 schedule.patch("/visits/:id", requireUser, requireCompany(WITH_SUBS), async (c) => {
-  return c.json(await updateVisit(scope(c), param(c, "id"), await readJson(c, visitChangeInput)));
+  const body = await readJson(c, visitChangeInput);
+  const visit = await updateVisit(scope(c), param(c, "id"), body);
+  // On my way texts the client now, not at the next minute's run: the crew's phone shows whether it went.
+  if (body.status === "en_route") kickAutomations(c, c.var.companyId);
+  return c.json(visit);
 });
 
 /** Rain day: move every open visit from one date to another, keeping each visit's local time. */

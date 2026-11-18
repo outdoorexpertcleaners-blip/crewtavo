@@ -43,6 +43,14 @@ export interface ProposalSettings {
 
 export const BRAND_LABEL: Record<ProposalBrand, string> = { washing: "Pressure washing", lights: "Christmas lights" };
 
+/**
+ * A brand's name as clients know it ("Outdoor Expert Cleaners", "Outdoor Expert Lighting"): the one
+ * on its Big Proposal letterhead, else the company's own name. For texts that say who's writing.
+ */
+export function brandName(settings: unknown, brand: ProposalBrand | null | undefined, companyName: string): string {
+  return (brand && proposalSettings(settings).brands[brand].name.trim()) || companyName;
+}
+
 const INTRO = (word: string) =>
   `<p>Dear {first_name},</p><p>We would like to start by thanking you for the opportunity to present our service(s) to you. At {company} we pride ourselves on providing an elite level of service and we look forward to demonstrating that same value to you. We offer something much more than a simple ${word} service; we are a partner!</p><p>Please take a moment to get to know us a little better as we have included information regarding the services offered, the clients we service, our credentials, our insurance and contact info, the scope of the work discussed and finally a firm quote. In this packet of information you can accept the quote at any time simply by clicking the "Accept" button at the top of this page. However, if you have any questions please don't hesitate to call us and we will be happy to answer any questions you may have.</p><p>Respectfully Submitted,</p><p>{owner}<br>{company}<br>{phone}</p>`;
 

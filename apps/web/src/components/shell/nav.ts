@@ -28,6 +28,7 @@ export const NAV_GROUPS: NavItem[][] = [
     { to: "/field", label: msg("My day"), icon: "clock", only: ["crew_lead", "field_crew", "subcontractor"], except: ["/field/paperwork", "/field/jobs"], keywords: "today my visits route" },
     { to: "/field/jobs", label: msg("My jobs"), icon: "job", only: ["subcontractor"], keywords: "offers accept decline take turn down price owed paid 1099 total" },
     { to: "/field/paperwork", label: msg("My paperwork"), icon: "file", only: ["subcontractor"], keywords: "w-9 w9 insurance certificate liability workers comp upload send" },
+    { to: "/clock", label: msg("Clock"), icon: "history", only: ["crew_lead", "field_crew"], keywords: "time clock clock in clock out punch hours break lunch my time" },
     { to: "/schedule", label: msg("Schedule"), icon: "calendar", keywords: "calendar visits appointments dispatch route crews tasks" },
     { to: "/chat", label: msg("Team chat"), icon: "chat", feature: "team_chat", keywords: "chat channels messages talk team crew announcements" },
   ],
@@ -83,11 +84,18 @@ export const OTHER_SCREENS: NavItem[] = [
 ];
 
 export const SETTINGS_ITEM: NavItem = { to: "/settings", label: msg("Settings"), icon: "settings", also: ["/automations", "/booking"] };
-/** A sub's settings are their profile and notifications. */
+/** A sub's settings are their profile and notifications, and so are field crew's. */
 export const PROFILE_ITEM: NavItem = { to: "/settings?tab=profile", label: msg("Profile"), icon: "user", only: ["subcontractor"] };
 
-/** The sidebar's last link: Settings, or a sub's profile. */
-export const settingsItem = (session: { role: string }) => (session.role === "subcontractor" ? PROFILE_ITEM : SETTINGS_ITEM);
+/**
+ * Field crew ("Employee"): the screens their menus show, in this order. They see the whole team's
+ * schedule and every client, and nothing about money or how the business is run (no Home, no
+ * requests, jobs, quotes or reports). Settings shows them only their own profile (settingsGroups).
+ */
+export const CREW_SCREENS = ["/field", "/schedule", "/clock", "/clients"] as const;
+
+/** The sidebar's last link: Settings, or a sub's or field crew's profile. */
+export const settingsItem = (session: { role: string }) => (session.role === "subcontractor" || session.role === "field_crew" ? PROFILE_ITEM : SETTINGS_ITEM);
 
 /** Bottom bar on phones for the team; everything else lives under More. */
 export const MOBILE_TABS: NavItem[] = [
@@ -105,9 +113,18 @@ export const SUB_TABS: NavItem[] = [
   { to: "/settings?tab=profile", label: msg("Profile"), icon: "user", only: ["subcontractor"] },
 ];
 
+/** Field crew's bottom bar: their four screens; Settings (their profile) is under More. */
+export const CREW_TABS: NavItem[] = [
+  { to: "/field", label: msg("My day"), icon: "clock" },
+  { to: "/schedule", label: msg("Schedule"), icon: "calendar" },
+  { to: "/clock", label: msg("Clock"), icon: "history" },
+  { to: "/clients", label: msg("Clients"), icon: "clients" },
+];
+
 /** The phone's bottom bar for this person. */
 export function mobileTabs(session: { role: string; company?: { settings?: Record<string, unknown> | null } }): NavItem[] {
   if (session.role === "subcontractor") return SUB_TABS;
+  if (session.role === "field_crew") return CREW_TABS;
   return MOBILE_TABS.filter((item) => !item.feature || featureOn(session.company?.settings, item.feature));
 }
 
@@ -116,6 +133,27 @@ export function mobileTabs(session: { role: string; company?: { settings?: Recor
  * Settings (which shows them only their profile). Anything else opened by its address goes to My day.
  */
 export const subCanOpen = (pathname: string) => /^\/field(\/paperwork|\/jobs(\/[^/]+)?|\/visits\/[^/]+)?\/?$/.test(pathname) || /^\/settings\/?$/.test(pathname);
+
+/**
+ * The screens field crew can open: My day and any visit (their own to work, anyone's to look at),
+ * the schedule, the clock, the clients and a client's page, and Settings (which shows them only
+ * their profile). Anything else opened by its address (Home, the pipeline, quotes, invoices,
+ * finance, timesheets' approvals...) goes to My day. The database keeps the money closed to them
+ * either way; this keeps them off screens that would only show them empty lists or errors. A sub's
+ * own field screens (/field/jobs, what they're paid; /field/paperwork) aren't theirs either.
+ */
+export const crewCanOpen = (pathname: string) =>
+  /^\/field(\/visits\/[^/]+)?\/?$/.test(pathname) || /^\/(schedule|clock|settings)\/?$/.test(pathname) || (/^\/clients(\/[^/]+)?\/?$/.test(pathname) && !/^\/clients\/duplicates\/?$/.test(pathname));
+
+/** Whether this person can open a screen by its address: subs and field crew have short lists, everyone else every screen. */
+export function canOpen(session: { role: string }, pathname: string): boolean {
+  if (session.role === "subcontractor") return subCanOpen(pathname);
+  if (session.role === "field_crew") return crewCanOpen(pathname);
+  return true;
+}
+
+/** Where the business's logo and a screen they can't open take someone: My day for subs and field crew. */
+export const homePath = (session: { role: string }) => (session.role === "subcontractor" || session.role === "field_crew" ? "/field" : "/");
 
 /** What people start most often: the sidebar's Create menu, the phone's More sheet and search. */
 export function createItems(session: Pick<Session, "role" | "permissions">): Array<{ to: string; label: string; newLabel: string; icon: IconName; keywords: string }> {
@@ -140,6 +178,8 @@ export function createItems(session: Pick<Session, "role" | "permissions">): Arr
 export function navVisible(session: { role: string; permissions: readonly string[]; company?: { settings?: Record<string, unknown> | null } }, item: NavItem): boolean {
   // A sub sees only what's listed for them by name: everything else is the team's.
   if (session.role === "subcontractor") return Boolean(item.only?.includes("subcontractor"));
+  // Field crew see their few screens by address, whatever else is listed or turned on.
+  if (session.role === "field_crew") return (CREW_SCREENS as readonly string[]).includes(item.to);
   if (item.feature && !featureOn(session.company?.settings, item.feature)) return false;
   if (item.only) return item.only.includes(session.role);
   if (session.role === "owner") return true;

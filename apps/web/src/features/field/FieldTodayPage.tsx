@@ -20,6 +20,7 @@ import { CrewEquipmentCard } from "../equipment/CrewEquipmentCard";
 import { dayRoute } from "../schedule/dayRoute";
 import { useSchedulingRights } from "../schedule/myCrews";
 import { ClockCard } from "./ClockCard";
+import { OnMyWayNote } from "./FieldText";
 import { visitContact } from "./contact";
 import { CrewClockCard } from "./CrewClockCard";
 import { showVisitStatus, statusSaved, type VisitStatusChange } from "./fieldActions";
@@ -69,6 +70,8 @@ export function FieldTodayPage() {
     // Finishing a visit ends the crew's clocks on it too.
     queryClient.invalidateQueries({ queryKey: ["crew-clock"] });
     queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    // On my way: whether the client was texted (FieldText.tsx OnMyWayNote).
+    queryClient.invalidateQueries({ queryKey: ["on-my-way"] });
   };
   // Works offline: the tap is saved on the phone (with its time) and sent when there's signal. Sent
   // by the action registered for it (fieldActions.ts), not a mutationFn here: lib/offline.ts notes
@@ -152,6 +155,7 @@ export function FieldTodayPage() {
                   <span className="muted">{[clientName(v), v.property?.line1 ?? v.address].filter(Boolean).join(" · ")}</span>
                 </Link>
                 {v.hold_reason && <div className="small" style={{ color: "var(--warning)", fontWeight: 600 }}><Icon name="cloud" size={14} /> {t("Weather: {reason}", { reason: v.hold_reason })}</div>}
+                <OnMyWayNote visitId={v.id} status={v.status} />
               </div>
               {/* The card's next step last and full width, where the thumb is (beside the rest on a wide screen). */}
               {(place || next) && (

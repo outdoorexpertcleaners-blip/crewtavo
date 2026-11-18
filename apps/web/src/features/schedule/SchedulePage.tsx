@@ -16,7 +16,7 @@ import { localDate, localTime, zonedTimeToUtc } from "@crewtavo/core/time";
 import { crewPeople, visitPeople, type CrewMember } from "@crewtavo/core/visitPeople";
 import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { lazy, Suspense, useEffect, useMemo, useState, type CSSProperties, type FormEvent } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
@@ -42,7 +42,7 @@ import { useVisitDrag, type DropTarget } from "./useVisitDrag";
 import { VisitDetails } from "./VisitDetails";
 import { VisitDialog, type VisitInput } from "./VisitDialog";
 import { usePendingChanges } from "./changeRequests";
-import { useSchedulingRights } from "./myCrews";
+import { opensInField, useSchedulingRights } from "./myCrews";
 import { eventOnRow, movePeople, onRow, peopleRows } from "./people";
 import { spanDays, stepMonth, type Span } from "./range";
 import { intlLocale, msg, t } from "@/lib/i18n";
@@ -214,8 +214,8 @@ export function SchedulePage() {
     queryFn: () => api.get<ScheduleData>(`/schedule?from=${range.from}&to=${range.to}${crewId ? `&crew_id=${crewId}` : ""}`),
   });
 
-  // Names and colors for the initials on each visit. Field crew see only their own visits, so they
-  // have nobody else's to pick.
+  // Names and colors for the initials on each visit. Field crew see the whole team's visits but
+  // only look: there's nobody for them to pick.
   // Subs on visits aren't on the team: they come too, named by their business (also once they
   // can't sign in, so old visits keep their names).
   const team = useQuery({ queryKey: ["team", session.company.id, "with-subs"], staleTime: 5 * 60_000, queryFn: () => api.get<Person[]>("/team?with_subs=1") });
@@ -268,8 +268,14 @@ export function SchedulePage() {
                 ? 1
                 : (a.route_order ?? 999) - (b.route_order ?? 999),
       );
-  /** Opening a visit shows it; its Edit button opens the form. */
-  const show = (v: Visit) => setDetails(v);
+  /**
+   * Opening a visit shows it; its Edit button opens the form. Field crew see the whole team's day
+   * but change none of it here: a visit opens in the field app instead (On my way, the work, the
+   * checklist), where only the people on it can change it.
+   */
+  const navigate = useNavigate();
+  const fieldOpens = opensInField(session);
+  const show = (v: Visit) => (fieldOpens ? navigate(`/field/visits/${v.id}`) : setDetails(v));
   const open = (v: Visit) => setEditing({ ...v, job_id: v.job?.id ?? null, property_id: v.property?.id ?? null, assignee_ids: v.assignees.map((a) => a.user_id), context: v.job ? { label: `${t("Job #{number}", { number: v.job.number })}${v.job.client ? ` · ${v.job.client.display_name}` : ""}`, to: `/jobs/${v.job.id}` } : null });
   // Clients' requests to move or cancel a visit, marked on it; a link to one (?visit=) opens its dialog
   // once the day's visits are in.
@@ -279,7 +285,7 @@ export function SchedulePage() {
     const v = linked ? schedule.data?.visits.find((x) => x.id === linked) : undefined;
     if (!v) return;
     if (canMove(v)) open(withColor(v));
-    else setDetails(withColor(v));
+    else show(withColor(v));
     setParams({}, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [linked, schedule.data]);

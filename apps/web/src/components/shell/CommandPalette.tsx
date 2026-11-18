@@ -17,7 +17,7 @@ import { getRecents } from "@/lib/recent";
 import { can, hasRole, useSession } from "@/lib/session";
 import { Spinner } from "../ui/Button";
 import { Icon, type IconName } from "../ui/Icon";
-import { createItems, NAV_GROUPS, navVisible, OTHER_SCREENS } from "./nav";
+import { canOpen, createItems, NAV_GROUPS, navVisible, OTHER_SCREENS } from "./nav";
 import { english, msg, t } from "@/lib/i18n";
 
 let opener: (() => void) | null = null;
@@ -159,7 +159,10 @@ export function CommandPalette() {
       // Files open in Drive, which is the office's: crews find theirs on their visits.
       const opensFiles = hasRole(session, "admin", "office", "estimator");
       const opens = (kind: string) => !KIND_SCREEN[kind] || SCREENS.some((n) => n.to === KIND_SCREEN[kind] && navVisible(session, n));
-      return [...records.filter((r) => KIND_PATH[r.kind] && (r.kind !== "file" || opensFiles) && opens(r.kind)), ...equipment, ...subcontractors];
+      // Field crew find clients and their properties, not jobs, requests or equipment: those screens
+      // are locked to them (nav.ts crewCanOpen), so a result there would only bounce them to My day.
+      const reachable = (r: { kind: string; id: string; client_id: string | null; title: string }) => canOpen(session, KIND_PATH[r.kind]!(r).split("?")[0]!);
+      return [...records.filter((r) => KIND_PATH[r.kind] && (r.kind !== "file" || opensFiles) && opens(r.kind)), ...equipment, ...subcontractors].filter(reachable);
     },
   });
 

@@ -47,6 +47,7 @@ import {
 } from "@crewtavo/core";
 import { daysSinceVisit, type AutomatedCampaign } from "@crewtavo/core/campaigns";
 import { hidesExactPrice } from "@crewtavo/core/estimates";
+import { brandName, firstName as firstWord } from "@crewtavo/core/proposal";
 import { inTextQuietHours, marketingOn, REFERRAL_GAP_DAYS, REVIEW_GAP_DAYS, textQuietHoursEnd, textsOffReason } from "@crewtavo/core/marketing";
 import { clientRecipients, type Recipient } from "@crewtavo/core/recipients";
 import { countsOn } from "@crewtavo/core/money";
@@ -350,7 +351,7 @@ export async function loadContext(admin: Db, companyId: string, subjectType: str
         propertyId = place?.data ? gone.property_id : null;
         jobId = job?.data?.id ?? null;
         facts = { status: "cancelled", kind: gone.kind, job_kind: job?.data?.kind ?? null };
-        vars = { title: gone.title, address: addressOf(place?.data ?? null), date: "", time: "", eta: "" };
+        vars = { title: gone.title, address: addressOf(place?.data ?? null), date: "", time: "", eta: "", eta_there: "" };
         label = gone.title;
         appPath = jobId ? `/jobs/${jobId}` : "/schedule";
         visit = { status: "cancelled", scheduled_on: null, starts_at: null, gone: true };
@@ -366,6 +367,7 @@ export async function loadContext(admin: Db, companyId: string, subjectType: str
         address: addressOf(rel.property),
         ...visitWhen(data.starts_at, data.scheduled_on, co.timezone || "UTC", arrivalWindowMin(co.settings)),
         eta: etaWords(data.eta_at),
+        eta_there: etaWords(data.eta_at, Date.now(), "there"),
       };
       visit = { status: data.status, scheduled_on: data.scheduled_on, starts_at: data.starts_at };
       label = data.title;
@@ -413,6 +415,8 @@ export async function loadContext(admin: Db, companyId: string, subjectType: str
     }
   }
   facts.client = client ? { tags: client.tags, status: client.status, lead_source: client.lead_source } : null;
+  // {{brand.name}}: the brand it's about, as the texts from that brand's line say who's writing.
+  const brand = await brandFor(admin, companyId, { subject, id: subjectId, clientId: client?.id ?? clientId });
 
   return {
     subject,
@@ -426,6 +430,8 @@ export async function loadContext(admin: Db, companyId: string, subjectType: str
       status: statusChoices(subject).find((s) => s.value === facts.status)?.label ?? facts.status ?? "",
       client: { name: client?.display_name ?? "", first_name: firstName(client?.display_name), email: client?.email ?? "", phone: client?.phone ?? "" },
       company: { name: co.name, phone: co.phone ?? "", email: co.email ?? "", website: co.website ?? "" },
+      // Nothing says which brand: the text goes from the wash line (core/quo.ts quoLineFor), so it says that brand.
+      brand: { name: brandName(co.settings, brand ?? "washing", co.name) },
     },
     appPath,
     jobId,
@@ -476,10 +482,16 @@ async function withHomeLink(env: Env, ctx: RunContext, baseUrl: string | null): 
  */
 export async function withEvent(admin: Db, ctx: RunContext, trigger: string, activityId: number | null | undefined): Promise<RunContext> {
   if ((!triggerDef(trigger)?.variables?.length && trigger !== "visit.cancelled") || activityId == null) return ctx;
-  const { data } = await admin.from("activity").select("data").eq("company_id", ctx.company.id).eq("id", activityId).maybeSingle();
+  const { data } = await admin.from("activity").select("data, actor_id").eq("company_id", ctx.company.id).eq("id", activityId).maybeSingle();
   const event = (data?.data ?? {}) as Record<string, unknown>;
   const text = (v: unknown) => (v == null ? "" : String(v));
   const amount = (v: unknown) => (v == null ? "" : money(v as number, ctx.company.currency || "USD"));
+  // On my way: {{tech.first_name}} is whoever tapped it. Empty when the office moved the visit along
+  // or the person has no name on file; the text then reads "this is Outdoor Expert Cleaners".
+  if (trigger === "visit.en_route") {
+    const { data: who } = data?.actor_id ? await admin.from("profiles").select("full_name").eq("user_id", data.actor_id).maybeSingle() : { data: null };
+    return { ...ctx, vars: { ...ctx.vars, tech: { first_name: firstWord(who?.full_name) } } };
+  }
   if (trigger === "referral.earned") {
     const invoice = event.invoice_number == null ? "" : `#${event.invoice_number}`;
     return { ...ctx, vars: { ...ctx.vars, referral: { name: event.friend_name ? firstName(text(event.friend_name)) : "", credit: amount(event.credit), invoice } } };

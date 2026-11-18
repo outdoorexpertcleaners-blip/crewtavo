@@ -1640,7 +1640,9 @@ button.hub-btn { width: 100%; border: 0; font: inherit; font-size: var(--fs-16);
 .quo-contact-fields dt { display: flex; align-items: center; gap: 6px; color: var(--text-2); }
 .quo-contact-fields dd { margin: 0; min-width: 0; }
 @media (max-width: 1280px) { .quo-thread-wrap { grid-template-columns: minmax(0, 1fr); } .quo-contact { display: none; } }
-@media (max-width: 1100px) { .quo-inbox[data-rail] { grid-template-columns: minmax(260px, 320px) minmax(0, 1fr); } .quo-rail { display: none; } }
+/* The lines as chips above the conversations where the rail doesn't fit (MessagesPage.tsx). */
+.quo-line-chips { display: none; padding-bottom: 0; }
+@media (max-width: 1100px) { .quo-inbox[data-rail] { grid-template-columns: minmax(260px, 320px) minmax(0, 1fr); } .quo-rail { display: none; } .quo-line-chips { display: flex; } }
 @media (max-width: 900px) {
   .quo-inbox, .quo-inbox[data-rail] { grid-template-columns: minmax(0, 1fr); border-radius: 0; height: calc(100dvh - var(--topbar-height) - var(--mobile-nav-height) - 24px); }
 }

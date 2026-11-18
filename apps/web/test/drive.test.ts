@@ -56,11 +56,12 @@ describe("Drive in the menu", () => {
     expect(APPS.keywords).toContain("drive files documents google drive");
   });
 
-  it("has a Trash every team member finds in search, Drive installed or not, and a sub never does", () => {
+  it("has a Trash every team member finds in search, Drive installed or not, and field crew and subs never do", () => {
     const TRASH = OTHER_SCREENS.find((item) => item.to === "/drive/trash")!;
     expect(TRASH.label).toBe("Trash");
     for (const settings of [{}, ON]) {
-      expect(STAFF.filter((role) => navVisible(person(role, [], settings), TRASH)), JSON.stringify(settings)).toEqual([...STAFF]);
+      // Field crew have only My day, Schedule, Clock and Clients (test/crewAccess.test.ts).
+      expect(STAFF.filter((role) => navVisible(person(role, [], settings), TRASH)), JSON.stringify(settings)).toEqual(STAFF.filter((role) => role !== "field_crew"));
       expect(navVisible(person("subcontractor", ["subs"], settings), TRASH)).toBe(false);
     }
     for (const word of ["deleted", "restore", "undo", "recycle bin"]) expect(TRASH.keywords).toContain(word);

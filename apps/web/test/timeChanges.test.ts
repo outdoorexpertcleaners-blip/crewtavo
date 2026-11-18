@@ -55,7 +55,7 @@ describe("who or what changed someone's time", () => {
 describe("what a change did", () => {
   it("gives the old and the new of each thing that changed, and nothing for what didn't", () => {
     expect(changeLines(change({ new_ended_at: "2026-11-09T16:30:00+00:00" }), TZ)).toEqual(["End: 12:00 PM → 11:30 AM"]);
-    expect(changeLines(change({ new_started_at: "2026-11-09T14:00:00+00:00", new_category: "break", new_notes: "Lunch" }), TZ)).toEqual(["Start: 8:00 AM → 9:00 AM", "Type: Shop time → On break", "Note: Lunch"]);
+    expect(changeLines(change({ new_started_at: "2026-11-09T14:00:00+00:00", new_category: "break", new_notes: "Lunch" }), TZ)).toEqual(["Start: 8:00 AM → 9:00 AM", "Type: Shop / other → On break", "Note: Lunch"]);
     expect(changeLines(change({ old_notes: "Lunch" }), TZ)).toEqual(["Note removed"]);
     expect(changeLines(change(), TZ)).toEqual([]);
   });
@@ -85,7 +85,7 @@ describe("what a change did", () => {
     const blank = { old_started_at: null, old_ended_at: null, old_category: null };
     expect(changeLines(change({ action: "added", ...blank, new_category: "other", new_notes: "Forgot to clock in" }), TZ)).toEqual(["Added 8:00 AM – 12:00 PM, Other work", "Note: Forgot to clock in"]);
     expect(changeLines(change({ action: "deleted", new_started_at: null, new_ended_at: null, new_category: null, old_category: "drive" }), TZ)).toEqual(["Deleted 8:00 AM – 12:00 PM, Driving"]);
-    expect(changeLines(change({ action: "deleted", new_started_at: null, new_ended_at: null, new_category: null, old_ended_at: null }), TZ)).toEqual(["Deleted 8:00 AM – now, Shop time"]);
+    expect(changeLines(change({ action: "deleted", new_started_at: null, new_ended_at: null, new_category: null, old_ended_at: null }), TZ)).toEqual(["Deleted 8:00 AM – now, Shop / other"]);
   });
 });
 

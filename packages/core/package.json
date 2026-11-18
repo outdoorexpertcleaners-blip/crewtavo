@@ -29,6 +29,7 @@
     "./time": "./src/time.ts",
     "./breaks": "./src/breaks.ts",
     "./clock": "./src/clock.ts",
+    "./timeclock": "./src/timeclock.ts",
     "./geofence": "./src/geofence.ts",
     "./photoMarkup": "./src/photoMarkup.ts",
     "./recurrence": "./src/recurrence.ts",

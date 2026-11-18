@@ -11,7 +11,8 @@ import { changed, companyArg, friendly, one, rows, tool, type ToolContext } from
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD.");
 const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Use 24-hour HH:MM.");
-const CATEGORIES = ["visit", "assessment", "drive", "shop", "break", "other"] as const;
+// "washing" and "lights" are the owner's brand clock (core/timeclock.ts): Pressure washing and Christmas lights.
+const CATEGORIES = ["visit", "assessment", "drive", "shop", "break", "other", "washing", "lights"] as const;
 
 /** When something happened: now, or a date and time in the company's zone. */
 function momentOf(ctx: ToolContext, at?: { date?: string; time?: string }) {

@@ -12,6 +12,13 @@ import { can, hasRole, isSub, type Session } from "@/lib/session";
 export type SettingsTab = "profile" | "company" | "payments" | "schedule" | "address" | "hosting" | "storage" | "team" | "roles" | "crews" | "sales-areas" | "prices" | "templates" | "proposal" | "contracts" | "checklists" | "custom-fields" | "client-notifications" | "email" | "calendars" | "assistants" | "maps" | "data" | "license" | "weather";
 export type SettingsItem = { label: string; icon: IconName; keywords: string } & ({ tab: SettingsTab } | { to: string });
 
+/**
+ * Whose Settings is only their own profile (name, photo, password, notifications, language): a sub,
+ * and field crew, who have nothing of the business's to set up (not even AI assistants, which would
+ * reach the same records as they do).
+ */
+export const profileOnly = (session: Pick<Session, "role">) => isSub(session) || session.role === "field_crew";
+
 export function settingsGroups(session: Session): Array<{ title: string; items: SettingsItem[] }> {
   const isAdmin = hasRole(session, "admin");
   const isOffice = hasRole(session, "admin", "office");
@@ -22,8 +29,8 @@ export function settingsGroups(session: Session): Array<{ title: string; items: 
   const managesEmail = isAdmin && (can(session, "apps") || can(session, "settings"));
   const connectsApps = isAdmin && can(session, "apps");
   const profile: SettingsItem = { tab: "profile", label: msg("Profile"), icon: "user", keywords: "my account name photo picture avatar password phone notifications theme dark mode appearance language idioma español spanish spare keys recovery calendar feed directions maps app measure map default imagery" };
-  // A sub's settings are their own profile and notifications.
-  if (isSub(session)) return [{ title: msg("You"), items: [profile] }];
+  // A sub's settings are their own profile and notifications, and so are field crew's.
+  if (profileOnly(session)) return [{ title: msg("You"), items: [profile] }];
 
   const groups: Array<{ title: string; items: Array<SettingsItem | false | undefined> }> = [
     { title: msg("You"), items: [profile] },

@@ -1,7 +1,7 @@
 /**
- * For a crew lead on My day: the crew's clocks in one place. Clock everyone in (onto a visit, the
- * drive or the shop), switch them (to lunch and back) or clock them out with one tap, or one person
- * at a time. Their time lands on their own
+ * For a crew lead on My day: the crew's clocks in one place. Clock everyone in (onto Pressure
+ * washing, Christmas lights or the shop), switch them (to lunch and back) or clock them out with one
+ * tap, or one person at a time. Their time lands on their own
  * timesheets, ready for the office.
  *
  * Its taps work with no signal, like the lead's own clock card: saved on the phone with when they
@@ -20,13 +20,15 @@ import { useSession } from "@/lib/session";
 import { toast } from "@/lib/toast";
 import { useMyCrews } from "../schedule/myCrews";
 import { useDispatchOptions } from "../schedule/VisitDialog";
-import { clockChange, clockSaved, crewAfter, showClockTap, waitingClockTaps, type ClockChange, type ClockTarget, type CrewClockRow } from "./clockTaps";
+import { CLOCK_CHOICES, clockChange, clockSaved, crewAfter, showClockTap, waitingClockTaps, type ClockChange, type ClockTarget, type CrewClockRow } from "./clockTaps";
+import { CLOCK_KIND_LABELS } from "@crewtavo/core/timeclock";
 import { CATEGORY_LABELS, clockPlace, formatDuration, type TimerCategory } from "./fieldData";
 import { msg, t } from "@/lib/i18n";
 
 interface VisitTarget { id: string; title: string; job: { id: string } | null; status: string }
 
-export function CrewClockCard({ visits }: { visits: VisitTarget[] }) {
+/** `visits`: My day's visits. No longer offered as targets (the clock goes on a brand, not a visit); kept so My day needn't change. */
+export function CrewClockCard(_props: { visits: VisitTarget[] }) {
   const session = useSession();
   const queryClient = useQueryClient();
   const crews = useMyCrews();
@@ -92,14 +94,8 @@ export function CrewClockCard({ visits }: { visits: VisitTarget[] }) {
   const entryOf = (id: string) => running.data?.find((r) => r.user_id === id);
   const off = people.filter((p) => !entryOf(p));
   const on = people.filter((p) => entryOf(p));
-  const targets: Array<{ label: string; target: ClockTarget }> = [
-    ...visits.filter((v) => !["completed", "cancelled"].includes(v.status)).map((v) => ({ label: v.title, target: { category: "visit" as const, visit: { id: v.id, jobId: v.job?.id ?? null, title: v.title } } })),
-    { label: t(CATEGORY_LABELS.drive), target: { category: "drive" } },
-    { label: t(CATEGORY_LABELS.shop), target: { category: "shop" } },
-    // Lunch for the whole crew; clock them back onto the visit after.
-    { label: t(CATEGORY_LABELS.break), target: { category: "break" } },
-    { label: t(CATEGORY_LABELS.other), target: { category: "other" } },
-  ];
+  // The owner's four (core/timeclock.ts): a break is lunch for the whole crew; clock them back onto the brand after.
+  const targets: Array<{ label: string; target: ClockTarget }> = CLOCK_CHOICES.map((category) => ({ label: t(CLOCK_KIND_LABELS[category]), target: { category } }));
   const clockIn = (who: string[], label: string, text = label) => (
     <Menu
       label={label}

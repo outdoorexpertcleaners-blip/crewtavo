@@ -49,6 +49,7 @@ import { FieldPlans } from "../plans/FieldPlans";
 import { PropertyEquipment } from "../clients/PropertyEquipment";
 import { guideQuery } from "../kb/kbData";
 import { contactLinks, visitContact, type VisitContact } from "./contact";
+import { canText, OnMyWayNote, TextClientDialog, useTextLines } from "./FieldText";
 import { pendingChecklistSaves, pendingVisitSave, pendingVisitStatus, showVisitStatus, statusSaved, type ChecklistSave, type VisitNotesSave, type VisitStatusChange } from "./fieldActions";
 import { formatDuration, useStatusTap } from "./fieldData";
 import { GeofenceCard } from "./GeofenceCard";
@@ -60,6 +61,8 @@ import { addsToVisit, addsWork, fieldInvoiceKind, takesMoney, takesWork } from "
 import { VisitExtraScope } from "./FieldExtras";
 import { YourPrice } from "./YourPrice";
 import { LocationNotice } from "./LocationNoticeDialog";
+import { onlyLooking } from "./visitAccess";
+import { useMyCrews } from "../schedule/myCrews";
 import { msg, t, T } from "@/lib/i18n";
 
 interface ChecklistItem { key: string; label: string; type: "check" | "number" | "text" | "choice" | "photo" | "signature"; required: boolean; options?: string[]; sop_page_id?: string }
@@ -81,6 +84,7 @@ export function FieldVisitPage() {
   const session = useSession();
   const queryClient = useQueryClient();
   const [expense, setExpense] = useState(false);
+  const [texting, setTexting] = useState(false);
   const sub = isSub(session);
   const clocks = keepsTime(session);
   const checklist = useRef<ChecklistHandle>(null);
@@ -96,7 +100,7 @@ export function FieldVisitPage() {
       const row = unwrapOne(
         await supabase()
           .from("visits")
-          .select("id, title, kind, status, starts_at, ends_at, scheduled_on, notes, address, hold_reason, completed_at, invoice_id, series_day, series_total, equipment:visit_equipment(equipment:equipment(id, name, kind)), job:jobs(id, number, title, instructions, property_id, custom_fields, kind, status, pricing, client:clients(display_name, phone, social_photos_opt_out)), request:requests(id, title, details, client:clients(display_name, phone, social_photos_opt_out)), property:properties(id, line1, city, region, postal_code, lat, lng, notes, custom_fields)")
+          .select("id, title, kind, status, starts_at, ends_at, scheduled_on, notes, address, hold_reason, completed_at, invoice_id, series_day, series_total, crew_id, assignees:visit_assignees(user_id), equipment:visit_equipment(equipment:equipment(id, name, kind)), job:jobs(id, number, title, instructions, property_id, custom_fields, kind, status, pricing, client:clients(id, display_name, phone, sms_opt_out_at, social_photos_opt_out)), request:requests(id, title, details, client:clients(id, display_name, phone, sms_opt_out_at, social_photos_opt_out)), property:properties(id, line1, city, region, postal_code, lat, lng, notes, custom_fields)")
           .eq("id", id)
           .maybeSingle(),
         msg("This visit"),
@@ -107,6 +111,9 @@ export function FieldVisitPage() {
   });
   const v = visit.data;
   useDocumentTitle(v?.title ?? t("Visit"));
+  // Field crew can open anyone's visit from the schedule; on one they're not on, they only look.
+  const myCrews = useMyCrews(session.role === "field_crew");
+  const looking = Boolean(v) && onlyLooking(session, v!, myCrews.data);
   // The job's and property's own fields, to read (a sub reads none: they're the business's).
   const jobFields = useCustomFields("job");
   const propertyFields = useCustomFields("property");
@@ -138,9 +145,12 @@ export function FieldVisitPage() {
     enabled: clocks,
     queryFn: async () => unwrap(await supabase().from("time_entries").select("started_at, ended_at").eq("visit_id", id).eq("user_id", session.userId)),
   });
+  // The team texts the client from the business's line inside the app (FieldText.tsx); a sub uses the phone's own.
+  const teamClient = (v?.job?.client ?? v?.request?.client ?? null) as { id: string; display_name: string; phone: string | null; sms_opt_out_at: string | null } | null;
+  const textLines = useTextLines(id, teamClient?.id ?? null, Boolean(teamClient?.phone));
   const refresh = () => {
     // The Jobs list and job pages say Late, Today, Upcoming or Unscheduled from the visits (public.job_state).
-    for (const k of [["field-visit", id], ["field"], ["schedule"], ["job"], ["jobs"], ["running-timer"], ["crew-clock"], ["dashboard"], ["checklist", id]]) queryClient.invalidateQueries({ queryKey: k });
+    for (const k of [["field-visit", id], ["field"], ["schedule"], ["job"], ["jobs"], ["running-timer"], ["crew-clock"], ["dashboard"], ["checklist", id], ["on-my-way", id]]) queryClient.invalidateQueries({ queryKey: k });
   };
   // These work offline: saved on the phone and sent, in order, when there's signal. Each is sent by
   // the action registered for it (fieldActions.ts), not a mutationFn here: lib/offline.ts notes when
@@ -217,7 +227,7 @@ export function FieldVisitPage() {
     setStatus("completed");
   };
   const commit =
-    v.status === "scheduled" ? (
+    looking ? null : v.status === "scheduled" ? (
       <>
         <Button icon="navigation" className="big-action" loading={going === "en_route"} onClick={() => setStatus("en_route")}>{t("On my way")}</Button>
         <Button variant="primary" icon="play" className="big-action" loading={going === "in_progress"} onClick={() => setStatus("in_progress")}>{t("Start visit")}</Button>
@@ -253,19 +263,27 @@ export function FieldVisitPage() {
         </div>
       </div>
       <OfflineNote />
+      {/* After On my way: whether the client got the text, and from which line. */}
+      <OnMyWayNote visitId={v.id} status={v.status} />
+      {texting && teamClient && <TextClientDialog client={teamClient} visitId={v.id} lines={textLines.data} onClose={() => setTexting(false)} />}
       {/* What's saved about where they are, said once before a tap here would save it. */}
       <LocationNotice />
+      {looking && <div className="callout"><Icon name="eye" size={20} /><div className="grow">{t("You're not on this visit, so you can look but not change it.")}</div></div>}
       {/* The clock at the property: Complete visit goes through the checklist check, as the button below does. */}
-      <GeofenceCard visitId={v.id} onStatus={(_visit, status) => (status === "completed" ? void complete() : setStatus(status))} />
+      {!looking && <GeofenceCard visitId={v.id} onStatus={(_visit, status) => (status === "completed" ? void complete() : setStatus(status))} />}
       {v.status === "completed" && v.completed_at && <div className="callout callout-good"><Icon name="check" size={20} /><div className="grow">{t("Completed {when}.", { when: timeAgo(v.completed_at) })}</div></div>}
       {/* Autopay bills the visit itself; with no signal, whether it does may not be on the phone. */}
       {v.status === "completed" && v.job && invoiceKind && takesMoney(session) && (autopay.isSuccess ? !autopay.data : !online) && <VisitInvoice visitId={v.id} jobId={v.job.id} kind={invoiceKind} />}
 
       <div className="field-actions">
         {commit && <div className="field-commit">{commit}</div>}
-        {contactLinks(client).map((link) => (
+        {contactLinks(client).filter((link) => sub || link.label === "Call").map((link) => (
           <a key={link.label} className="btn big-action" href={link.href}><Icon name={link.label === "Call" ? "phone" : "messages"} size={20} />{link.label === "Call" ? t("Call") : t("Text", { context: "message" })}</a>
         ))}
+        {/* The team's Text goes through the business's line, once texting is set up. */}
+        {!sub && !looking && teamClient?.phone && canText(textLines.data, session.config.features.sms) && (
+          <Button icon="messages" className="big-action" onClick={() => setTexting(true)}>{t("Text", { context: "message" })}</Button>
+        )}
         {place && <MapsLink className="btn big-action" place={place}><Icon name="navigation" size={20} />{t("Directions")}</MapsLink>}
       </div>
 
@@ -306,7 +324,7 @@ export function FieldVisitPage() {
           {/* A repeating job's work is the same every visit; this is what's extra on this one. */}
           {addsToVisit(v.job) && <VisitExtraScope visitId={v.id} />}
           {/* Not once a repeating job's visit is on an invoice: the office adds to the invoice then. */}
-          {addsWork(session) && takesWork(v.job) && v.status !== "cancelled" && !(addsToVisit(v.job) && v.invoice_id) && <AddWork visitId={v.id} jobId={v.job.id} toVisit={addsToVisit(v.job)} />}
+          {!looking && addsWork(session) && takesWork(v.job) && v.status !== "cancelled" && !(addsToVisit(v.job) && v.invoice_id) && <AddWork visitId={v.id} jobId={v.job.id} toVisit={addsToVisit(v.job)} />}
         </section>
       )}
       {sub && <YourPrice visitId={v.id} />}
@@ -335,6 +353,9 @@ export function FieldVisitPage() {
           className="textarea"
           value={notes}
           maxLength={5000}
+          // Only the people on a visit can save its notes (visits_update_assigned): someone just looking
+          // reads them, so nothing they type looks saved when it isn't.
+          readOnly={looking}
           onChange={(e) => {
             setNotes(e.target.value);
             notesSave.change(e.target.value);
@@ -343,7 +364,7 @@ export function FieldVisitPage() {
           placeholder={t("Extra work they asked about, damage you noticed, materials used…")}
         />
         <FormError error={saveNotes.error} />
-        {v.job && !sub && <Button variant="ghost" icon="receipt" style={{ justifySelf: "start" }} onClick={() => setExpense(true)}>{t("Add a receipt")}</Button>}
+        {v.job && !sub && !looking && <Button variant="ghost" icon="receipt" style={{ justifySelf: "start" }} onClick={() => setExpense(true)}>{t("Add a receipt")}</Button>}
       </section>
 
       {expense && v.job && !sub && <ExpenseDialog jobId={v.job.id} expense={null} onClose={() => setExpense(false)} onSaved={() => toast.success(t("Receipt sent to the office"), { tone: "job" })} />}

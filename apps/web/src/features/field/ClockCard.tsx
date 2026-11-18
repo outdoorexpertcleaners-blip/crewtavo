@@ -3,8 +3,12 @@
  * On My day it also offers the visits under way, to clock back onto one after a break. Not there for
  * a sub unless the office keeps their hours.
  *
- * On the whole-day clock (Settings → Company → Time clock) it runs between visits too, on Driving,
- * so the way to end the day is here: Stop for the day.
+ * On the whole-day clock (Settings → Company → Time clock) it runs between visits too, on the job's
+ * brand, so the way to end the day is here: Stop for the day.
+ *
+ * What it switches to are the owner's four (core/timeclock.ts): Pressure washing, Christmas lights,
+ * Shop / other and a break. A visit isn't one of them: the visit's own buttons put the clock on its
+ * brand. The Clock screen (features/clock) is the full version of this card.
  *
  * Its taps work with no signal, like a visit's: each is saved on the phone with when it was tapped
  * and sent in order when there's signal (clockTaps.ts, fieldActions.setClock), and the card shows
@@ -18,14 +22,16 @@ import { Menu } from "@/components/ui/Menu";
 import { FIELD_SCOPE } from "@/lib/offline";
 import { hasRole, keepsTime, useSession } from "@/lib/session";
 import { toast } from "@/lib/toast";
-import { clockChange, clockSaved, showClockTap, type ClockChange, type ClockTarget } from "./clockTaps";
+import { CLOCK_CHOICES, clockChange, clockSaved, showClockTap, type ClockChange, type ClockTarget } from "./clockTaps";
 import { CATEGORY_LABELS, clockPlace, onDayClock, recordsPlaces, useElapsed, useRunningTimer, type TimerCategory } from "./fieldData";
+import { CLOCK_KIND_LABELS } from "@crewtavo/core/timeclock";
 import { LocationNotice } from "./LocationNoticeDialog";
 import { msg, t } from "@/lib/i18n";
 
 interface VisitUnderWay { id: string; title: string; job_id: string | null }
 
-export function ClockCard({ visits = [] }: { visits?: VisitUnderWay[] }) {
+/** `visits`: the visits under way on My day. No longer offered (the clock goes on their brand); kept so My day needn't change. */
+export function ClockCard(_props: { visits?: VisitUnderWay[] }) {
   const session = useSession();
   const queryClient = useQueryClient();
   const clocks = keepsTime(session);
@@ -85,10 +91,7 @@ export function ClockCard({ visits = [] }: { visits?: VisitUnderWay[] }) {
         label={t("Start a timer")}
         triggerClassName="btn"
         trigger={<>{going === "start" ? <Spinner size={16} /> : <Icon name="play" size={16} />}{on ? t("Switch") : t("Start timer")}</>}
-        items={[
-          ...visits.filter((v) => v.id !== visit?.id).map((v) => ({ label: v.title, disabled: going !== null, onSelect: () => void tap({ category: "visit", visit: { id: v.id, jobId: v.job_id, title: v.title } }) })),
-          ...(["drive", "shop", "break", "other"] as TimerCategory[]).map((c) => ({ label: t(CATEGORY_LABELS[c]), disabled: going !== null, onSelect: () => void tap({ category: c }) })),
-        ]}
+        items={CLOCK_CHOICES.filter((c) => !on || c !== timer.data?.category).map((c) => ({ label: t(CLOCK_KIND_LABELS[c]), disabled: going !== null, onSelect: () => void tap({ category: c }) }))}
       />
     </div>
   );

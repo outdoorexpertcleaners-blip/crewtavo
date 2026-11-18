@@ -37,14 +37,16 @@ describe("a sub's navigation", () => {
   it("has no Create menu, and their profile in place of Settings", () => {
     expect(createItems({ role: "subcontractor", permissions: ["sales", "schedule", "invoices"] })).toEqual([]);
     expect(settingsItem({ role: "subcontractor" })).toMatchObject({ to: "/settings?tab=profile", label: "Profile" });
-    expect(settingsItem({ role: "field_crew" })).toBe(SETTINGS_ITEM);
+    // Field crew's Settings is their profile too (test/crewAccess.test.ts).
+    expect(settingsItem({ role: "field_crew" })).toMatchObject({ to: "/settings?tab=profile", label: "Profile" });
+    expect(settingsItem({ role: "crew_lead" })).toBe(SETTINGS_ITEM);
   });
 
   it("gives them their own tab bar on the phone: My day, My jobs, Paperwork and Profile", () => {
     expect(mobileTabs(sub({ team_chat: { enabled: true } })).map((t) => t.to)).toEqual(["/field", "/field/jobs", "/field/paperwork", "/settings?tab=profile"]);
     expect(mobileTabs(sub())).toBe(SUB_TABS);
-    // The team's is as before: chat only while it's on.
-    expect(mobileTabs(staff("field_crew")).map((t) => t.to)).toEqual(MOBILE_TABS.map((t) => t.to));
+    // The team's is as before: chat only while it's on. (Field crew have their own: test/crewAccess.test.ts.)
+    expect(mobileTabs(staff("crew_lead")).map((t) => t.to)).toEqual(MOBILE_TABS.map((t) => t.to));
     expect(mobileTabs({ role: "office", company: { settings: {} } }).map((t) => t.to)).toEqual(["/", "/field", "/schedule", "/clients"]);
   });
 
@@ -78,7 +80,7 @@ describe("a sub's settings", () => {
 
   it("are only their profile (with notifications)", () => {
     expect(settingsGroups(session("subcontractor")).flatMap((g) => g.items.map((i) => ("tab" in i ? i.tab : i.to)))).toEqual(["profile"]);
-    expect(settingsGroups(session("field_crew")).flatMap((g) => g.items.map((i) => ("tab" in i ? i.tab : i.to)))).toContain("assistants");
+    expect(settingsGroups(session("crew_lead")).flatMap((g) => g.items.map((i) => ("tab" in i ? i.tab : i.to)))).toContain("assistants");
   });
 
   it("are never offered as a level when inviting someone or changing their role", () => {

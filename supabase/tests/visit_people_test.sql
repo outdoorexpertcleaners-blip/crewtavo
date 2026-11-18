@@ -91,10 +91,12 @@ select tvp.check(tvp.count(:cy) = 0 and tvp.count(:owner) = 0, 'another crew and
 begin;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "fd210000-0000-0000-0000-00000000000a", "role": "authenticated"}', true);
-select tvp.check((select array_agg(title) from public.visits) = '{"Mow the lawn"}', 'a crew member sees their crew''s visit with nobody listed, and not one given to someone else');
-select tvp.check((select array_agg(title) from public.jobs) = '{"Weekly mowing"}' and (select array_agg(display_name) from public.clients) = '{"Mowed client"}'
-  and (select array_agg(line1) from public.properties) = '{"1 Lawn Ln"}', 'with its job, client and property');
-select tvp.check((select array_agg(gate_code) from public.property_access) = '{1234}', 'and its gate code the day before');
+-- Field crew read the whole team's schedule, with every job, client and property
+-- (20261119000100_crew_sees_team.sql); gate codes and changes stay with the people on a visit.
+select tvp.check((select array_agg(title order by title) from public.visits) = '{"Grind the stump","Mow the lawn","Supply run"}', 'a crew member sees the whole team''s schedule');
+select tvp.check((select array_agg(title order by title) from public.jobs) = '{Stump,"Weekly mowing"}' and (select array_agg(display_name order by display_name) from public.clients) = '{"Mowed client","Other client"}'
+  and (select array_agg(line1 order by line1) from public.properties) = '{"1 Lawn Ln","2 Other Rd"}', 'with every job, client and property');
+select tvp.check((select array_agg(gate_code) from public.property_access) = '{1234}', 'and only the gate code of their crew''s visit with nobody listed, the day before');
 with x as (update public.visits set status = 'en_route' where id in (:'v_crew', :'v_listed') returning title)
 select tvp.check((select array_agg(title) from x) = '{"Mow the lawn"}', 'they can start it, and not the other');
 rollback;
@@ -104,7 +106,9 @@ set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "fd210000-0000-0000-0000-00000000000d", "role": "authenticated"}', true);
 select tvp.check((select array_agg(title) from public.visits) = '{"Grind the stump"}' and (select array_agg(gate_code) from public.property_access) = '{9999}', 'someone listed sees their visit, as before');
 select set_config('request.jwt.claims', '{"sub": "fd210000-0000-0000-0000-00000000000c", "role": "authenticated"}', true);
-select tvp.check((select count(*) from public.visits) = 0 and (select count(*) from public.clients) = 0 and (select count(*) from public.property_access) = 0, 'another crew''s member sees none of it');
+select tvp.check((select count(*) from public.visits) = 3 and (select count(*) from public.clients) = 2 and (select count(*) from public.property_access) = 0, 'another crew''s member sees the schedule and the clients, and no gate code');
+with x as (update public.visits set status = 'en_route' where id in (:'v_crew', :'v_listed') returning title)
+select tvp.check(not exists (select 1 from x), 'and starts none of those visits');
 rollback;
 
 -- ===== Moved, cancelled and deleted visits tell the people on them ================================

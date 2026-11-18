@@ -109,7 +109,8 @@ select tjs.check(not exists (select 1 from public.jobs j where j.company_id = :'
 select tjs.check((select count(*) from public.jobs j where public.job_state(j) is not null) = 2, 'only her own two');
 select tjs.check(not exists (select 1 from public.job_state_counts(:'kiri')), 'and none of Kai''s jobs are counted for her');
 select set_config('request.jwt.claims', '{"sub": "ab4e0000-0000-0000-0000-000000000003", "role": "authenticated"}', true);
-select tjs.check(not exists (select 1 from public.jobs j where public.job_state(j) is not null), 'crew on no visits see no jobs, as with jobs themselves');
+-- Field crew read the team's jobs and schedule (20261119000100_crew_sees_team.sql), so the same states.
+select tjs.check((select count(*) from public.jobs j where j.company_id = :'kiri' and public.job_state(j) = 'late') = 3, 'crew on no visits read the team''s jobs, in the same states as the office');
 rollback;
 
 \echo 'All job state tests passed.'

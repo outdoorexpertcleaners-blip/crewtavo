@@ -192,14 +192,15 @@ select tmt.check(tmt.days(:'co', '2026-09-01', '2026-11-12') = '{}' and tmt.tile
   'so every money figure is zero for him');
 select tmt.check(tmt.to_invoice(:'co') = '{"Mow A","Mow B"}' and (select count(*) from public.jobs where id in (:'mow_a', :'mow_b')) = 2, 'he gets the jobs, which he can read anyway');
 
--- The crew: no money; of the jobs, only the one whose visit they're on, as from the tables.
+-- The crew: no money. They read the team's jobs (20261119000100_crew_sees_team.sql), which hold
+-- none, so the jobs to invoice are the same titles the operations manager gets.
 select tmt.as_user(:'cy');
 select tmt.check(tmt.days(:'co', '2026-09-01', '2026-11-12') = '{}' and tmt.tiles(:'co', '2026-11-12') = '0/0 0/0 0/0 | 0 0 0' and public.stripe_fees(:'co', '2026-01-01 00:00Z') = 0,
   'a crew member gets no money figure');
-select tmt.check((select array_agg(title order by title) from public.jobs) = '{"Mow A"}' and tmt.to_invoice(:'co') = '{"Mow A"}', 'and only the job of the visit they''re on, which is all they can read');
+select tmt.check((select count(*) from public.jobs where id in (:'mow_a', :'mow_b')) = 2 and tmt.to_invoice(:'co') = '{"Mow A","Mow B"}', 'and the jobs, which they can read anyway, with no amount');
 select tmt.as_user(:'dee');
-select tmt.check(tmt.to_invoice(:'co') = '{}' and tmt.days(:'co', '2026-09-01', '2026-11-12') = '{}' and tmt.tiles(:'co', '2026-11-12') = '0/0 0/0 0/0 | 0 0 0',
-  'one on no visit gets nothing at all');
+select tmt.check(tmt.to_invoice(:'co') = '{"Mow A","Mow B"}' and tmt.days(:'co', '2026-09-01', '2026-11-12') = '{}' and tmt.tiles(:'co', '2026-11-12') = '0/0 0/0 0/0 | 0 0 0',
+  'one on no visit gets no money either, and the same jobs');
 
 -- A sub: the same.
 select tmt.as_user(:'sal');

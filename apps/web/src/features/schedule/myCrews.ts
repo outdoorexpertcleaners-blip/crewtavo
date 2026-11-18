@@ -35,3 +35,10 @@ export function useSchedulingRights() {
     canChange: (crewId: string | null | undefined) => wholeTeam || (ownCrew && Boolean(crewId) && crews.includes(crewId!)),
   };
 }
+
+/**
+ * Whether a visit opened from the schedule goes to the field app's page for it (/field/visits/:id)
+ * rather than the office's details and edit form: field crew, who see the whole team's schedule but
+ * only look at it. Crew leads and up keep the details, with Edit where they can change the visit.
+ */
+export const opensInField = (session: { role: string }) => session.role === "field_crew";

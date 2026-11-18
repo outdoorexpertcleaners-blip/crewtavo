@@ -24,6 +24,7 @@ import { hasRole, useSession } from "@/lib/session";
 import { ClientPicker, type PickedClient } from "../clients/ClientForm";
 import { MessageBody } from "../clients/MessageBody";
 import { messageFrom, messagePeople } from "../clients/messagePeople";
+import { useTextLines } from "../field/FieldText";
 import { ConnectEmailHint } from "../settings/ConnectEmailHint";
 import { UnknownRows, UnknownThread, useUnknownNumbers } from "./UnknownNumbers";
 import { matchingNumbers } from "./unknownTexts";
@@ -35,6 +36,8 @@ const FILTERS = [
   { key: "email", label: "Email", channels: ["email"] },
 ] as const;
 type Line = "washing" | "lights";
+/** A line as the team calls it. */
+const lineLabel = (l: Line) => (l === "lights" ? "Lighting line" : "Wash line");
 interface QuoLines { lines: Array<{ brand: Line; name: string; number: string }>; test_only: boolean; practice: boolean }
 const ICON: Record<string, IconName> = { email: "mail", sms: "messages", note: "note", call: "phone" };
 
@@ -139,6 +142,17 @@ export function MessagesPage() {
             <strong>{line ? lines.find((l) => l.brand === line)?.name ?? "Messages" : "Chats"}</strong>
             {canCompose && <button type="button" className="icon-btn" aria-label="New message" title="New message" onClick={() => setComposing(true)}><Icon name="edit" size={18} /></button>}
           </div>
+          {/* On a phone or tablet the rail is hidden (under 1100px), so the lines are chips here. */}
+          {lines.length > 0 && (
+            <div className="quo-chips quo-line-chips" role="group" aria-label="Inboxes">
+              <button type="button" className="quo-chip" aria-pressed={!line} onClick={() => setLine(null)}>All</button>
+              {lines.map((l) => (
+                <button key={l.brand} type="button" className="quo-chip" aria-pressed={line === l.brand} onClick={() => setLine(l.brand)}>
+                  {lineLabel(l.brand)}{(waiting.data?.[l.brand] ?? 0) > 0 && <> · {waiting.data![l.brand]}</>}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="quo-chips" role="group" aria-label="Filter messages">
             {FILTERS.map((x) => <button key={x.key} type="button" className="quo-chip" aria-pressed={filter === x.key} onClick={() => setFilter(x.key)}>{x.label}</button>)}
           </div>
@@ -245,7 +259,7 @@ function Thread({ clientId, onBack }: { clientId: string; onBack: () => void }) 
                 <span className="msg-meta">
                   <Icon name={ICON[m.channel] ?? "messages"} size={12} />
                   {note ? "Internal note" : m.channel === "email" ? "Email" : m.channel === "sms" ? "Text" : "Call"}
-                  {m.line && <> · {m.line === "lights" ? "Lighting line" : "Wash line"}</>}
+                  {m.line && <> · {lineLabel(m.line as Line)}</>}
                   {from && <> from {from}</>}
                   {sent.to && <span title={sent.toFull ?? undefined}> to {sent.to}</span>} · <span title={formatDateTime(m.created_at)}>{new Date(m.created_at).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}</span>
                   {m.status === "failed" && <span className="text-danger strong">· Not delivered</span>}
@@ -256,7 +270,7 @@ function Thread({ clientId, onBack }: { clientId: string; onBack: () => void }) 
           );
         })}
       </div>
-      <Composer key={client.id} client={client} onSent={() => { queryClient.invalidateQueries({ queryKey: ["client", clientId] }); queryClient.invalidateQueries({ queryKey: ["messages", session.company.id] }); }} />
+      <Composer key={client.id} client={client} line={[...rows].reverse().find((m) => m.channel === "sms" && (m.line === "washing" || m.line === "lights"))?.line as Line | undefined} onSent={() => { queryClient.invalidateQueries({ queryKey: ["client", clientId] }); queryClient.invalidateQueries({ queryKey: ["messages", session.company.id] }); }} />
     </div>
     <ContactPanel client={client} />
     </div>
@@ -285,10 +299,19 @@ function ContactPanel({ client }: { client: { id: string; display_name: string; 
   );
 }
 
-function Composer({ client, onSent }: { client: { id: string; display_name: string; email: string | null; phone: string | null; sms_opt_out_at: string | null }; onSent: () => void }) {
+function Composer({ client, line, onSent }: { client: { id: string; display_name: string; email: string | null; phone: string | null; sms_opt_out_at: string | null }; line?: Line; onSent: () => void }) {
   const session = useSession();
   const { features } = session.config;
-  const [channel, setChannel] = useState<"email" | "sms" | "note">(client.phone && features.sms && !textsOff(client) ? "sms" : client.email && features.email ? "email" : "note");
+  // The Quo lines a text can go from, and the client's brand (useTextLines asks the server's brandFor).
+  const quoLines = useQuery({ queryKey: ["quo-lines", session.company.id], queryFn: () => api.get<QuoLines>("/quo/lines"), staleTime: 60_000 });
+  const lines = quoLines.data?.lines ?? [];
+  const brand = useTextLines(null, client.id, lines.length > 1 && !line);
+  // Texting works through Quo's lines or the server's own texting.
+  const texts = features.sms || lines.length > 0;
+  const [picked, setPicked] = useState<Line | null>(null);
+  // Send from: what the office picked, else the line the conversation is on, else the client's brand.
+  const from: Line = picked ?? line ?? brand.data?.brand ?? "washing";
+  const [channel, setChannel] = useState<"email" | "sms" | "note">(client.phone && texts && !textsOff(client) ? "sms" : client.email && features.email ? "email" : "note");
   const [subject, setSubject] = useState(`A note from ${session.company.name}`);
   const [body, setBody] = useState("");
   const send = useMutation({
@@ -296,7 +319,7 @@ function Composer({ client, onSent }: { client: { id: string; display_name: stri
     meta: { inline: true, success: () => (channel === "note" ? null : channel === "email" ? "Email sent" : "Text sent") },
     mutationFn: async () => {
       if (channel === "note") return unwrap(await supabase().from("messages").insert({ company_id: session.company.id, client_id: client.id, channel: "note", direction: "internal", body: body.trim() }));
-      return api.post("/messages/send", { client_id: client.id, channel, subject: channel === "email" ? subject.trim() : undefined, body: body.trim() });
+      return api.post("/messages/send", { client_id: client.id, channel, subject: channel === "email" ? subject.trim() : undefined, body: body.trim(), ...(channel === "sms" && lines.length > 1 ? { line: from } : {}) });
     },
     onSuccess: () => {
       setBody("");
@@ -307,7 +330,7 @@ function Composer({ client, onSent }: { client: { id: string; display_name: stri
   });
   const problem =
     channel === "email" ? (!client.email ? "No email address on file for this client." : !features.email ? "Email isn't turned on yet." : null)
-    : channel === "sms" ? (!client.phone ? "No phone number on file for this client." : textsOff(client) ? textsOffReason(client.display_name) : !features.sms ? "Texting isn't turned on yet." : null)
+    : channel === "sms" ? (!client.phone ? "No phone number on file for this client." : textsOff(client) ? textsOffReason(client.display_name) : !texts ? "Texting isn't turned on yet." : null)
     : null;
   const canSend = body.trim().length > 0 && !problem && (channel !== "email" || subject.trim().length > 0);
   return (
@@ -318,6 +341,14 @@ function Composer({ client, onSent }: { client: { id: string; display_name: stri
           <button type="button" aria-pressed={channel === "email"} onClick={() => { setChannel("email"); send.reset(); }}><Icon name="mail" size={14} />Email</button>
           <button type="button" aria-pressed={channel === "note"} onClick={() => { setChannel("note"); send.reset(); }}><Icon name="note" size={14} />Note</button>
         </div>
+        {/* Which Quo line the text goes from, when the business has both. */}
+        {channel === "sms" && lines.length > 1 && (
+          <div className="segmented" role="group" aria-label="Send from">
+            {lines.map((l) => (
+              <button key={l.brand} type="button" aria-pressed={from === l.brand} onClick={() => { setPicked(l.brand); send.reset(); }}>{lineLabel(l.brand)}</button>
+            ))}
+          </div>
+        )}
         {problem && <span className="small" style={{ color: "var(--warning)", fontWeight: 600 }}>{problem}</span>}
       </div>
       {channel === "email" && <input className="input" value={subject} onChange={(e) => setSubject(e.target.value)} maxLength={200} placeholder="Subject" aria-label="Subject" />}

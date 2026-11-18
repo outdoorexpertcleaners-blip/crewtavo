@@ -25,9 +25,11 @@ import { can, hasRole, useSession } from "@/lib/session";
 import { undoable } from "@/lib/undo";
 import { ClockCard } from "../field/ClockCard";
 import { CATEGORY_LABELS, type TimerCategory } from "../field/fieldData";
+import { CLOCK_CHOICES } from "../field/clockTaps";
 import { useMyCrews } from "../schedule/myCrews";
 import { useDispatchOptions } from "../schedule/VisitDialog";
 import { timeEntryProblem } from "@crewtavo/core/pay";
+import { CLOCK_KIND_LABELS } from "@crewtavo/core/timeclock";
 import { atPropertyNote, describePlace, type EntryPlaces, type StoredPlace } from "./clockPlace";
 import { entrySpan } from "./entrySpan";
 import { PayPeriods } from "./PayPeriods";
@@ -328,7 +330,7 @@ function TimeEntryDialog({ entry, team, defaultDate, onClose, onSaved }: { entry
   const [date, setDate] = useState(entry ? localDate(new Date(entry.started_at), tz) : defaultDate);
   const [start, setStart] = useState(entry ? localTime(new Date(entry.started_at), tz) : "08:00");
   const [end, setEnd] = useState(entry?.ended_at ? localTime(new Date(entry.ended_at), tz) : "16:30");
-  const [category, setCategory] = useState<TimerCategory>(entry?.category ?? "other");
+  const [category, setCategory] = useState<TimerCategory>(entry?.category ?? "washing");
   const [notes, setNotes] = useState(entry?.notes ?? "");
   // Why an entry is being changed: kept with the record of the change, where whoever's time it is reads it.
   const [reason, setReason] = useState("");
@@ -373,7 +375,8 @@ function TimeEntryDialog({ entry, team, defaultDate, onClose, onSaved }: { entry
         </div>
         <Field label={t("Type")}>
           <select className="select" value={category} onChange={(e) => setCategory(e.target.value as TimerCategory)}>
-            {(Object.keys(CATEGORY_LABELS) as TimerCategory[]).map((c) => <option key={c} value={c}>{t(CATEGORY_LABELS[c])}</option>)}
+            {/* The clock's four (core/timeclock.ts), and an older kind an entry being edited still has. */}
+            {[...CLOCK_CHOICES, ...(entry && !(CLOCK_CHOICES as readonly string[]).includes(entry.category) ? [entry.category] : [])].map((c) => <option key={c} value={c}>{t((CLOCK_KIND_LABELS as Record<string, string>)[c] ?? CATEGORY_LABELS[c])}</option>)}
           </select>
         </Field>
         <Field label={t("Note")} optional><input className="input" value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={300} placeholder={t("Forgot to clock in at the Shah job")} /></Field>

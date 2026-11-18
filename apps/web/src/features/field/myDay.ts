@@ -67,12 +67,14 @@ export function useMyDay(enabled = true) {
         supabase().from("crew_members").select("crew_id").eq("user_id", session.userId),
       ]);
       // The visits I'm on: the ones I'm listed on, and my crews' visits with nobody listed (visitPeople).
-      // A crew's visit with other people listed still shows to whoever can see it (a foreman, the
-      // office), as it always has; field crew aren't sent those at all.
+      // A crew's visit with other people listed still shows to a foreman or the office, as it always
+      // has. Field crew are sent the whole team's schedule now (to look at it on Schedule), so My day
+      // keeps to the visits they're on.
       const myCrews = crewPeople(unwrap(crews).map((c) => ({ crew_id: c.crew_id, user_id: session.userId })));
+      const crewsToo = session.role !== "field_crew";
       const mine = schedule.visits
         .map((v) => ({ ...v, mine: isSub(session) || onVisit(v, session.userId, myCrews) }))
-        .filter((v) => v.status !== "cancelled" && (v.mine || Boolean(v.crew_id && myCrews.has(v.crew_id))))
+        .filter((v) => v.status !== "cancelled" && (v.mine || (crewsToo && Boolean(v.crew_id && myCrews.has(v.crew_id)))))
         .map((v) => ({ ...v, status: pendingVisitStatus(queryClient, v.id) ?? v.status }));
       return { today: mine.filter((v) => v.scheduled_on === today), tomorrow: mine.filter((v) => v.scheduled_on !== today && !["completed", "cancelled"].includes(v.status)) };
     },

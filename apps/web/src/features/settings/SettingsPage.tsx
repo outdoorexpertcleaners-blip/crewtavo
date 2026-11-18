@@ -5,7 +5,7 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { Icon } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { hasRole, isSub, useSession } from "@/lib/session";
+import { hasRole, useSession } from "@/lib/session";
 import { AssistantSettings } from "./AssistantSettings";
 import { CalendarSettings } from "./CalendarSettings";
 import { ChecklistSettings } from "./ChecklistSettings";
@@ -26,7 +26,7 @@ import { RolesSettings } from "./RolesSettings";
 import { SalesAreaSettings } from "./SalesAreaSettings";
 import { ScheduleSettings } from "./ScheduleSettings";
 import { t } from "@/lib/i18n";
-import { settingsGroups, type SettingsTab } from "./sections";
+import { profileOnly, settingsGroups, type SettingsTab } from "./sections";
 import { ProposalSettings } from "./ProposalSettings";
 import { StorageSettings } from "./StorageSettings";
 import { TeamSettings } from "./TeamSettings";
@@ -39,8 +39,8 @@ export function SettingsPage() {
   const [params, setParams] = useSearchParams();
   const isAdmin = hasRole(session, "admin");
   const groups = settingsGroups(session);
-  // A sub has only their profile here.
-  const sub = isSub(session);
+  // A sub, and field crew, have only their profile here.
+  const sub = profileOnly(session);
 
   const tabs = groups.flatMap((g) => g.items).flatMap((i) => ("tab" in i ? [i.tab] : []));
   const requested = params.get("tab") as SettingsTab | null;

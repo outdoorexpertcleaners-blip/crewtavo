@@ -98,7 +98,8 @@ export const TRIGGERS: TriggerDef[] = [
   // {{date}} and {{time}} are when it was to be: by now the visit has no day, or is gone.
   { verb: "visit.cancelled", label: "A visit is cancelled", group: "Visits", subject: "visit", delayable: false },
   { verb: "visit.reminder", label: "A visit is tomorrow", group: "Visits", subject: "visit", delayable: false },
-  { verb: "visit.en_route", label: "A crew is on the way", group: "Visits", subject: "visit", delayable: false },
+  // Who tapped On my way, from the event (the activity's actor), so the text can say "this is Mike".
+  { verb: "visit.en_route", label: "A crew is on the way", group: "Visits", subject: "visit", delayable: false, variables: [{ token: "tech.first_name", label: "Who's on the way (first name)" }] },
   { verb: "visit.started", label: "A visit starts", group: "Visits", subject: "visit", delayable: false },
   { verb: "visit.completed", label: "A visit is completed", group: "Visits", subject: "visit", delayable: true },
   // With Snow installed (20261113000100_snow_app.sql), for snow customers set to be told: their storm
@@ -432,6 +433,9 @@ export const TEMPLATE_VARIABLES: Array<{ token: string; label: string; subjects:
   { token: "client.name", label: "Client name", subjects: "all" },
   { token: "company.name", label: "Your company", subjects: "all" },
   { token: "company.phone", label: "Your phone", subjects: "all" },
+  // The brand the record is about (Outdoor Expert Cleaners or Outdoor Expert Lighting), as its Big
+  // Proposal names it, else the company's name (services/brand.ts brandFor, core/proposal.ts brandName).
+  { token: "brand.name", label: "Brand name", subjects: "all" },
   { token: "number", label: "Number", subjects: ["request", "quote", "job", "invoice"] },
   { token: "title", label: "Title", subjects: "all" },
   { token: "total", label: "Total", subjects: ["quote", "job", "invoice"] },
@@ -444,6 +448,8 @@ export const TEMPLATE_VARIABLES: Array<{ token: string; label: string; subjects:
   { token: "time", label: "Visit time", subjects: ["visit"] },
   // While a crew is on the way: " and should arrive in about 20 minutes", or nothing when that isn't known (etaWords).
   { token: "eta", label: "Arrival time", subjects: ["visit"] },
+  // The same time worded to follow "I'm on my way": " and should be there in about 20 minutes", or nothing.
+  { token: "eta_there", label: "Arrival time (“should be there”)", subjects: ["visit"] },
   { token: "address", label: "Address", subjects: ["visit", "request", "quote", "job"] },
 ];
 
@@ -451,15 +457,17 @@ export const TEMPLATE_VARIABLES: Array<{ token: string; label: string; subjects:
  * The {{eta}} words, to follow "on the way to {{address}} now": " and should arrive in about 20
  * minutes", from when the crew should get there (visits.eta_at). Empty when that isn't known, has
  * passed, or is more than 4 hours off (a phone's place gone wrong), so the sentence reads well either way.
+ * Worded "there" ({{eta_there}}), it follows "I'm on my way": " and should be there in about 20
+ * minutes". That's a token of its own so a business's own wording around {{eta}} doesn't change.
  */
-export function etaWords(etaAt: string | null | undefined, now = Date.now()): string {
+export function etaWords(etaAt: string | null | undefined, now = Date.now(), wording: "arrive" | "there" = "arrive"): string {
   const minutes = etaAt ? (Date.parse(etaAt) - now) / 60_000 : NaN;
   if (!(minutes > 0 && minutes <= 240)) return "";
   const rounded = Math.max(5, Math.round(minutes / 5) * 5);
   const hours = Math.floor(rounded / 60);
   const rest = rounded % 60;
   const span = hours ? `${hours} hour${hours > 1 ? "s" : ""}${rest ? ` ${rest} minutes` : ""}` : `${rounded} minutes`;
-  return ` and should arrive in about ${span}`;
+  return wording === "there" ? ` and should be there in about ${span}` : ` and should arrive in about ${span}`;
 }
 
 export const variablesFor = (subject: SubjectKind) => TEMPLATE_VARIABLES.filter((v) => v.subjects === "all" || v.subjects.includes(subject));
@@ -510,11 +518,15 @@ export type TemplateVars = Record<string, string | number | null | undefined | R
 
 /** Replace {{path}} tokens; unknown or empty values become "". */
 export function renderTemplate(template: string, vars: TemplateVars): string {
-  return template.replace(/\{\{\s*([a-z_]+(?:\.[a-z_]+)?)\s*\}\}/gi, (_, path: string) => {
+  const text = template.replace(/\{\{\s*([a-z_]+(?:\.[a-z_]+)?)\s*\}\}/gi, (_, path: string) => {
     const [head, tail] = path.split(".");
     const value = tail ? (vars[head] as Record<string, unknown> | undefined)?.[tail] : vars[head];
     return value == null ? "" : String(value);
   });
+  // "this is {{tech.first_name}} with {{brand.name}}" when nobody's name is known (the office moved the
+  // visit along, or the person has no name on file) reads "this is Outdoor Expert Cleaners", not
+  // "this is  with Outdoor Expert Cleaners". Only an empty name leaves "is" right before "with".
+  return text.replace(/\b(this is) +with +/gi, "$1 ");
 }
 
 // ---------------------------------------------------------------------------------------------

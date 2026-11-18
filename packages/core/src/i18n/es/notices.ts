@@ -179,4 +179,6 @@ export const NOTICE_WORDS: Record<string, string> = {
   "shop time": "tiempo en el taller",
   "a break": "descanso",
   "other work": "otro trabajo",
+  "pressure washing": "lavado a presión",
+  "Christmas lights": "luces de Navidad",
 };

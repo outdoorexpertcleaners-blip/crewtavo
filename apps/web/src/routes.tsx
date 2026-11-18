@@ -25,6 +25,8 @@ const screens = {
   fieldVisit: () => import("@/features/field/FieldVisitPage"),
   myPaperwork: () => import("@/features/field/MyPaperworkPage"),
   myJobs: () => import("@/features/field/MyJobsPage"),
+  // The time clock: clock in and out by kind of work, breaks, and fixing their own hours.
+  clock: () => import("@/features/clock/ClockPage"),
   kb: () => import("@/features/kb/KnowledgeBasePage"),
   sop: () => import("@/features/kb/SopPage"),
   sopEditor: () => import("@/features/kb/SopEditorPage"),
@@ -139,6 +141,7 @@ export const routes: RouteObject[] = [
           // A sub's job offers and work (offers' texts and notifications link to /field/jobs/<pay id>).
           { path: "field/jobs", ...page(screens.myJobs, "MyJobsPage") },
           { path: "field/jobs/:payId", ...page(screens.myJobs, "MyJobsPage") },
+          { path: "clock", ...page(screens.clock, "ClockPage") },
           { path: "measure", ...page(measure, "MeasurePage") },
           { path: "kb", ...page(screens.kb, "KnowledgeBasePage") },
           { path: "kb/new", ...page(screens.sopEditor, "SopEditorPage") },

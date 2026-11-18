@@ -14,6 +14,7 @@ import { DetailSkeleton, Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState, ErrorState, PageError } from "@/components/ui/States";
 import { EntityStatus, statusText } from "@/components/ui/StatusPill";
 import { api, supabase, unwrap, unwrapOne } from "@/lib/api";
+import { lookupOnly } from "./access";
 import { copyText } from "@/lib/clipboard";
 import { addressLine, formatDate, formatMoney } from "@/lib/format";
 import { useRememberRecent } from "@/lib/recent";
@@ -58,6 +59,10 @@ export function ClientPage() {
   const canSell = hasRole(session, "admin", "office", "estimator") && can(session, "sales");
   // Autopay is for the people who look after money, and only once the company has it on.
   const seesMoney = isOffice && can(session, "invoices");
+  // Field crew look clients up for their contact details, properties and history (notes and texts),
+  // not for the work sold to them: requests, quotes and jobs are the office's, and open screens
+  // they can't (nav.ts crewCanOpen).
+  const seesWork = !lookupOnly(session);
   const autopayOn = autopaySettings(session.company.settings, session.company.trade_preset).enabled;
   const contacts = useClientContacts(id);
   const clientFields = useCustomFields("client");
@@ -94,6 +99,7 @@ export function ClientPage() {
   });
   const work = useQuery({
     queryKey: ["client", id, "work"],
+    enabled: seesWork,
     queryFn: async () => {
       const db = supabase();
       const [requests, quotes, jobs, invoices] = await Promise.all([
@@ -387,7 +393,7 @@ export function ClientPage() {
           </section>
 
           {/* Clear of the sticky top bar when the balance scrolls here. */}
-          <section ref={workRef} className="stack" aria-label="Work" style={{ scrollMarginTop: "calc(var(--topbar-height) + 16px)" }}>
+          {seesWork && <section ref={workRef} className="stack" aria-label="Work" style={{ scrollMarginTop: "calc(var(--topbar-height) + 16px)" }}>
             {noWork ? (
               <div className="card">
                 <EmptyState inline title={isOffice ? "No requests, quotes, jobs or invoices yet" : "No requests, quotes or jobs yet"} action={canSell && <Button icon="plus" onClick={() => setDialog("quote")}>New quote</Button>} />
@@ -425,7 +431,7 @@ export function ClientPage() {
                 </div>
               </>
             )}
-          </section>
+          </section>}
 
           <PhotosCard clientId={c.id} />
 

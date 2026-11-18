@@ -375,10 +375,11 @@ rollback;
 begin;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "b6000000-0000-0000-0000-000000000007", "role": "authenticated"}', true);
--- Cree is listed on Mow, and on the Mowing crew, which has a visit with nobody listed (20261113000210_visit_people.sql).
-select t60.check((select array_agg(title order by title) from public.visits) = '{"Crew visit",Mow}', 'crew read the visits they''re on: the one they''re listed on, and their crew''s with nobody listed');
-select t60.check((select array_agg(display_name order by display_name) from public.clients) = '{"Lima client"}', 'and its client');
-select t60.check((select array_agg(title) from public.jobs) = '{"Weekly mowing"}', 'and its job');
+-- Cree is field crew in Lima: they read the whole team's schedule, every client and the jobs, as
+-- the owner decided (20261119000100_crew_sees_team.sql), and none of Lima's in another company.
+select t60.check((select array_agg(v.title order by v.title) from public.visits v where v.company_id = :'lima') = '{Assess,"Crew visit",Mow,"No crew"}', 'crew read every visit on the schedule');
+select t60.check((select count(*) from public.clients where company_id = :'lima') = 4, 'and every client');
+select t60.check((select array_agg(title order by title) from public.jobs where company_id = :'lima') = '{"Someone else''s job","Weekly mowing"}', 'and every job (which holds no money)');
 select set_config('request.jwt.claims', '{"sub": "b6000000-0000-0000-0000-000000000006", "role": "authenticated"}', true);
 select t60.check((select count(*) from public.visits v join public.companies co on co.id = v.company_id where co.name = 'Lima Lawn') = 4, 'a crew lead reads every visit');
 select t60.check((select count(*) from public.clients c join public.companies co on co.id = c.company_id where co.name = 'Lima Lawn') = 4, 'and every client');

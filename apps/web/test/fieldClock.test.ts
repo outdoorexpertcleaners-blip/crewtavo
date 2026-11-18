@@ -14,7 +14,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 // and time_entries rows as the database holds them.
 const STEPS: Record<string, number> = { unscheduled: 0, scheduled: 0, en_route: 1, in_progress: 2, completed: 3 };
 type Entry = { id: number; company_id?: string; user_id: string; visit_id: string | null; category?: string; started_at: string; ended_at: string | null };
-const server = { status: "scheduled", completedAt: null as string | null, entries: [] as Entry[], refuseTime: false, sent: [] as object[], order: [] as string[], day: false };
+const server = { status: "scheduled", completedAt: null as string | null, entries: [] as Entry[], refuseTime: false, sent: [] as object[], order: [] as string[], day: false, brands: {} as Record<string, string>, brandAsked: 0 };
 // The database's rule: a clock running on a visit ends when the visit was finished, with no place
 // of its own, and so does a clock-in that arrives afterwards dated before it. On the whole-day
 // clock (server.day) the person goes on to travel from there.
@@ -69,7 +69,12 @@ vi.mock("../src/lib/api", () => {
     };
     return q;
   };
-  return { api, supabase: () => ({ from: () => table() }), unwrap: (r: { data: unknown; error: unknown }) => { if (r.error) throw r.error; return r.data; } };
+  // public.job_brand: the job's brand, or an error for a job it doesn't know (an older server).
+  const rpc = async (_name: string, args: { p_job: string }) => {
+    server.brandAsked++;
+    return args.p_job in server.brands ? { data: server.brands[args.p_job], error: null } : { data: null, error: new Error("function public.job_brand(uuid) does not exist") };
+  };
+  return { api, supabase: () => ({ from: () => table(), rpc }), unwrap: (r: { data: unknown; error: unknown }) => { if (r.error) throw r.error; return r.data; } };
 });
 
 const { setVisitStatus, statusSaved } = await import("../src/features/field/fieldActions");
@@ -88,6 +93,8 @@ beforeEach(() => {
   server.entries = [];
   server.refuseTime = false;
   server.sent = [];
+  server.brands = {};
+  server.brandAsked = 0;
 });
 
 it("clocks a crewmate in even when the visit was finished before their taps arrived, up to when it was finished", async () => {
@@ -331,4 +338,62 @@ it("keeps a sub and a company on visits only off the whole-day clock, as decided
   server.completedAt = null;
   expect(statusSaved(await tap("alice", "en_route", "2026-10-17T12:40:00Z"), { status: "en_route" } as never)).toBe("On your way");
   expect(timeOf("alice")).toEqual([]);
+});
+
+// ----- The brand clock (the owner's: Pressure washing or Christmas lights, never Driving) ----------
+
+/** A team member's tap on the brand clock, on job j1; `day`: the whole-day clock. */
+const brandTap = (userId: string, status: string, at: string, options: { day?: boolean; brand?: "washing" | "lights" } = {}) =>
+  setVisitStatus({ companyId: "c1", userId, visitId: "v1", jobId: "j1", status, at, clock: true, brandClock: true, ...(options.day && { day: true }), ...(options.brand && { brand: options.brand }) });
+const brandOf = (userId: string) => server.entries.filter((e) => e.user_id === userId).map((e) => [e.category, e.visit_id ? "on visit" : (e as Entry & { job_id?: string }).job_id ?? null, e.started_at, e.ended_at]);
+
+it("on the whole-day brand clock, On my way starts the job's brand and it runs through the visit and after it", async () => {
+  server.day = true;
+  server.brands = { j1: "lights" };
+  await brandTap("alice", "en_route", "2026-10-17T12:40:00Z", { day: true });
+  expect(brandOf("alice")).toEqual([["lights", "j1", "2026-10-17T12:40:00Z", null]]);
+  await brandTap("alice", "in_progress", "2026-10-17T13:00:00Z", { day: true });
+  const done = await brandTap("alice", "completed", "2026-10-17T16:00:00Z", { day: true });
+  // One block: Start visit doesn't split it onto the visit, and finishing the visit doesn't end it.
+  expect(brandOf("alice")).toEqual([["lights", "j1", "2026-10-17T12:40:00Z", null]]);
+  expect(statusSaved(done, { status: "completed" } as never)).toBe("Visit completed, your clock keeps running");
+  // Sent again after the app closed before it heard back: nothing more.
+  await brandTap("alice", "en_route", "2026-10-17T12:40:00Z", { day: true });
+  expect(brandOf("alice")).toHaveLength(1);
+});
+
+it("moves a break, the shop or the other brand onto the job's brand at On my way or Start visit", async () => {
+  server.day = true;
+  server.entries.push({ id: 1, company_id: "c1", user_id: "alice", visit_id: null, category: "break", started_at: "2026-10-17T12:00:00Z", ended_at: null });
+  await brandTap("alice", "in_progress", "2026-10-17T12:30:00Z", { day: true, brand: "washing" });
+  expect(brandOf("alice")).toEqual([["break", null, "2026-10-17T12:00:00Z", "2026-10-17T12:30:00Z"], ["washing", "j1", "2026-10-17T12:30:00Z", null]]);
+  // The tap knew the brand: the server isn't asked.
+  expect(server.brandAsked).toBe(0);
+  server.status = "scheduled";
+  await brandTap("alice", "en_route", "2026-10-17T15:00:00Z", { day: true, brand: "lights" });
+  expect(brandOf("alice").at(-1)).toEqual(["lights", "j1", "2026-10-17T15:00:00Z", null]);
+  expect(brandOf("alice")[1]![3]).toBe("2026-10-17T15:00:00Z");
+});
+
+it("on visits only, Start visit clocks onto the job's brand on the visit and Complete stops it", async () => {
+  server.brands = { j1: "washing" };
+  await brandTap("alice", "en_route", "2026-10-17T12:40:00Z");
+  expect(server.entries).toEqual([]);
+  await brandTap("alice", "in_progress", "2026-10-17T13:00:00Z");
+  await brandTap("alice", "completed", "2026-10-17T16:00:00Z");
+  expect(brandOf("alice")).toEqual([["washing", "on visit", "2026-10-17T13:00:00Z", "2026-10-17T16:00:00Z"]]);
+});
+
+it("keeps the time on washing when the server can't say the brand", async () => {
+  server.day = true;
+  await brandTap("alice", "en_route", "2026-10-17T12:40:00Z", { day: true });
+  expect(brandOf("alice")).toEqual([["washing", "j1", "2026-10-17T12:40:00Z", null]]);
+});
+
+it("puts a team member on the brand clock at the tap, and never a sub", () => {
+  const person = (role: string, extra: object = {}) => ({ role, userId: "u1", subcontractor: null, company: { id: "c1", settings: { clock: { mode: "day" } } }, ...extra }) as never;
+  expect(statusChange(person("field_crew"), { id: "v1", jobId: "j1" }, "en_route").change).toMatchObject({ brandClock: true });
+  expect(statusChange(person("field_crew"), { id: "v1", jobId: "j1", brand: "lights" }, "en_route").change).toMatchObject({ brandClock: true, brand: "lights" });
+  const sub = person("subcontractor", { subcontractor: { id: "s1", name: "Apex", can_contact_clients: false, uses_clock: true } });
+  expect(statusChange(sub, { id: "v1", jobId: "j1", brand: "lights" }, "en_route").change).not.toHaveProperty("brandClock");
 });

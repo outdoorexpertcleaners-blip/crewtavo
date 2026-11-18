@@ -3690,14 +3690,14 @@ isOneToOne: false
                   ]
                 },"time_entries": {
                   Row: {
-                    "approved_at": string | null,"approved_by": string | null,"auto_stopped_at": string | null,"category": string,"change_reason": string | null,"company_id": string,"created_at": string,"ended_at": string | null,"geofence_in": boolean,"geofence_out": boolean,"id": string,"in_place": Json | null,"job_id": string | null,"labor_rate": number | null,"notes": string | null,"out_place": Json | null,"reminded_at": string | null,"started_at": string,"updated_at": string,"user_id": string,"visit_id": string | null
+                    "added_by_hand": boolean,"approved_at": string | null,"approved_by": string | null,"auto_stopped_at": string | null,"category": string,"change_reason": string | null,"company_id": string,"created_at": string,"ended_at": string | null,"geofence_in": boolean,"geofence_out": boolean,"id": string,"in_place": Json | null,"job_id": string | null,"labor_rate": number | null,"notes": string | null,"out_place": Json | null,"reminded_at": string | null,"started_at": string,"updated_at": string,"user_id": string,"visit_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "approved_at"?: string | null,"approved_by"?: string | null,"auto_stopped_at"?: string | null,"category"?: string,"change_reason"?: string | null,"company_id": string,"created_at"?: string,"ended_at"?: string | null,"geofence_in"?: boolean,"geofence_out"?: boolean,"id"?: string,"in_place"?: Json | null,"job_id"?: string | null,"labor_rate"?: number | null,"notes"?: string | null,"out_place"?: Json | null,"reminded_at"?: string | null,"started_at": string,"updated_at"?: string,"user_id"?: string,"visit_id"?: string | null
+                    "added_by_hand"?: boolean,"approved_at"?: string | null,"approved_by"?: string | null,"auto_stopped_at"?: string | null,"category"?: string,"change_reason"?: string | null,"company_id": string,"created_at"?: string,"ended_at"?: string | null,"geofence_in"?: boolean,"geofence_out"?: boolean,"id"?: string,"in_place"?: Json | null,"job_id"?: string | null,"labor_rate"?: number | null,"notes"?: string | null,"out_place"?: Json | null,"reminded_at"?: string | null,"started_at": string,"updated_at"?: string,"user_id"?: string,"visit_id"?: string | null
                   }
                   Update: {
-                    "approved_at"?: string | null,"approved_by"?: string | null,"auto_stopped_at"?: string | null,"category"?: string,"change_reason"?: string | null,"company_id"?: string,"created_at"?: string,"ended_at"?: string | null,"geofence_in"?: boolean,"geofence_out"?: boolean,"id"?: string,"in_place"?: Json | null,"job_id"?: string | null,"labor_rate"?: number | null,"notes"?: string | null,"out_place"?: Json | null,"reminded_at"?: string | null,"started_at"?: string,"updated_at"?: string,"user_id"?: string,"visit_id"?: string | null
+                    "added_by_hand"?: boolean,"approved_at"?: string | null,"approved_by"?: string | null,"auto_stopped_at"?: string | null,"category"?: string,"change_reason"?: string | null,"company_id"?: string,"created_at"?: string,"ended_at"?: string | null,"geofence_in"?: boolean,"geofence_out"?: boolean,"id"?: string,"in_place"?: Json | null,"job_id"?: string | null,"labor_rate"?: number | null,"notes"?: string | null,"out_place"?: Json | null,"reminded_at"?: string | null,"started_at"?: string,"updated_at"?: string,"user_id"?: string,"visit_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -5064,6 +5064,9 @@ isOneToOne: false
       } },
 "job_promo_discounts":
 { Args: { "p_job": string }; Returns: Json
+                           },
+"job_brand":
+{ Args: { "p_job": string }; Returns: string
                            },
 "job_scope":
 { Args: { "p_job": string }; Returns: {

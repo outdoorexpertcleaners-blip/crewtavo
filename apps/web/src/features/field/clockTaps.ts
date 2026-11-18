@@ -12,7 +12,13 @@ import type { ClockPlace, TimerCategory } from "./fieldData";
 import { intlLocale, msg, t } from "@/lib/i18n";
 
 /** What each kind of clock is called (fieldData exports it as CATEGORY_LABELS): shown with t(). */
-export const CLOCK_LABELS: Record<TimerCategory, string> = { visit: msg("On a visit"), assessment: msg("Assessment"), drive: msg("Driving"), shop: msg("Shop time"), break: msg("On break"), other: msg("Other work") };
+export const CLOCK_LABELS: Record<TimerCategory, string> = {
+  visit: msg("On a visit"), assessment: msg("Assessment"), drive: msg("Driving"), shop: msg("Shop / other"), break: msg("On break"), other: msg("Other work"),
+  washing: msg("Pressure washing"), lights: msg("Christmas lights"),
+};
+
+/** What the clock offers to start or switch to, in the owner's order (core/timeclock.ts CLOCK_KINDS). */
+export const CLOCK_CHOICES = ["washing", "lights", "shop", "break"] as const satisfies readonly TimerCategory[];
 
 /** What a clock goes onto: a visit, or driving, the shop, a break or other work. */
 export interface ClockTarget {
@@ -89,6 +95,7 @@ export function clockAfter(clock: ShownClock | null, tap: ClockTap, userId: stri
   const v = tap.change;
   const day = v.day === true && !v.sub;
   const onVisit = clock?.visit?.id === v.visitId;
+  if (v.brandClock && !v.sub && v.clock !== false) return brandClockAfter(clock, v, userId, tap.title);
   // Finishing a visit ends every clock still running on it, or on the whole-day clock moves it to travel.
   if (v.status === "completed" && onVisit && clock && startedBefore(clock, v.at)) return day ? travel(v.at) : null;
   if (v.userId !== userId || v.clock === false) return clock;
@@ -97,6 +104,27 @@ export function clockAfter(clock: ShownClock | null, tap: ClockTap, userId: stri
   // Complete stops whatever they were on; on the whole-day clock only a clock on this visit moves (above).
   if (v.status === "completed") return day ? clock : null;
   if (v.status === "en_route" && day) return clock?.category === "drive" && !clock.visit ? clock : travel(v.at);
+  return clock;
+}
+
+/**
+ * clockAfter for a tap on the brand clock (fieldActions.setVisitStatus): the job's brand in place of
+ * "On a visit" and Driving. Until the tap knows the brand it shows washing, the one most jobs are.
+ */
+function brandClockAfter(clock: ShownClock | null, v: VisitStatusChange, userId: string, title: string | undefined): ShownClock | null {
+  const day = v.day === true;
+  const work: TimerCategory = v.brand ?? "washing";
+  const onVisit = clock?.visit?.id === v.visitId;
+  const onWork = (at: string): ShownClock => ({ id: `tap:${at}`, category: work, started_at: at, visit: null });
+  // Finishing a visit ends every clock still running on it (a crewmate's included); on the whole-day
+  // clock the tapper's own goes on to the brand, and a crewmate's to travel (the database does that).
+  if (v.status === "completed" && onVisit && clock && startedBefore(clock, v.at)) return day ? (v.userId === userId ? onWork(v.at) : travel(v.at)) : null;
+  if (v.userId !== userId) return clock;
+  if (clock && !startedBefore(clock, v.at)) return clock;
+  if (day && (v.status === "en_route" || v.status === "in_progress")) return clock?.category === work && !clock.visit ? clock : onWork(v.at);
+  if (!day && v.status === "in_progress") return onVisit ? clock : { id: `tap:${v.at}`, category: work, started_at: v.at, visit: { id: v.visitId, title: title ?? t("Visit") } };
+  // Complete stops it on visits only; on the whole-day clock it keeps running.
+  if (!day && v.status === "completed") return null;
   return clock;
 }
 

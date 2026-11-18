@@ -39,6 +39,8 @@ messages.post("/messages/send", requireUser, requireCompany(SALES), async (c) =>
       to: z.string().trim().max(200).optional(),
       subject: z.string().trim().max(200).optional(),
       body: z.string().trim().min(1).max(10_000),
+      // A text's Quo line, picked in the reply box (Send from: Wash line or Lighting line).
+      line: z.enum(["washing", "lights"]).optional(),
     }),
   );
   const { db, companyId } = c.var;
@@ -60,8 +62,9 @@ messages.post("/messages/send", requireUser, requireCompany(SALES), async (c) =>
     if (textsOffTo(client, to)) throw new HttpError(400, textsOffRefusal(client.display_name));
     if (await numberStopped(adminClient(c.env), companyId, to)) throw new HttpError(400, numberStoppedRefusal(to));
     if (body.body.length > 1600) throw new HttpError(400, "Texts are limited to 1,600 characters.");
-    // From the line for the client's brand (their latest quote or request), when texts go through Quo.
-    const brand = await brandFor(adminClient(c.env), companyId, { clientId: client.id });
+    // From the line the office picked, else the one for the client's brand (their latest quote or
+    // request), when texts go through Quo.
+    const brand = body.line ?? (await brandFor(adminClient(c.env), companyId, { clientId: client.id }));
     result = await sendSms(c.env, { to, body: body.body, company: companyId, ...(brand ? { brand } : {}) });
     await noteRefusedText(adminClient(c.env), client, to, result, companyId);
   }
@@ -69,7 +72,7 @@ messages.post("/messages/send", requireUser, requireCompany(SALES), async (c) =>
     .from("messages")
     .insert({
       company_id: companyId, client_id: client.id, channel: body.channel, direction: "out", subject: body.channel === "email" ? body.subject : null,
-      body: body.body, status: result.sent ? "sent" : "failed", external_id: result.id ?? null, line: result.line ?? null,
+      body: body.body, status: result.sent ? "sent" : "failed", external_id: result.id ?? null, line: result.line ?? null, sent_by: c.var.userId,
       recipients: [{ to, name: sentToClient(body.channel, to, client) ? client.display_name : to, ...(result.sent ? {} : { failed: true }) }],
     })
     .select("id")

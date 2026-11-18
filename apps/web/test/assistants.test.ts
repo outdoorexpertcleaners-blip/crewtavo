@@ -165,11 +165,11 @@ describe("Settings → AI assistants", () => {
     return html;
   }
 
-  it("is in everyone's settings, and the profile no longer has it", () => {
+  it("is in everyone's settings but field crew's (theirs is only their profile), and the profile no longer has it", () => {
     for (const role of ["owner", "admin", "office", "estimator", "crew_lead", "field_crew"]) {
       as(role);
       const items = settingsGroups(session.current as never).flatMap((g) => g.items);
-      expect(items.some((i) => "tab" in i && i.tab === "assistants"), role).toBe(true);
+      expect(items.some((i) => "tab" in i && i.tab === "assistants"), role).toBe(role !== "field_crew");
     }
     as("field_crew");
     const client = new QueryClient();

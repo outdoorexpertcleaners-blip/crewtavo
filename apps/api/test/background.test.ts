@@ -1607,6 +1607,51 @@ describe("the on my way text", () => {
   });
 });
 
+describe("the on my way text from the person on the way (20261119000200_on_my_way_from_the_tech.sql)", () => {
+  const STARTER = "Hi {{client.first_name}}, this is {{tech.first_name}} with {{brand.name}}. I'm on my way{{eta_there}}.";
+  const brands = { big_proposal: { brands: { washing: { name: "Outdoor Expert Cleaners" }, lights: { name: "Outdoor Expert Lighting" } } } };
+  /** A visit.en_route run Mike's tap made (`actor`: null for no one known), on a client whose latest quote is `brand`. */
+  const textOf = async (etaAt: string | null, actor: string | null, brand: "washing" | "lights") => {
+    const rows: Record<string, unknown> = {
+      automation_rules: { id: "rule-1", name: "Text the client when the crew is on the way", trigger: "visit.en_route", enabled: true, conditions: [], run_count: 0, actions: [{ type: "send_sms", body: STARTER }] },
+      companies: { id: COMPANY, name: "Outdoor Expert LLC", timezone: "America/New_York", currency: "USD", trade_preset: "lawn_exterior", settings: brands, address: {} },
+      visits: {
+        title: "House wash", kind: "job", status: "en_route", scheduled_on: "2026-11-19", starts_at: null, eta_at: etaAt, job_id: "job-1", property_id: "property-1",
+        property: { line1: "12 Oak St", city: "Milton", region: "GA", client_id: "client-1" }, job: { client_id: "client-1", kind: "one_off" }, request: null,
+      },
+      clients: { id: "client-1", display_name: "Jane Doe", email: null, phone: "+14705550101", tags: [], status: "active", lead_source: null },
+      quotes: { brand, lines: [] },
+      activity: { data: {}, actor_id: actor },
+      profiles: actor ? { full_name: "Mike Jones" } : null,
+    };
+    fakeDb(
+      (q) => ({ data: verb(q) === "select" ? (rows[q.table] ?? null) : null }),
+      (fn) =>
+        fn === "claim_automation_runs"
+          ? { data: [{ id: 1, company_id: COMPANY, rule_id: "rule-1", subject_type: "visit", subject_id: "visit-1", activity_id: 5, result: [], status: "running", attempts: 1, locked_until: "2026-11-19T15:05:00Z", claim_token: "claim-1" }] }
+          : fn === "start_automation_run" || fn === "renew_automation_run" || fn === "finish_automation_run" ? { data: true } : {},
+    );
+    const texts: string[] = [];
+    vi.stubGlobal("fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).includes("twilio")) texts.push(new URLSearchParams(String(init!.body)).get("Body")!);
+      return Response.json({ sid: "SM1" });
+    });
+    const texting = { ...env, TWILIO_ACCOUNT_SID: "AC1", TWILIO_AUTH_TOKEN: "t", TWILIO_FROM_NUMBER: "+15405550000" };
+    expect(await processAutomations(texting, { limit: 50, baseUrl: "https://app.test" })).toMatchObject({ done: 1 });
+    return texts[0]!.replace("\n\nReply STOP to opt out.", "");
+  };
+
+  it("says who's coming, for which brand, and when they should be there", async () => {
+    const soon = new Date(Date.now() + 20.5 * 60_000).toISOString();
+    expect(await textOf(soon, "u1", "washing")).toBe("Hi Jane, this is Mike with Outdoor Expert Cleaners. I'm on my way and should be there in about 20 minutes.");
+    expect(await textOf(null, "u1", "lights")).toBe("Hi Jane, this is Mike with Outdoor Expert Lighting. I'm on my way.");
+  });
+
+  it("reads naturally when nobody's name is known", async () => {
+    expect(await textOf(null, null, "washing")).toBe("Hi Jane, this is Outdoor Expert Cleaners. I'm on my way.");
+  });
+});
+
 describe("when a crew on its way should arrive", () => {
   const NOW = Date.parse("2026-10-17T15:00:00Z");
   const home = { lat: 37.13, lng: -80.41 };

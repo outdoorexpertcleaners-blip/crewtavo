@@ -1378,7 +1378,7 @@ describe("screens", () => {
         expect(options, relative(SRC, file)).not.toMatch(/\bmutationFn\b/);
       }
     }
-    expect(found.sort()).toEqual(["features/field/ClockCard.tsx clock", "features/field/CrewClockCard.tsx clock", "features/field/FieldBilling.tsx job-line-add", "features/field/FieldTodayPage.tsx visit-status", "features/field/FieldVisitPage.tsx checklist-save", "features/field/FieldVisitPage.tsx visit-notes", "features/field/FieldVisitPage.tsx visit-status", "features/field/GeofenceCard.tsx clock", "features/field/geofence.ts clock", "features/marketing/ShareToggle.tsx photo-share"]);
+    expect(found.sort()).toEqual(["features/clock/clockData.ts clock", "features/field/ClockCard.tsx clock", "features/field/CrewClockCard.tsx clock", "features/field/FieldBilling.tsx job-line-add", "features/field/FieldTodayPage.tsx visit-status", "features/field/FieldVisitPage.tsx checklist-save", "features/field/FieldVisitPage.tsx visit-notes", "features/field/FieldVisitPage.tsx visit-status", "features/field/GeofenceCard.tsx clock", "features/field/geofence.ts clock", "features/marketing/ShareToggle.tsx photo-share"]);
   });
 });
 

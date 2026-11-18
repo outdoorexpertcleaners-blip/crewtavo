@@ -5,6 +5,7 @@
  */
 import { addCatalog } from "../index";
 import { addPatterns } from "../patterns";
+import clock from "./clock";
 import common from "./common";
 import { ERRORS } from "./errors";
 import field from "./field";
@@ -13,7 +14,7 @@ import server from "./server";
 import team from "./team";
 
 /** By area, so each line is read in the screen it's for. */
-export const parts = { common, field, team, server };
+export const parts = { common, field, team, server, clock };
 
 let installed = false;
 

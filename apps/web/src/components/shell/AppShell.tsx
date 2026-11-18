@@ -17,7 +17,7 @@ import { CommandPalette, openPalette } from "./CommandPalette";
 import { useChatBadge, useChatLive } from "@/features/chat/data";
 import { useMyJobs, waitingCount } from "@/features/field/myJobsData";
 import { signOutNote, subCodeWays } from "@/features/auth/textCode";
-import { createItems, mobileTabs, NAV_GROUP_LABELS, NAV_GROUPS, navVisible, settingsItem, subCanOpen, type NavItem } from "./nav";
+import { canOpen, createItems, homePath, mobileTabs, NAV_GROUP_LABELS, NAV_GROUPS, navVisible, settingsItem, type NavItem } from "./nav";
 import { HelpButton } from "./Help";
 import { NotificationsButton } from "./Notifications";
 import { RestartBanner } from "./RestartBanner";
@@ -33,13 +33,13 @@ function useVisibleNav(): { groups: Array<{ label: string | null; items: NavItem
   };
 }
 
-/** New requests waiting, shown beside Requests in the sidebar (which a sub doesn't have). */
+/** New requests waiting, shown beside Requests in the sidebar (which a sub and field crew don't have). */
 function useNewRequests() {
   const session = useSession();
   const { company } = session;
   return useQuery({
     queryKey: ["nav-counts", company.id],
-    enabled: !isSub(session),
+    enabled: !isSub(session) && session.role !== "field_crew",
     queryFn: async () => {
       const { count } = await supabase().from("requests").select("id", { count: "exact", head: true }).eq("company_id", company.id).eq("status", "new");
       return { requests: count ?? 0 };
@@ -170,6 +170,8 @@ export function AppShell() {
     await session.signOut();
   };
   const settings = settingsItem(session);
+  // Field crew don't read the office's inbox, and their Settings is their profile.
+  const crew = session.role === "field_crew";
   const shownEmail = isPlaceholderEmail(session.profile.email) ? null : session.profile.email;
 
   useEffect(() => {
@@ -217,7 +219,7 @@ export function AppShell() {
 
       <aside className="sidebar" aria-label={t("Primary")} lang={shellLang}>
         {/* This modified copy shows the business's own logo (Settings → Company), not Crewtavo's (NOTICE: names and logos). */}
-        <Link to={sub ? "/field" : "/"} className="brand brand-business" aria-label={t("Home")} viewTransition>
+        <Link to={homePath(session)} className="brand brand-business" aria-label={t("Home")} viewTransition>
           <BusinessBrand name={session.company.name} settings={session.company.settings} />
         </Link>
         <nav className="nav nav-scroll">
@@ -267,7 +269,7 @@ export function AppShell() {
                 <kbd className="kbd">{navigator.platform.toLowerCase().includes("mac") ? "⌘K" : t("Ctrl K")}</kbd>
               </button>
               <button type="button" className="icon-btn mobile-only" onClick={openPalette} aria-label={t("Search")}><Icon name="search" size={20} /></button>
-              <Link className="icon-btn hide-mobile" to="/messages" aria-label={t("Messages")} title={t("Messages")}><Icon name="messages" size={20} /></Link>
+              {!crew && <Link className="icon-btn hide-mobile" to="/messages" aria-label={t("Messages")} title={t("Messages")}><Icon name="messages" size={20} /></Link>}
             </>
           )}
           <HelpButton />
@@ -279,7 +281,7 @@ export function AppShell() {
             items={[
               { heading: session.profile.full_name || shownEmail || t("Account") },
               { label: t("Your profile"), icon: "user", onSelect: () => navigate("/settings?tab=profile") },
-              { label: t("Settings"), icon: "settings", hidden: sub, onSelect: () => navigate("/settings") },
+              { label: t("Settings"), icon: "settings", hidden: sub || crew, onSelect: () => navigate("/settings") },
               { separator: true },
               { label: t("Sign out"), icon: "logout", onSelect: () => void signOut() },
             ]}
@@ -348,8 +350,8 @@ function Screen() {
   const flush = (/^\/chat(\/|$)/.test(location.pathname) && !location.pathname.startsWith("/chat/settings")) || /^\/(website|measure)\/?$/.test(location.pathname);
   return (
     <main className={flush ? "content content-flush" : "content"} data-crossfade={crossFaded || undefined}>
-      {/* A sub opening any other screen by its address (or Home) lands on My day. */}
-      {isSub(session) && !subCanOpen(location.pathname) ? <Navigate to="/field" replace /> : <Outlet />}
+      {/* A sub or field crew opening any other screen by its address (or Home) lands on My day. */}
+      {canOpen(session, location.pathname) ? <Outlet /> : <Navigate to="/field" replace />}
     </main>
   );
 }
