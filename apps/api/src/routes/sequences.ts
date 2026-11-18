@@ -57,6 +57,26 @@ sequences.put("/sequences/alert-phone", requireUser, requireCompany(OFFICE), asy
   return c.json({ phone });
 });
 
+/** Each brand's Google review link, for {{review_link}}: washing's is the business's own (settings.review_url). */
+sequences.get("/sequences/review-links", requireUser, requireCompany(OFFICE), async (c) => {
+  const { data, error } = await adminClient(c.env).from("companies").select("settings").eq("id", c.var.companyId).single();
+  if (error) throw dbError(error);
+  const s = (data.settings ?? {}) as Record<string, unknown>;
+  return c.json({ washing: typeof s.review_url === "string" ? s.review_url : "", lights: typeof s.review_url_lights === "string" ? s.review_url_lights : "" });
+});
+
+sequences.put("/sequences/review-links", requireUser, requireCompany(OFFICE), async (c) => {
+  const link = z.union([z.literal(""), z.string().trim().url("Paste the whole link, starting with https://").max(500)]);
+  const body = await readJson(c, z.object({ washing: link, lights: link }));
+  const admin = adminClient(c.env);
+  const { data: company, error } = await admin.from("companies").select("settings").eq("id", c.var.companyId).single();
+  if (error) throw dbError(error);
+  const settings = { ...((company.settings ?? {}) as Record<string, unknown>), review_url: body.washing || null, review_url_lights: body.lights || null };
+  const { error: saveError } = await admin.from("companies").update({ settings: asJson(settings) }).eq("id", c.var.companyId);
+  if (saveError) throw dbError(saveError);
+  return c.json(body);
+});
+
 sequences.post("/sequence-runs/:id/:action", requireUser, requireCompany(OFFICE), async (c) => {
   const action = c.req.param("action");
   if (action !== "pause" && action !== "resume" && action !== "stop") throw new HttpError(404, "Not found.");

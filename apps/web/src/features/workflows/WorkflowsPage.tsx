@@ -66,7 +66,10 @@ export function WorkflowsPage() {
   return (
     <div className="stack">
       <PageHeader title="Workflows" actions={<Button icon="plus" loading={addTemplates.isPending} onClick={() => addTemplates.mutate()}>Add Outdoor Expert's GHL workflows</Button>} />
-      <AlertPhone />
+      <div className="grid-2" style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))" }}>
+        <AlertPhone />
+        <ReviewLinks />
+      </div>
       {list.error && <div className="card"><ErrorState error={list.error} onRetry={() => list.refetch()} /></div>}
       <div className="card ghl-wf-list">
         <div className="ghl-wf-row ghl-wf-head" role="row">
@@ -125,6 +128,28 @@ function AlertPhone() {
         <input className="input" style={{ maxWidth: 220 }} type="tel" value={phone} onChange={(e) => { setPhone(e.target.value); save.reset(); }} placeholder="(470) 555-0101" aria-label="Alert number" />
         <Button loading={save.isPending} onClick={() => save.mutate()}>Save</Button>
       </div>
+      <FormError error={save.error} />
+    </section>
+  );
+}
+
+function ReviewLinks() {
+  const session = useSession();
+  const saved = useQuery({ queryKey: ["sequence-review-links", session.company.id], queryFn: () => api.get<{ washing: string; lights: string }>("/sequences/review-links") });
+  const [typed, setTyped] = useState<{ washing: string; lights: string } | null>(null);
+  const links = typed ?? saved.data ?? { washing: "", lights: "" };
+  const save = useMutation({
+    meta: { inline: true, success: "Review links saved" },
+    mutationFn: () => api.put("/sequences/review-links", links),
+    onSuccess: () => { setTyped(null); saved.refetch(); },
+  });
+  return (
+    <section className="card card-pad stack-sm" aria-labelledby="review-links-title">
+      <strong id="review-links-title">Google review links</strong>
+      <span className="muted small">What {"{{review_link}}"} fills in, for each brand's review request.</span>
+      <input className="input" value={links.washing} onChange={(e) => { setTyped({ ...links, washing: e.target.value }); save.reset(); }} placeholder="Outdoor Expert Cleaners: https://g.page/r/…/review" aria-label="Washing review link" />
+      <input className="input" value={links.lights} onChange={(e) => { setTyped({ ...links, lights: e.target.value }); save.reset(); }} placeholder="Outdoor Expert Lighting: https://g.page/r/…/review" aria-label="Lights review link" />
+      <div className="row"><Button loading={save.isPending} onClick={() => save.mutate()} disabled={!typed}>Save</Button></div>
       <FormError error={save.error} />
     </section>
   );

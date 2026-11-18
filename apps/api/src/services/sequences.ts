@@ -152,7 +152,13 @@ async function companyOf(admin: Db, companyId: string): Promise<Company> {
   return { id: data!.id, name: data!.name, timezone: data!.timezone || "America/New_York", settings: (data!.settings ?? {}) as Record<string, unknown> };
 }
 
-async function varsFor(admin: Db, company: Company, clientId: string | null): Promise<{ vars: SequenceVars; client: { id: string; display_name: string; phone: string | null; email: string | null; sms_opt_out_at: string | null } | null }> {
+/** The Google review link for a brand: Lighting's own when it has one (settings.review_url_lights), else the business's. */
+const reviewLinkFor = (settings: Record<string, unknown>, brand: string | null) => {
+  const lights = brand === "lights" && typeof settings.review_url_lights === "string" ? settings.review_url_lights : "";
+  return lights || (typeof settings.review_url === "string" ? settings.review_url : "");
+};
+
+async function varsFor(admin: Db, company: Company, clientId: string | null, brand: string | null = null): Promise<{ vars: SequenceVars; client: { id: string; display_name: string; phone: string | null; email: string | null; sms_opt_out_at: string | null } | null }> {
   const [client, owner] = await Promise.all([
     clientId ? admin.from("clients").select("id, display_name, phone, email, sms_opt_out_at").eq("id", clientId).maybeSingle() : Promise.resolve({ data: null }),
     admin.from("memberships").select("user_id").eq("company_id", company.id).eq("role", "owner").eq("active", true).limit(1).maybeSingle(),
@@ -168,7 +174,7 @@ async function varsFor(admin: Db, company: Company, clientId: string | null): Pr
       phone: c?.phone ?? "",
       owner_first_name: ownerName.trim().split(/\s+/)[0] ?? "",
       company: company.name,
-      review_link: typeof company.settings.review_url === "string" ? company.settings.review_url : "",
+      review_link: reviewLinkFor(company.settings, brand),
     },
   };
 }
@@ -193,7 +199,7 @@ async function alertOffice(env: Env, admin: Db, company: Company, run: RunRow, t
 async function handleReply(env: Env, admin: Db, run: RunRow, now: Date) {
   const { data: seq } = await admin.from("sequences").select("*").eq("id", run.sequence_id).maybeSingle();
   const company = await companyOf(admin, run.company_id);
-  const { vars } = await varsFor(admin, company, run.client_id);
+  const { vars } = await varsFor(admin, company, run.client_id, run.brand);
   const mode = ((seq as SequenceRow | null)?.on_reply ?? "stop") as OnReply;
   const log = logOf(run.log);
   if (mode === "hot") {
@@ -223,7 +229,7 @@ async function advance(env: Env, admin: Db, run: RunRow, now: Date): Promise<{ s
   const window = sendWindow(seq.send_window);
   const company = await companyOf(admin, run.company_id);
   const tz = company.timezone;
-  const { vars, client } = await varsFor(admin, company, run.client_id);
+  const { vars, client } = await varsFor(admin, company, run.client_id, run.brand);
   let step = run.step;
   let done = 0;
   for (let i = 0; i < MAX_STEPS; i++) {
