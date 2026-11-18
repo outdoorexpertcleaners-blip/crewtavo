@@ -23,6 +23,7 @@ import { Hono, type Context } from "hono";
 import { z } from "zod";
 import type { AppEnv } from "../env";
 import { handleStripeEvent, hubPayment, stripeAccess, stripeCheckout, type WebhookRoute } from "../integrations/stripe";
+import { squareCheckout, squareOn, syncSquareInvoice } from "../services/square";
 import { kickAutomations, runInBackground } from "../lib/background";
 import {
   addressLines,
@@ -604,6 +605,8 @@ publicRoutes.get("/hub/:token", async (c) => {
       home,
     });
   }
+  // Back from Square's checkout page (or its webhook hasn't come yet): what was paid there is booked first.
+  await syncSquareInvoice(c.env, admin, l.c, l.id).catch((error) => console.error("Couldn't check Square for payments", error));
   const invoice = must(
     await admin
       .from("invoices")
@@ -999,6 +1002,11 @@ publicRoutes.post("/hub/:token/pay", async (c) => {
   // reaches Stripe.
   if (tipCents > 0 && !tips) throw new HttpError(409, "Tips aren't offered here anymore. Check the amount and pay again.");
   if (await chargingNow(admin, l.c, l.id)) throw new HttpError(409, CHARGING_NOW);
+  // Without Stripe, Square's checkout page (services/square.ts), which sends them back to this invoice.
+  if (!(await stripeAccess(c.env, admin, l.c)) && (await squareOn(c.env, l.c))) {
+    const back = await clientLink(c.env, appUrl(c), { c: l.c, t: "invoice", id: l.id, ...keepVia(l) });
+    return c.json({ url: await squareCheckout(c.env, admin, l.c, l.id, tipCents, back) });
+  }
   try {
     return c.json({ url: await stripeCheckout(c.env, admin, l.c, l.id, tipCents) });
   } catch (error) {

@@ -28,7 +28,7 @@ import type { Env } from "../env";
 import { DIALOG, GRAPH_VERSION, META_SCOPES } from "./metaConfig";
 
 /** Apps with a row in integrations (and maybe integration_secrets). */
-export type Provider = "quickbooks" | "zoho_books" | "google_calendar" | "google_business" | "meta" | "stripe" | "twilio" | "quo" | "anthropic" | "chatgpt" | "fal" | "railway" | "abc_supply" | "lob" | "open_meteo";
+export type Provider = "quickbooks" | "zoho_books" | "google_calendar" | "google_business" | "meta" | "stripe" | "twilio" | "quo" | "square" | "anthropic" | "chatgpt" | "fal" | "railway" | "abc_supply" | "lob" | "open_meteo";
 /** Apps whose calendars are added by link. They're also the calendar_sources.app values (with google_calendar). */
 export type LinkApp = "zoho_calendar" | "outlook_calendar" | "apple_calendar" | "ics_calendar";
 export type AppId = Provider | LinkApp | "team_chat" | "website_analytics" | "website_forms" | "careers" | "drive" | "marketing" | "paving" | "roofing" | "snow" | "sveltia";
@@ -296,6 +296,16 @@ export const CATALOG: CatalogEntry[] = [
     auth: "api_key",
     docs: "https://www.quo.com/docs",
     // A company connects its own Quo workspace with its API key (lib/quo.ts), or tries it in practice mode.
+    available: () => true,
+  },
+  {
+    id: "square",
+    name: "Square",
+    category: "Payments",
+    description: "Clients pay invoices on Square's checkout page, and each payment is recorded on its invoice.",
+    auth: "api_key",
+    docs: "https://developer.squareup.com/docs/checkout-api",
+    // A company connects its own Square account with an access token (lib/square.ts), Sandbox to test.
     available: () => true,
   },
   {

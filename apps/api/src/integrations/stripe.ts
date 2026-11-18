@@ -14,6 +14,7 @@
  *     refunds from Crewtavo. Only with the company's own key.
  * Uses the admin client; every query filters by company.
  */
+import { squareOn } from "../services/square";
 import { memberPermissions, OFFICE, type Role } from "@crewtavo/core";
 import { methodExpiry, methodLabel, tipsAllowed } from "@crewtavo/core/autopay";
 import type { Env } from "../env";
@@ -790,7 +791,8 @@ export async function hubPayment(env: Env, admin: Db, companyId: string, invoice
   // A tip added after paying is its own Stripe invoice, and says nothing about paying this one.
   const linked = (rows ?? []).filter((row) => (row.purpose ?? "invoice") === "invoice");
   return {
-    enabled: Boolean(access),
+    // Without Stripe, the invoice is paid on a Square checkout page when the business uses Square (services/square.ts).
+    enabled: Boolean(access) || (await squareOn(env, companyId)),
     processing: linked.some((row) => waiting(row, livemode)),
     imported: linked.some((row) => row.origin === "stripe"),
   };

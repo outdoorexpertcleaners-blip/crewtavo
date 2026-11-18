@@ -49,6 +49,7 @@ import { SCREENSHOTS } from "./screenshots";
 import { StripePanel } from "./StripePanel";
 import { TeamChatPanel, useTeamChatSwitch } from "./TeamChatPanel";
 import { QuoPanel } from "./QuoPanel";
+import { SquarePanel } from "./SquarePanel";
 import { TwilioPanel } from "./TwilioPanel";
 import { useTradeAppSwitch } from "./tradeApps";
 import { WebsiteFormsPanel, useWebsiteFormsSwitch } from "./WebsiteFormsPanel";
@@ -430,6 +431,8 @@ function AppListing({ app, all, ai }: { app: AppRow; all: AppRow[]; ai: AiState 
             <TwilioPanel app={app} onChanged={refresh} />
           ) : app.id === "quo" ? (
             <QuoPanel app={app} onChanged={refresh} />
+          ) : app.id === "square" ? (
+            <SquarePanel app={app} onChanged={refresh} />
           ) : app.id === "lob" ? (
             <LobPanel app={app} onChanged={refresh} />
           ) : app.id === "chatgpt" ? (
@@ -458,7 +461,7 @@ function AppListing({ app, all, ai }: { app: AppRow; all: AppRow[]; ai: AiState 
           {app.auth === "link" && <LinkCalendarsPanel app={app.id} appName={app.name} steps={info.steps} />}
           {(app.id === "anthropic" || app.id === "chatgpt") && <AiServiceChoice ai={ai} onChanged={refresh} />}
           {app.id === "stripe" && app.stripe && <StripePanel app={app} onChanged={refresh} />}
-          {app.auth === "api_key" && app.id !== "abc_supply" && app.id !== "twilio" && app.id !== "quo" && app.id !== "lob" && <KeyCard app={app} onSaved={refresh} />}
+          {app.auth === "api_key" && app.id !== "abc_supply" && app.id !== "twilio" && app.id !== "quo" && app.id !== "square" && app.id !== "lob" && <KeyCard app={app} onSaved={refresh} />}
           {app.id === "chatgpt" && app.status !== "disconnected" && <OpenAiModelCard app={app} onChanged={refresh} />}
           {app.id === "chatgpt" && <ChatGptPlanCard where="app" />}
           {app.id === "chatgpt" && <TeamPlansSwitch />}
@@ -466,6 +469,7 @@ function AppListing({ app, all, ai }: { app: AppRow; all: AppRow[]; ai: AiState 
           {app.id === "abc_supply" && <AbcSupplyPanel app={app} onChanged={refresh} />}
           {app.id === "twilio" && <TwilioPanel app={app} onChanged={refresh} />}
           {app.id === "quo" && <QuoPanel app={app} onChanged={refresh} />}
+          {app.id === "square" && <SquarePanel app={app} onChanged={refresh} />}
           {app.id === "website_analytics" && <AnalyticsPanel />}
           {app.id === "website_forms" && <WebsiteFormsPanel />}
           {app.id === "careers" && <WebsiteFormsPanel kind="careers" />}
@@ -639,6 +643,7 @@ function uninstallBody(app: AppRow, counts: { calendars: number; teamPlans?: boo
     if (AI_CHAT_APPS.has(app.id)) parts.push(`Assistants connected in Settings → AI assistants keep working.`);
     return `${parts.join(" ")} ${again}`;
   }
+  if (app.id === "square") return `Clients can't pay invoices through Square from here anymore, the webhook is removed from your Square app, and the token is removed. Payments already made stay, here and in Square. ${again}`;
   if (app.id === "quo") return `Texts stop going out through Quo, Crewtavo's webhook is removed from your Quo workspace, and the key is removed from Crewtavo. Nothing in Quo is deleted. ${again}`;
   if (app.id === "twilio") return `Texts stop going out from your number, and your Twilio account's keys are removed from Crewtavo. Nothing already sent is deleted, and your Twilio account isn't changed. ${again}`;
   if (app.auth === "site") return `Website comes out of the menu. Your website, its editor and everything on it stay as they are. ${again}`;

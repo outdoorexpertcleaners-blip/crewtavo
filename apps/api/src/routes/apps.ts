@@ -19,6 +19,9 @@ import { checkTwilio, companyTwilio, forgetTwilio, serverTwilio, setSmsWebhook, 
 import { adminClient, type Db } from "../lib/supabase";
 import { deleteQuoWebhook, forgetQuo } from "../lib/quo";
 import { quoState } from "./quo";
+import { deleteSquareWebhook, forgetSquare } from "../lib/square";
+import { squareSettings } from "@crewtavo/core/square";
+import { squareState } from "./square";
 import { aiChoice, askerOf, complete, countAiAsk, teamPlans, type OpenAiSettings } from "../services/ai";
 import { analyticsSettings } from "../services/analytics";
 import { AbcProblem, chooseAbcAccount, connectAbc, settingsOf as abcSettingsOf } from "../integrations/abcSupply";
@@ -164,6 +167,7 @@ apps.get("/apps", requireUser, requireCompany(ADMINS, "apps"), async (c) => {
         ...(entry.id === "abc_supply" && abc ? { supplier: abc } : {}),
         ...(entry.id === "twilio" ? { twilio } : {}),
         ...(entry.id === "quo" ? { quo: quoState(appUrl(c), c.var.companyId, integrations.find((r) => r.provider === "quo")) } : {}),
+        ...(entry.id === "square" ? { square: squareState(appUrl(c), integrations.find((r) => r.provider === "square")) } : {}),
         ...(entry.id === "lob" ? { lob } : {}),
         ...(entry.id === "google_business" ? { google_business: business } : {}),
         ...(entry.id === "meta" ? { meta } : {}),
@@ -411,6 +415,12 @@ apps.post("/apps/:provider/disconnect", requireUser, requireCompany(ADMINS, "app
     const hook = (data?.settings as { webhook_id?: string } | null)?.webhook_id;
     if (hook) await deleteQuoWebhook(secret.api_key, hook);
   }
+  // Square: its webhook subscription comes out of the Square app too. Checkout pages already sent stay payable in Square.
+  if (provider === "square" && secret?.api_key) {
+    const { data } = await admin.from("integrations").select("settings").match({ company_id: c.var.companyId, provider }).maybeSingle();
+    const s = squareSettings(data?.settings);
+    if (s.webhook_id) await deleteSquareWebhook({ environment: s.environment, token: secret.api_key }, s.webhook_id);
+  }
   // Stripe's open invoices are voided with the old key, which can finish after the response.
   if (secret && provider === "stripe") runInBackground(c, (await disconnectStripe(c.env, admin, c.var.companyId, secret)).settled);
   else if (secret && provider === "meta") await signOutMeta(c.env, secret);
@@ -436,6 +446,7 @@ apps.post("/apps/:provider/disconnect", requireUser, requireCompany(ADMINS, "app
   // Texts go from the server's account again, if it has one, from the next one on.
   if (provider === "twilio") forgetTwilio(c.var.companyId);
   if (provider === "quo") forgetQuo(c.var.companyId);
+  if (provider === "square") forgetSquare(c.var.companyId);
   return c.json({ provider, status: "disconnected", ...(provider === "google_business" ? { removed } : {}), ...(shared ? { revoked: false } : {}) });
 });
 

@@ -18,6 +18,7 @@
     "./proposal": "./src/proposal.ts",
     "./pipeline": "./src/pipeline.ts",
     "./quo": "./src/quo.ts",
+    "./square": "./src/square.ts",
     "./sequences": "./src/sequences.ts",
     "./documents": "./src/documents.ts",
     "./contracts": "./src/contracts.ts",

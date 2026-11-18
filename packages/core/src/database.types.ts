@@ -2942,6 +2942,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"square_checkouts": {
+                  Row: {
+                    "amount_cents": number,"company_id": string,"created_at": string,"environment": string,"id": string,"invoice_id": string | null,"link_id": string,"order_id": string,"payment_id": string | null,"status": string,"tip_cents": number,"updated_at": string,"url": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount_cents": number,"company_id": string,"created_at"?: string,"environment": string,"id"?: string,"invoice_id"?: string | null,"link_id": string,"order_id": string,"payment_id"?: string | null,"status"?: string,"tip_cents"?: number,"updated_at"?: string,"url": string
+                  }
+                  Update: {
+                    "amount_cents"?: number,"company_id"?: string,"created_at"?: string,"environment"?: string,"id"?: string,"invoice_id"?: string | null,"link_id"?: string,"order_id"?: string,"payment_id"?: string | null,"status"?: string,"tip_cents"?: number,"updated_at"?: string,"url"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "square_checkouts_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "companies"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"sequence_cursors": {
                   Row: {
                     "company_id": string,"last_activity_id": number,"updated_at": string

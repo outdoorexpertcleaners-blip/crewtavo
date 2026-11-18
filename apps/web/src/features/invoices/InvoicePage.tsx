@@ -537,7 +537,7 @@ function InvoicePageScreen() {
                       <strong className="tabular">{shown.amount}</strong>
                       {shown.tip && <span className="muted"> {shown.tip}</span>}
                       <span className="muted small" style={{ display: "block" }}>
-                        {METHODS[p.method] ?? p.method}{p.processor ? ` via ${p.processor === "stripe" ? "Stripe" : p.processor}` : ""}{p.notes ? ` · ${p.notes}` : ""}
+                        {METHODS[p.method] ?? p.method}{p.processor ? ` via ${p.processor === "stripe" ? "Stripe" : p.processor === "square" ? "Square" : p.processor}` : ""}{p.notes ? ` · ${p.notes}` : ""}
                         {Number(p.fee_amount) > 0 && ` · ${formatMoneyCents(p.fee_amount)} fee`}
                         {p.payout && ` · ${p.payout.status === "paid" ? "deposited" : "arrives"} ${formatDate(p.payout.arrival_on)}`}
                       </span>

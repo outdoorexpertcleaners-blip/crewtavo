@@ -55,6 +55,8 @@ export interface AppRow {
   twilio?: TwilioState | null;
   /** Quo, once set up (practice or connected): its lines, test numbers and whether replies come here (routes/quo.ts). */
   quo?: QuoState | null;
+  /** Square, once connected: Sandbox or Production, the location payments go to, and whether Square reports them here (routes/square.ts). */
+  square?: SquareState | null;
   /** Lob, once connected: whether its key is a test key (nothing mailed) or a live one. */
   lob?: { mode: "test" | "live" | null } | null;
   /** ChatGPT, once the company's OpenAI key is saved: the model it uses and the ones to pick from. */
@@ -108,6 +110,16 @@ export interface QuoState {
   webhook_set: boolean;
   webhook_url: string;
   /** This Crewtavo has a public https address, which Quo needs to reach it. */
+  reachable: boolean;
+}
+
+export interface SquareState {
+  environment: "sandbox" | "production";
+  location_id: string | null;
+  location_name: string | null;
+  /** Square tells this app when a payment is made (a webhook subscription in the Square app). */
+  webhook_set: boolean;
+  /** This app has a public https address, which Square needs to reach it. */
   reachable: boolean;
 }
 
@@ -819,6 +831,21 @@ export const APP_INFO: Record<string, AppInfo> = {
     connectsWith: "Key from Quo",
     website: "https://www.quo.com/",
     open: "/messages",
+  },
+  square: {
+    developer: "Square",
+    tagline: "Clients pay invoices with Square",
+    about:
+      "Keep taking payments with the Square account you already use. A client presses Pay on their invoice and pays on Square's own checkout page, by card, Apple Pay or Google Pay, and the payment is recorded on the invoice here with the fee Square kept. The money goes to your Square account as it does now. Start with Square's Sandbox: test cards, no real money, nothing charged.",
+    highlights: [
+      { icon: "dollar", title: "Square's checkout", text: "Clients pay on Square's page, from their invoice link." },
+      { icon: "invoice", title: "Recorded for you", text: "Each payment lands on its invoice, with Square's fee." },
+      { icon: "lock", title: "Sandbox first", text: "Test with Square's test cards before real money." },
+    ],
+    access: ["Read your locations", "Make a checkout page for an invoice when a client presses Pay, and take old ones down", "Read the payments made on those pages", "Add one webhook so payments show up right away, only when you ask"],
+    connectsWith: "Access token from Square",
+    website: "https://squareup.com/",
+    open: "https://squareup.com/dashboard/sales/transactions",
   },
   sveltia: {
     developer: "Sveltia",
