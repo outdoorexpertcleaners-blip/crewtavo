@@ -70,6 +70,14 @@ export async function processSequences(env: Env, options: { companyId?: string; 
       reportError(error, { feature: "sequences" });
     }
   }
+  // An answered quote or a lead that moved on ends its runs now, as GoHighLevel's stop did, rather
+  // than at the run's next step (which checks too, so nothing is ever sent for one).
+  try {
+    tally.ended += await endAnswered(admin, now, options.companyId);
+  } catch (error) {
+    tally.failed++;
+    reportError(error, { feature: "sequences" });
+  }
   // Paused too long: ended.
   const stale = new Date(now.getTime() - PAUSE_DAYS * 86_400_000).toISOString();
   await admin.from("sequence_runs").update({ status: "done", ended_reason: `Paused for ${PAUSE_DAYS} days and not resumed` }).eq("status", "paused").lt("paused_at", stale);
@@ -138,6 +146,37 @@ async function subjectOf(admin: Db, companyId: string, type: string, id: string)
     return data ? { clientId: data.client_id, brand: data.quote ? quoteBrand(data.quote) : "washing" } : null;
   }
   return null;
+}
+
+/**
+ * Active and paused runs about a quote or a lead whose record no longer keeps them going (core
+ * stillGoing): stopped, with why. How many were.
+ */
+export async function endAnswered(admin: Db, now: Date, companyId?: string): Promise<number> {
+  let query = admin.from("sequence_runs").select("id, sequence_id, subject_type, subject_id, step, log").in("status", ["active", "paused"]).in("subject_type", ["quote", "request"]);
+  if (companyId) query = query.eq("company_id", companyId);
+  const { data: runs, error } = await query.limit(500);
+  if (error) throw new Error(error.message);
+  if (!runs?.length) return 0;
+  const ids = (type: string) => [...new Set(runs.filter((r) => r.subject_type === type).map((r) => r.subject_id))];
+  const [seqs, quotes, requests] = await Promise.all([
+    admin.from("sequences").select("id, trigger").in("id", [...new Set(runs.map((r) => r.sequence_id))]),
+    ids("quote").length ? admin.from("quotes").select("id, status").in("id", ids("quote")) : Promise.resolve({ data: [] as Array<{ id: string; status: string }> }),
+    ids("request").length ? admin.from("requests").select("id, status, stage").in("id", ids("request")) : Promise.resolve({ data: [] as Array<{ id: string; status: string; stage: string | null }> }),
+  ]);
+  const trigger = new Map((seqs.data ?? []).map((q) => [q.id, q.trigger as SequenceTrigger]));
+  const record = new Map<string, { status?: string | null; stage?: string | null }>([...(quotes.data ?? []), ...(requests.data ?? [])].map((r) => [r.id, r]));
+  let ended = 0;
+  for (const run of runs) {
+    const t = trigger.get(run.sequence_id);
+    if (!t) continue;
+    const going = stillGoing(t, record.get(run.subject_id) ?? null);
+    if (going.going) continue;
+    const why = going.why ?? "Stopped";
+    await admin.from("sequence_runs").update({ status: "stopped", ended_reason: why, log: [...logOf(run.log), { at: now.toISOString(), note: why }] }).eq("id", run.id).in("status", ["active", "paused"]);
+    ended++;
+  }
+  return ended;
 }
 
 /** Where the record a run is about stands, for core stillGoing. */
