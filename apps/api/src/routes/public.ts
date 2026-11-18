@@ -6,6 +6,7 @@
 import { autopaySettings, methodLabel, tipsAllowed } from "@crewtavo/core/autopay";
 import { lateFeeCouldApply, lateFeeSettings } from "@crewtavo/core/billing";
 import { contractValues, fillIn } from "@crewtavo/core/contracts";
+import { proposalSettings } from "@crewtavo/core/proposal";
 import { shownCustomFields } from "@crewtavo/core/customFields";
 import { pickTemplate, templateSettings, type TemplateSettings } from "@crewtavo/core/documents";
 import { hidesExactPrice, inRangeMode, isSiteAdjustment, notIncluded, optionsRange, priceRange, rangeSettings } from "@crewtavo/core/estimates";
@@ -1143,11 +1144,18 @@ publicRoutes.post("/public/forms/:company/:form/promo", async (c) => {
   return c.json({ code: code.toUpperCase().replace(/\s/g, ""), offer: data });
 });
 
+/** The brand's own letterhead name and phone for a brand's form (Settings → Proposal), or null. */
+const formBrandOf = (company: { settings: unknown }, form: { brand?: string | null }) =>
+  form.brand === "washing" || form.brand === "lights" ? proposalSettings(company.settings).brands[form.brand] : null;
+const formBrandName = (company: { settings: unknown }, form: { brand?: string | null }) => formBrandOf(company, form)?.name.trim() || null;
+const formBrandPhone = (company: { settings: unknown }, form: { brand?: string | null }) => formBrandOf(company, form)?.phone.trim() || null;
+
 publicRoutes.get("/public/forms/:company/:form", async (c) => {
   const { company, form } = await findForm(c);
   return c.json({
     // `texts`: the business can text, so the phone box says what giving a number agrees to.
-    company: { name: company.name, phone: company.phone, texts: await smsReady(c.env, company.id), privacy_url: privacyUrl(company.settings as Record<string, unknown> | null) },
+    // A brand's form (intake_forms.brand) is that brand's: its name and phone from Settings → Proposal, when set.
+    company: { name: formBrandName(company, form) ?? company.name, phone: formBrandPhone(company, form) ?? company.phone, texts: await smsReady(c.env, company.id), privacy_url: privacyUrl(company.settings as Record<string, unknown> | null) },
     form: { name: form.name, kind: form.kind, questions: form.questions },
     // With "Let clients pick a time" on: what the page needs to offer times (the openings themselves come from /openings).
     ...(form.pick_time && { booking: bookingView(company, form as BookingForm, (form.service_area_zips ?? []) as string[]) }),
@@ -1282,7 +1290,7 @@ publicRoutes.post("/public/forms/:company/:form", async (c) => {
   const formBrand = (form as { brand?: string | null }).brand;
   if (formBrand === "washing" || formBrand === "lights") await admin.from("requests").update({ brand: formBrand }).eq("id", request.id);
   const leadSource = (body.source || (form as { lead_source?: string | null }).lead_source || "").slice(0, 60);
-  if (leadSource) await admin.from("clients").update({ lead_source: leadSource }).eq("id", found.client_id).is("lead_source", null);
+  if (leadSource) await admin.from("clients").update({ lead_source: leadSource }).eq("id", found.client_id).or("lead_source.is.null,lead_source.eq.");
   // The number they typed, under the line that says the business may text it: where their say-so came from.
   if (body.phone && (await smsReady(c.env, company.id))) await noteTextConsent(admin, company.id, found.client_id, body.phone, "booking_form");
   if (found.new_property && found.property_id) geocodeLater(c, found.property_id, body.address);
