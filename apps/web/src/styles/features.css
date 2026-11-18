@@ -1687,3 +1687,5 @@ button.hub-btn { width: 100%; border: 0; font: inherit; font-size: var(--fs-16);
   :root:not([data-theme="light"]) .cf-estimate > .card, :root:not([data-theme="light"]) .cf-estimate .line-edit, :root:not([data-theme="light"]) .cf-estimate .line-view { background: var(--surface); }
 }
 :root[data-theme="dark"] .cf-estimate > .card, :root[data-theme="dark"] .cf-estimate .line-edit, :root[data-theme="dark"] .cf-estimate .line-view { background: var(--surface); }
+/* Messages and the sales board use the whole width, as Quo's inbox and GoHighLevel's board do. */
+.content:has(> .messages-page.quo), .content:has(> .ghl-toolbar), .content:has(.ghl-toolbar) { max-width: none; }
