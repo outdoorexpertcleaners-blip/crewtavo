@@ -56,6 +56,7 @@ import { clientLink } from "../lib/links";
 import { peopleOnVisits } from "./visitPeople";
 import { sendEmail, sendSms } from "../lib/notify";
 import { brandFor } from "./brand";
+import { companyQuo } from "../lib/quo";
 import { adminClient, type Db } from "../lib/supabase";
 import { CAMPAIGN_LINK_DAYS, campaignRuleOf, letStretchGo, sendCampaignEmail } from "./automatedCampaigns";
 import { sendAutopayInvite } from "./autopay";
@@ -803,6 +804,8 @@ export async function performAction(env: Env, admin: Db, ctx: RunContext, action
       await admin.from("messages").insert({
         company_id: ctx.company.id, client_id: client.id, channel: "sms", direction: "out", body: render(action.body, kept),
         ...messageAbout(ctx, client.id), external_id: delivery.id, sent_by: null, recipients: recipientsColumn(delivery),
+        // The Quo line it went out on, so it shows under that line in Messages.
+        line: (await companyQuo(env, ctx.company.id).catch(() => null)) ? (brand ?? "washing") : null,
       });
       return `Texted ${addressList(delivery.went)}${late}${missed(delivery)}`;
     }

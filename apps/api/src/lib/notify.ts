@@ -17,12 +17,14 @@ import { decryptJson } from "./crypto";
 import { reportError } from "./monitoring";
 import { smtpSend, SmtpError, type SmtpSettings } from "./smtp";
 import { adminClient } from "./supabase";
-import { quoLineFor, quoNumberAllowed } from "@crewtavo/core/quo";
+import { quoBrandOf, quoLineFor, quoNumberAllowed } from "@crewtavo/core/quo";
 import { companyQuo, postQuoMessage, type QuoAccount } from "./quo";
 import { companyTwilio, postMessage, twilioFor, type TwilioAccount } from "./twilio";
 
 export interface SendResult {
   sent: boolean;
+  /** The Quo line it went out on (washing or lights), when it went through Quo. */
+  line?: "washing" | "lights";
   id?: string;
   reason?: string;
   /** The provider's HTTP status when it turned the email or text down: 401/403 is the key, 429 a limit. */
@@ -412,9 +414,10 @@ async function noteTwilioHealth(env: Env, companyId: string, account: TwilioAcco
 async function quoOut(quo: QuoAccount, message: { to: string; body: string; brand?: "washing" | "lights" | null }): Promise<SendResult> {
   if (!quoNumberAllowed(quo.settings, message.to)) return { sent: false, reason: "Not sent: Quo is in test mode, so it only texts the test numbers on Apps → Quo." };
   const line = quoLineFor(quo.settings, message.brand ?? null);
-  if (quo.settings.practice) return { sent: true, id: `practice-${crypto.randomUUID()}` };
+  if (quo.settings.practice) return { sent: true, id: `practice-${crypto.randomUUID()}`, ...(line ? { line: quoBrandOf(quo.settings, line.id) ?? "washing" } : {}) };
   if (!line || !quo.apiKey) return { sent: false, reason: "Quo has no line to text from. Pick one on Apps → Quo." };
-  return postQuoMessage(quo.apiKey, line, message);
+  const brand = quoBrandOf(quo.settings, line.id) ?? undefined;
+  return { ...(await postQuoMessage(quo.apiKey, line, message)), ...(brand ? { line: brand } : {}) };
 }
 
 async function textOut(env: Env, account: TwilioAccount | null, message: { to: string; body: string }): Promise<SendResult> {

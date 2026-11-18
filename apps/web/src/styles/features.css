@@ -1592,3 +1592,55 @@ button.hub-btn { width: 100%; border: 0; font: inherit; font-size: var(--fs-16);
 .google-notice { display: grid; gap: 4px; }
 .google-attribution { font-family: Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 13px; font-style: normal; font-weight: 400; letter-spacing: normal; line-height: 1.4; color: #5e5e5e; white-space: nowrap; }
 :root.dark .google-attribution { color: #fff; }
+
+/* ---------------------------------------------------------------------------------------------
+ * Messages as Quo's inbox (features/messages/MessagesPage.tsx): the lines, the conversations, the
+ * open one, and the contact beside it. White panels split by thin lines rather than cards.
+ * ------------------------------------------------------------------------------------------- */
+.quo-inbox { grid-template-columns: minmax(280px, 340px) minmax(0, 1fr); gap: 0; height: calc(100dvh - var(--topbar-height) - 64px); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); overflow: hidden; }
+.quo-inbox[data-rail] { grid-template-columns: 220px minmax(260px, 320px) minmax(0, 1fr); }
+.quo-rail { display: flex; flex-direction: column; gap: 2px; padding: 12px 8px; background: var(--fill); border-right: 1px solid var(--divider); overflow-y: auto; }
+.quo-rail-title { font-size: var(--fs-11); font-weight: 600; text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--text-3); padding: 6px 10px 4px; }
+.quo-rail-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-sm); text-align: left; font-size: var(--fs-13); color: var(--ink); background: none; border: 0; cursor: pointer; }
+.quo-rail-item:hover { background: var(--fill-2); }
+.quo-rail-item[aria-current="true"] { background: var(--surface); box-shadow: 0 0 0 1px var(--border); font-weight: 600; }
+.quo-line-icon { width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center; font-size: 13px; color: #fff; background: #2f9e44; flex: none; }
+.quo-line-icon[data-brand="lights"] { background: #e8590c; }
+.quo-count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: #e03131; color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center; }
+.quo-test-note { margin-top: auto; padding: 10px; font-size: var(--fs-11); color: var(--text-3); display: flex; gap: 6px; align-items: center; }
+.quo-list { gap: 0; border-right: 1px solid var(--divider); background: var(--surface); }
+.quo-list-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px 6px; }
+.quo-chips { display: flex; gap: 6px; padding: 4px 14px 8px; flex-wrap: wrap; }
+.quo-chip { padding: 4px 10px; border-radius: var(--radius-pill); border: 1px solid var(--border); background: var(--surface); font-size: var(--fs-12); color: var(--text-2); cursor: pointer; }
+.quo-chip[aria-pressed="true"] { background: #e7efff; border-color: #c5d6fb; color: #1d4ed8; font-weight: 600; }
+.quo-search { margin: 0 14px 8px; }
+.quo-rows { flex: 1; min-height: 0; overflow-y: auto; border-top: 1px solid var(--divider); }
+.quo-row { display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 10px 14px; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--divider); cursor: pointer; color: var(--ink); }
+.quo-row:hover { background: var(--fill); }
+.quo-row[aria-current="true"] { background: var(--fill-2); }
+.quo-avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--fill-2); color: var(--text-2); font-size: var(--fs-12); font-weight: 600; }
+.quo-avatar-lg { width: 64px; height: 64px; font-size: 20px; }
+.quo-preview { display: block; font-size: var(--fs-12); color: var(--text-2); margin-top: 2px; }
+.quo-unread { width: 9px; height: 9px; border-radius: 50%; background: #2563eb; flex: none; margin-top: 6px; }
+.quo-empty { height: 100%; display: grid; place-items: center; }
+.quo .inbox-thread .card, .quo .inbox-thread .thread { border: 0; border-radius: 0; box-shadow: none; }
+.quo-thread-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 260px; height: 100%; min-height: 0; }
+.quo-thread-wrap .thread { border-right: 1px solid var(--divider) !important; }
+.quo .thread-body { background: var(--surface); }
+.quo .msg-bubble { border-radius: 16px; border-bottom-left-radius: 4px; background: var(--fill-2); border-color: transparent; }
+.quo .msg[data-mine] .msg-bubble { background: #4c6ef5; border-color: #4c6ef5; color: #fff; border-radius: 16px; border-bottom-right-radius: 4px; }
+.quo .msg[data-note] .msg-bubble { background: var(--note); border-color: var(--note-border); color: var(--ink); }
+.quo .composer { margin: 10px 14px 14px; border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; background: var(--surface); }
+.quo .composer textarea { border: 0; box-shadow: none; background: transparent; padding-left: 2px; }
+.quo-contact { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 24px 16px; overflow-y: auto; background: var(--surface); }
+.quo-contact-name { font-size: var(--fs-16); }
+.quo-round { border-radius: 50%; border: 1px solid var(--border); width: 34px; height: 34px; display: grid; place-items: center; }
+.quo-contact-title { align-self: stretch; font-size: var(--fs-11); font-weight: 600; text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--text-3); margin-top: 8px; }
+.quo-contact-fields { align-self: stretch; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 10px; margin: 0; font-size: var(--fs-13); }
+.quo-contact-fields dt { display: flex; align-items: center; gap: 6px; color: var(--text-2); }
+.quo-contact-fields dd { margin: 0; min-width: 0; }
+@media (max-width: 1280px) { .quo-thread-wrap { grid-template-columns: minmax(0, 1fr); } .quo-contact { display: none; } }
+@media (max-width: 1100px) { .quo-inbox[data-rail] { grid-template-columns: minmax(260px, 320px) minmax(0, 1fr); } .quo-rail { display: none; } }
+@media (max-width: 900px) {
+  .quo-inbox, .quo-inbox[data-rail] { grid-template-columns: minmax(0, 1fr); border-radius: 0; height: calc(100dvh - var(--topbar-height) - var(--mobile-nav-height) - 24px); }
+}

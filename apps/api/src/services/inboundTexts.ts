@@ -41,6 +41,8 @@ export interface InboundText {
   keyword: "stop" | "start" | null;
   /** The "stop" is words that ask for it, not the keyword itself: Twilio hasn't stopped the number. */
   phrase?: boolean;
+  /** The business's line it came in to, when it came through Quo (core/quo.ts quoBrandOf). */
+  line?: "washing" | "lights" | null;
 }
 
 /** As many texts from one unknown number as a company keeps in a day, and from all unknown numbers. */
@@ -87,7 +89,7 @@ export async function receiveText(admin: Db, text: InboundText, companies: reado
     touched.add(client.company_id);
     await admin.from("messages").insert({
       company_id: client.company_id, client_id: client.id, channel: "sms", direction: "in", status: "received",
-      body, external_id: text.sid, sent_by: null, from_phone: text.from,
+      body, external_id: text.sid, sent_by: null, from_phone: text.from, line: text.line ?? null,
     });
     // Texts off from now, or back on: only a change is news (a YES that's an ordinary reply isn't).
     let changed = false;
@@ -127,7 +129,7 @@ export async function receiveText(admin: Db, text: InboundText, companies: reado
     touched.add(contact.company_id);
     await admin.from("messages").insert({
       company_id: contact.company_id, client_id: contact.client_id, channel: "sms", direction: "in", status: "received",
-      body, external_id: text.sid, sent_by: null, from_phone: text.from, from_name: contact.name.slice(0, 200),
+      body, external_id: text.sid, sent_by: null, from_phone: text.from, from_name: contact.name.slice(0, 200), line: text.line ?? null,
     });
     // STOP or START is about the number, once for the company; the office hears once too.
     let changed = false;

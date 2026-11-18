@@ -44,7 +44,7 @@ messages.post("/messages/send", requireUser, requireCompany(SALES), async (c) =>
   const { db, companyId } = c.var;
   const client = must(await db.from("clients").select("id, display_name, email, phone, sms_opt_out_at").eq("id", body.client_id).eq("company_id", companyId).maybeSingle(), "Client not found.");
   const company = must(await db.from("companies").select("name, email, phone, address, settings").eq("id", companyId).maybeSingle());
-  let result: { sent: boolean; id?: string; reason?: string };
+  let result: { sent: boolean; id?: string; reason?: string; line?: "washing" | "lights" };
   let to: string;
   if (body.channel === "email") {
     to = body.to || client.email || "";
@@ -69,7 +69,7 @@ messages.post("/messages/send", requireUser, requireCompany(SALES), async (c) =>
     .from("messages")
     .insert({
       company_id: companyId, client_id: client.id, channel: body.channel, direction: "out", subject: body.channel === "email" ? body.subject : null,
-      body: body.body, status: result.sent ? "sent" : "failed", external_id: result.id ?? null,
+      body: body.body, status: result.sent ? "sent" : "failed", external_id: result.id ?? null, line: result.line ?? null,
       recipients: [{ to, name: sentToClient(body.channel, to, client) ? client.display_name : to, ...(result.sent ? {} : { failed: true }) }],
     })
     .select("id")

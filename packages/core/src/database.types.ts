@@ -1752,14 +1752,14 @@ isOneToOne: false
                   ]
                 },"messages": {
                   Row: {
-                    "body": string,"channel": string,"client_id": string | null,"company_id": string,"created_at": string,"direction": string,"external_id": string | null,"from_name": string | null,"from_phone": string | null,"id": string,"recipients": Json | null,"related_id": string | null,"related_type": string | null,"sent_by": string | null,"status": string,"subject": string | null
+                    "body": string,"channel": string,"client_id": string | null,"company_id": string,"created_at": string,"direction": string,"external_id": string | null,"from_name": string | null,"from_phone": string | null,"id": string,"line": string | null,"recipients": Json | null,"related_id": string | null,"related_type": string | null,"sent_by": string | null,"status": string,"subject": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "body": string,"channel": string,"client_id"?: string | null,"company_id": string,"created_at"?: string,"direction"?: string,"external_id"?: string | null,"from_name"?: string | null,"from_phone"?: string | null,"id"?: string,"recipients"?: Json | null,"related_id"?: string | null,"related_type"?: string | null,"sent_by"?: string | null,"status"?: string,"subject"?: string | null
+                    "body": string,"channel": string,"client_id"?: string | null,"company_id": string,"created_at"?: string,"direction"?: string,"external_id"?: string | null,"from_name"?: string | null,"from_phone"?: string | null,"id"?: string,"line"?: string | null,"recipients"?: Json | null,"related_id"?: string | null,"related_type"?: string | null,"sent_by"?: string | null,"status"?: string,"subject"?: string | null
                   }
                   Update: {
-                    "body"?: string,"channel"?: string,"client_id"?: string | null,"company_id"?: string,"created_at"?: string,"direction"?: string,"external_id"?: string | null,"from_name"?: string | null,"from_phone"?: string | null,"id"?: string,"recipients"?: Json | null,"related_id"?: string | null,"related_type"?: string | null,"sent_by"?: string | null,"status"?: string,"subject"?: string | null
+                    "body"?: string,"channel"?: string,"client_id"?: string | null,"company_id"?: string,"created_at"?: string,"direction"?: string,"external_id"?: string | null,"from_name"?: string | null,"from_phone"?: string | null,"id"?: string,"line"?: string | null,"recipients"?: Json | null,"related_id"?: string | null,"related_type"?: string | null,"sent_by"?: string | null,"status"?: string,"subject"?: string | null
                   }
                   Relationships: [
                     {

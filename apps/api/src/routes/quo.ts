@@ -6,9 +6,9 @@
  * Test only is on from the start and nothing here turns it off: until the business goes live, only
  * the test numbers are texted, and a text from any other number is dropped without being kept.
  */
-import { ADMINS } from "@crewtavo/core";
+import { ADMINS, SALES } from "@crewtavo/core";
 import { asksToStopTexts, smsKeyword } from "@crewtavo/core/marketing";
-import { parseTestNumbers, quoIncomingText, quoNumberAllowed, quoSettings, type QuoIncomingText, type QuoLine, type QuoSettings } from "@crewtavo/core/quo";
+import { parseTestNumbers, quoBrandOf, quoIncomingText, quoNumberAllowed, quoSettings, type QuoIncomingText, type QuoLine, type QuoSettings } from "@crewtavo/core/quo";
 import { Hono } from "hono";
 import { z } from "zod";
 import type { AppEnv, Env } from "../env";
@@ -67,6 +67,13 @@ async function current(admin: Db, companyId: string): Promise<QuoSettings | null
   const { data } = await admin.from("integrations").select("status, settings").match({ company_id: companyId, provider: "quo" }).maybeSingle();
   return data && data.status !== "disconnected" ? quoSettings(data.settings) : null;
 }
+
+/** The lines texts go from, for Messages' inboxes (names and numbers only). Empty without Quo. */
+quo.get("/quo/lines", requireUser, requireCompany(SALES), async (c) => {
+  const account = await companyQuo(c.env, c.var.companyId);
+  const lines = account ? (["washing", "lights"] as const).flatMap((brand) => (account.settings.lines[brand] ? [{ brand, name: account.settings.lines[brand]!.name, number: account.settings.lines[brand]!.number }] : [])) : [];
+  return c.json({ lines, test_only: account?.settings.test_only ?? false, practice: account?.settings.practice ?? false });
+});
 
 /** Practice mode: Quo without a Quo account. Texts don't leave Crewtavo; replies are pretended. */
 quo.put("/apps/quo/practice", requireUser, requireCompany(ADMINS, "apps"), async (c) => {
@@ -186,25 +193,25 @@ quo.post("/apps/quo/webhook", requireUser, requireCompany(ADMINS, "apps"), async
  * client's timeline, or under Unknown numbers, with STOP honoured). While it's test only, a text
  * from a number that isn't a test number is dropped here and never kept. Whether it was filed.
  */
-export async function receiveQuoText(admin: Db, companyId: string, settings: Pick<QuoSettings, "test_only" | "test_numbers">, text: QuoIncomingText): Promise<boolean> {
+export async function receiveQuoText(admin: Db, companyId: string, settings: Pick<QuoSettings, "test_only" | "test_numbers" | "lines">, text: QuoIncomingText & { line?: "washing" | "lights" | null }): Promise<boolean> {
   if (!quoNumberAllowed(settings, text.from)) return false;
   const body = text.text.slice(0, 10_000);
   if (!body.trim()) return false;
   const word = smsKeyword(body);
   const phrase = !word && asksToStopTexts(body);
-  await receiveText(admin, { from: text.from, body, sid: text.id || null, keyword: phrase ? "stop" : word, phrase }, [companyId]);
+  await receiveText(admin, { from: text.from, body, sid: text.id || null, keyword: phrase ? "stop" : word, phrase, line: text.line ?? quoBrandOf(settings, text.phoneNumberId) }, [companyId]);
   return true;
 }
 
 /** Test only: a test number "texts" the line, to try replies without a phone. */
 quo.post("/apps/quo/pretend", requireUser, requireCompany(ADMINS, "apps"), async (c) => {
-  const body = await readJson(c, z.object({ from: z.string().trim().min(7).max(40), body: z.string().trim().min(1, "Type what they texted.").max(1600) }));
+  const body = await readJson(c, z.object({ from: z.string().trim().min(7).max(40), body: z.string().trim().min(1, "Type what they texted.").max(1600), line: z.enum(["washing", "lights"]).optional() }));
   const account = await companyQuo(c.env, c.var.companyId);
   if (!account) throw new HttpError(409, "Set up Quo first.");
   if (!account.settings.test_only) throw new HttpError(400, "Pretend texts are only for testing.");
   const [from] = testNumbers([body.from]);
   if (!quoNumberAllowed(account.settings, from)) throw new HttpError(400, "That isn't one of your test numbers.");
-  await receiveQuoText(adminClient(c.env), c.var.companyId, account.settings, { id: `pretend-${crypto.randomUUID()}`, from: from!, text: body.body, phoneNumberId: null });
+  await receiveQuoText(adminClient(c.env), c.var.companyId, account.settings, { id: `pretend-${crypto.randomUUID()}`, from: from!, text: body.body, phoneNumberId: null, line: body.line ?? "washing" });
   kickAutomations(c, c.var.companyId);
   return c.json({ ok: true });
 });
