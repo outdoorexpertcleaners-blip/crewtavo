@@ -76,7 +76,7 @@ export const LEVEL_SUMMARY: Record<Role, string> = {
   office: "All clients, jobs and money",
   estimator: "Clients, requests, quotes and the schedule. No invoices",
   crew_lead: "Schedules and staffs their own crew, sees its time. Sees the whole schedule. No prices",
-  field_crew: "Their own visits and time, the whole schedule and every client to look up. No prices",
+  field_crew: "Their own visits and time, the whole schedule, every client and their texts, and job prices. No invoices or pay",
   subcontractor: "Only their own jobs, their price on each, and their paperwork. A client's phone and email only if you allow it",
 };
 

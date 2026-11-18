@@ -324,10 +324,11 @@ export function FieldVisitPage() {
           </dl>
         </section>
       )}
-      {/* The work: the job's lines are readable by the people on it, so someone just looking would see an empty card. */}
-      {v.job && !looking && (
+      {/* The scope of work: the estimate's services, their descriptions and, for the team (not subs),
+          each price and the total, on any job the person can see, theirs or a teammate's. */}
+      {v.job && (
         <section className="card card-pad stack-sm">
-          <ScopeOfWork jobId={v.job.id} title={t("The work")} bare />
+          <ScopeOfWork jobId={v.job.id} title={t("Scope of work")} bare prices={!sub} />
           {/* A repeating job's work is the same every visit; this is what's extra on this one. */}
           {addsToVisit(v.job) && <VisitExtraScope visitId={v.id} />}
           {/* Not once a repeating job's visit is on an invoice: the office adds to the invoice then. */}
