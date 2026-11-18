@@ -9,7 +9,8 @@
  *      on the bell, and Messages lists it under "Unknown numbers" until someone attaches the number
  *      to a client (public.attach_unknown_texts), which moves its texts onto that client's timeline.
  * The office is told each time (the people who get new-message notifications: owners, admins and
- * the office).
+ * the office). So are the people working at the client's today (tellVisitPeople): on a job the crew
+ * deals with the client directly, so "Can you move the truck?" reaches whoever is in the driveway.
  *
  * STOP and START are honoured for the number itself (sms_stops), whoever's it is, and for a
  * client's own phone on the client too (clients.sms_opt_out_at). From a number nobody knows they
@@ -28,6 +29,8 @@
  * company UNKNOWN_PER_COMPANY, and the office hears about a number once an hour.
  */
 import { phoneMatchKey } from "@crewtavo/core/recipients";
+import { STAFF } from "@crewtavo/core/roles";
+import { localDate } from "@crewtavo/core/time";
 import type { Db } from "../lib/supabase";
 import { noteSequenceReply } from "./sequences";
 import { clearStop, noteStop, phoneKey, type StopDetails } from "./textsOff";
@@ -59,11 +62,97 @@ const HOUR_MS = 3_600_000;
 
 type Notice = { title: string; body: string; link: string };
 
-/** The bell, for the people who hear about new messages: the company's owners, admins and office. */
-async function tellOffice(admin: Db, companyId: string, notice: Notice) {
+/** The bell, for the people who hear about new messages: the company's owners, admins and office. Says who was told. */
+async function tellOffice(admin: Db, companyId: string, notice: Notice): Promise<string[]> {
   const { data: office } = await admin.from("memberships").select("user_id").eq("company_id", companyId).eq("active", true).in("role", ["owner", "admin", "office"]);
-  if (!office?.length) return;
+  if (!office?.length) return [];
   await admin.from("notifications").insert(office.map((m) => ({ company_id: companyId, user_id: m.user_id, kind: "client", title: notice.title.slice(0, 300), body: notice.body, link: notice.link })));
+  return office.map((m) => m.user_id);
+}
+
+/** A visit as tellVisitPeople reads it: whose it is (its job's client, else its request's), and who's on it. */
+export interface TodaysVisit {
+  crew_id: string | null;
+  status: string;
+  job: { client_id: string | null } | null;
+  request: { client_id: string | null } | null;
+  assignees: Array<{ user_id: string }> | null;
+}
+
+/** The people on the client's visits that aren't cancelled: those listed, else the crew's members. */
+function peopleOnVisits(visits: readonly TodaysVisit[], crewMembers: ReadonlyArray<{ crew_id: string; user_id: string }>, clientId: string): string[] {
+  const people = new Set<string>();
+  for (const visit of visits) {
+    if (visit.status === "cancelled" || (visit.job?.client_id ?? visit.request?.client_id) !== clientId) continue;
+    const listed = (visit.assignees ?? []).map((a) => a.user_id);
+    const onIt = listed.length ? listed : crewMembers.filter((m) => visit.crew_id && m.crew_id === visit.crew_id).map((m) => m.user_id);
+    for (const id of onIt) people.add(id);
+  }
+  return [...people];
+}
+
+/**
+ * Who on the team hears about a client's text because they're working at the client's today: the
+ * people listed on each of the client's visits that isn't cancelled, or, on a visit with nobody
+ * listed, its crew's members (the rule private.assigned_to_visit uses). Only the team as it is now
+ * (an active member, never a sub), never someone already told as the office, and never the person
+ * whose own phone sent it.
+ */
+export function visitPeopleToTell(input: {
+  visits: readonly TodaysVisit[];
+  crewMembers: ReadonlyArray<{ crew_id: string; user_id: string }>;
+  clientId: string;
+  /** The active members among the candidates, with their profile's phone. */
+  team: ReadonlyArray<{ user_id: string; role: string; phone?: string | null }>;
+  told: readonly string[];
+  /** The number the text came from. */
+  from: string;
+}): string[] {
+  const sender = phoneKey(input.from);
+  return peopleOnVisits(input.visits, input.crewMembers, input.clientId).filter((id) => {
+    const member = input.team.find((m) => m.user_id === id);
+    if (!member || !(STAFF as readonly string[]).includes(member.role)) return false;
+    if (input.told.includes(id)) return false;
+    return !(sender && member.phone && phoneKey(member.phone) === sender);
+  });
+}
+
+/**
+ * The bell (and the phone's push, by their choices) for the people working at the client's today,
+ * as visitPeopleToTell picks them. Never in the way of filing the text: a problem is logged.
+ */
+export async function tellVisitPeople(admin: Db, companyId: string, clientId: string, notice: Notice, told: readonly string[], from: string, now = new Date()): Promise<string[]> {
+  try {
+    const { data: company } = await admin.from("companies").select("timezone").eq("id", companyId).maybeSingle();
+    const today = localDate(now, company?.timezone || "UTC");
+    const { data: rows, error } = await admin
+      .from("visits")
+      .select("crew_id, status, job:jobs(client_id), request:requests(client_id), assignees:visit_assignees(user_id)")
+      .eq("company_id", companyId)
+      .eq("scheduled_on", today)
+      .neq("status", "cancelled")
+      .limit(1000);
+    if (error) throw new Error(error.message);
+    const visits = (rows ?? []) as unknown as TodaysVisit[];
+    const theirs = visits.filter((v) => (v.job?.client_id ?? v.request?.client_id) === clientId);
+    if (!theirs.length) return [];
+    const crewIds = [...new Set(theirs.filter((v) => !(v.assignees ?? []).length && v.crew_id).map((v) => v.crew_id!))];
+    const crewMembers = crewIds.length ? ((await admin.from("crew_members").select("crew_id, user_id").eq("company_id", companyId).in("crew_id", crewIds).limit(1000)).data ?? []) : [];
+    const people = peopleOnVisits(theirs, crewMembers, clientId);
+    if (!people.length) return [];
+    const [{ data: members }, { data: profiles }] = await Promise.all([
+      admin.from("memberships").select("user_id, role").eq("company_id", companyId).eq("active", true).in("user_id", people).limit(1000),
+      admin.from("profiles").select("user_id, phone").in("user_id", people).limit(1000),
+    ]);
+    const team = (members ?? []).map((m) => ({ ...m, phone: (profiles ?? []).find((p) => p.user_id === m.user_id)?.phone ?? null }));
+    const tell = visitPeopleToTell({ visits: theirs, crewMembers, clientId, team, told, from });
+    if (!tell.length) return [];
+    await admin.from("notifications").insert(tell.map((user_id) => ({ company_id: companyId, user_id, kind: "client", title: notice.title.slice(0, 300), body: notice.body, link: notice.link })));
+    return tell;
+  } catch (error) {
+    console.error(`Couldn't tell the people at the client's today about their text: ${error instanceof Error ? error.message : String(error)}`);
+    return [];
+  }
 }
 
 /** Files the text, and returns the companies whose automations should look at it. */
@@ -113,7 +202,9 @@ export async function receiveText(admin: Db, text: InboundText, companies: reado
       : changed
         ? { title: `${client.display_name} turned texts back on`, body: `They texted ${body.trim().slice(0, 20).toUpperCase()}, so Crewtavo can text them again.` }
         : { title: "New text from a client", body: body.slice(0, 200) };
-    await tellOffice(admin, client.company_id, { ...notice, link: `/messages?client=${client.id}` });
+    const told = await tellOffice(admin, client.company_id, { ...notice, link: `/messages?client=${client.id}` });
+    // An ordinary text (not STOP or START) reaches the people working there today too.
+    if (!keyword) await tellVisitPeople(admin, client.company_id, client.id, { title: `New text from ${client.display_name}`, body: body.slice(0, 200), link: `/messages?client=${client.id}` }, told, text.from);
   }
 
   // A contact's phone, in a company where it isn't also a client's own: on each of those clients'
@@ -147,7 +238,8 @@ export async function receiveText(admin: Db, text: InboundText, companies: reado
       : changed
         ? { title: `${contact.name} turned texts back on`, body: `They texted ${body.trim().slice(0, 20).toUpperCase()} from ${text.from}, so Crewtavo can text that number again.` }
         : { title: `New text from ${contact.name}`, body: body.slice(0, 200) };
-    await tellOffice(admin, contact.company_id, { ...notice, link: `/messages?client=${contact.client_id}` });
+    const told = await tellOffice(admin, contact.company_id, { ...notice, link: `/messages?client=${contact.client_id}` });
+    if (!keyword) await tellVisitPeople(admin, contact.company_id, contact.client_id, { title: `New text from ${contact.name}`, body: body.slice(0, 200), link: `/messages?client=${contact.client_id}` }, told, text.from);
   }
   if (touched.size) return [...touched];
 

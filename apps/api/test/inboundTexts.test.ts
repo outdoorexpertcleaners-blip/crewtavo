@@ -6,7 +6,7 @@
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Db } from "../src/lib/supabase";
-import { receiveText, UNKNOWN_PER_NUMBER } from "../src/services/inboundTexts";
+import { receiveText, UNKNOWN_PER_NUMBER, visitPeopleToTell, type TodaysVisit } from "../src/services/inboundTexts";
 
 interface State {
   companies: string[];
@@ -19,12 +19,18 @@ interface State {
   /** The record of texts going off and on (sms_stop_changes). */
   changes: Array<Record<string, unknown>>;
   messages: Array<Record<string, unknown>>;
-  notices: Array<{ company_id: string; title: string; body: string; link: string }>;
+  notices: Array<{ company_id: string; user_id?: string; title: string; body: string; link: string }>;
   /** The companies each read of clients and contacts was kept to (null: every company). */
   scopes: Array<string[] | null>;
+  /** Today's visits (the stand-in doesn't filter by day: these are today's), crews, and the team. */
+  visits: TodaysVisit[];
+  crewMembers: Array<{ crew_id: string; user_id: string }>;
+  team: Array<{ user_id: string; role: string }>;
+  /** The day each read of visits asked for. */
+  days: string[];
 }
 
-const fresh = (): State => ({ companies: ["co-1"], clients: [], contacts: [], unknown: [], stops: new Set(), kept: new Map(), changes: [], messages: [], notices: [], scopes: [] });
+const fresh = (): State => ({ companies: ["co-1"], clients: [], contacts: [], unknown: [], stops: new Set(), kept: new Map(), changes: [], messages: [], notices: [], scopes: [], visits: [], crewMembers: [], team: [], days: [] });
 
 function fakeDb(state: State): Db {
   const from = (table: string) => {
@@ -35,7 +41,14 @@ function fakeDb(state: State): Db {
     const eq: Record<string, unknown> = {};
     let since = "";
     let scope: string[] | null = null;
+    let byUser = false;
+    let single = false;
     const answer = () => {
+      if (table === "companies" && single) return { data: { timezone: "America/New_York" } };
+      if (table === "visits") return (state.days.push(String(eq.scheduled_on)), { data: state.visits });
+      if (table === "crew_members") return { data: state.crewMembers };
+      if (table === "memberships" && byUser) return { data: state.team };
+      if (table === "profiles") return { data: [] };
       if (table === "clients" && op === "select") return (state.scopes.push(scope), { data: state.clients.filter((c) => !scope || scope.includes(c.company_id)) });
       if (table === "clients" && op === "update") return { data: [{ id: eq.id }] };
       if (table === "client_contacts") return { data: state.contacts.filter((c) => !scope || scope.includes(c.company_id)) };
@@ -76,12 +89,13 @@ function fakeDb(state: State): Db {
       update: (value: unknown) => ((op = "update"), (row = value), builder),
       delete: () => ((op = "delete"), builder),
       eq: (column: string, value: unknown) => ((eq[column] = value), builder),
-      in: (column: string, values: string[]) => (column === "company_id" && (scope = values), builder),
+      in: (column: string, values: string[]) => ((column === "company_id" && (scope = values)), (column === "user_id" && (byUser = true)), builder),
+      maybeSingle: () => ((single = true), builder),
       gte: (_column: string, value: string) => ((since = value), builder),
       limit: (n: number) => ((limit = n), builder),
       then: (resolve: (r: unknown) => unknown, reject: (e: unknown) => unknown) => Promise.resolve({ data: null, error: null, count: null, ...answer() }).then(resolve, reject),
     };
-    for (const name of ["not", "is", "ilike"]) builder[name] = () => builder;
+    for (const name of ["not", "is", "ilike", "neq"]) builder[name] = () => builder;
     return builder;
   };
   return { from } as unknown as Db;
@@ -253,5 +267,59 @@ describe("a text from a number nobody knows", () => {
     expect(state.notices).toEqual([]);
     await receiveText(fakeDb(state), text("START"), ["co-2"]);
     expect([...state.stops]).toEqual(["co-1:5405550163"]);
+  });
+});
+
+describe("the people working at a client's today", () => {
+  const visit = (over: Partial<TodaysVisit> = {}): TodaysVisit => ({ crew_id: null, status: "scheduled", job: { client_id: "client-1" }, request: null, assignees: [], ...over });
+  const team = (...ids: string[]) => ids.map((user_id) => ({ user_id, role: "field_crew" }));
+  const pick = (over: Partial<Parameters<typeof visitPeopleToTell>[0]>) =>
+    visitPeopleToTell({ visits: [], crewMembers: [], clientId: "client-1", team: team("dee", "eli", "fay", "gus"), told: [], from: "+15405550163", ...over });
+
+  it("are the people listed on the client's visits, or the crew's members when nobody is listed", () => {
+    expect(pick({ visits: [visit({ crew_id: "mowing", assignees: [{ user_id: "dee" }] })], crewMembers: [{ crew_id: "mowing", user_id: "eli" }] })).toEqual(["dee"]);
+    expect(pick({ visits: [visit({ crew_id: "mowing" })], crewMembers: [{ crew_id: "mowing", user_id: "eli" }, { crew_id: "mowing", user_id: "fay" }, { crew_id: "trees", user_id: "gus" }] })).toEqual(["eli", "fay"]);
+    // A visit on a request (an estimate) counts too; two visits tell each person once.
+    expect(pick({ visits: [visit({ job: null, request: { client_id: "client-1" }, assignees: [{ user_id: "dee" }] }), visit({ assignees: [{ user_id: "dee" }, { user_id: "eli" }] })] })).toEqual(["dee", "eli"]);
+  });
+
+  it("aren't on another client's visits or a cancelled one, or on a visit with no crew and nobody listed", () => {
+    expect(pick({ visits: [visit({ job: { client_id: "client-2" }, assignees: [{ user_id: "dee" }] })] })).toEqual([]);
+    expect(pick({ visits: [visit({ status: "cancelled", assignees: [{ user_id: "dee" }] })] })).toEqual([]);
+    expect(pick({ visits: [visit()], crewMembers: [{ crew_id: "mowing", user_id: "eli" }] })).toEqual([]);
+  });
+
+  it("are only the team as it is now, never a sub, someone already told as the office, or whoever sent the text", () => {
+    const visits = [visit({ assignees: [{ user_id: "dee" }, { user_id: "sub" }, { user_id: "gone" }, { user_id: "owen" }, { user_id: "pat" }] })];
+    const people = [{ user_id: "dee", role: "field_crew" }, { user_id: "sub", role: "subcontractor" }, { user_id: "owen", role: "office" }, { user_id: "pat", role: "crew_lead", phone: "(540) 555-0163" }];
+    expect(pick({ visits, team: people, told: ["owen"] })).toEqual(["dee"]);
+  });
+});
+
+describe("a client's text reaching the crew at their place today", () => {
+  it("tells the people on the visit, as well as the office, with what they wrote", async () => {
+    const state = fresh();
+    state.clients = [{ id: "client-1", company_id: "co-1", phone: "(540) 555-0163", display_name: "Jane Doe" }];
+    state.visits = [{ crew_id: "mowing", status: "in_progress", job: { client_id: "client-1" }, request: null, assignees: [] }];
+    state.crewMembers = [{ crew_id: "mowing", user_id: "dee" }, { crew_id: "mowing", user_id: "owner-1" }];
+    state.team = [{ user_id: "dee", role: "field_crew" }, { user_id: "owner-1", role: "owner" }];
+    vi.useFakeTimers({ now: new Date("2026-11-19T03:30:00Z"), toFake: ["Date"] });
+    await receiveText(fakeDb(state), text("Can you move the truck?"), null);
+    expect(state.notices).toEqual([
+      { company_id: "co-1", user_id: "owner-1", kind: "client", title: "New text from a client", body: "Can you move the truck?", link: "/messages?client=client-1" },
+      // The owner was told as the office, so once.
+      { company_id: "co-1", user_id: "dee", kind: "client", title: "New text from Jane Doe", body: "Can you move the truck?", link: "/messages?client=client-1" },
+    ]);
+    // Today in the company's time zone: still the 18th in New York.
+    expect(state.days).toEqual(["2026-11-18"]);
+  });
+
+  it("doesn't tell the crew about STOP or START", async () => {
+    const state = fresh();
+    state.clients = [{ id: "client-1", company_id: "co-1", phone: "(540) 555-0163", display_name: "Jane Doe" }];
+    state.visits = [{ crew_id: null, status: "scheduled", job: { client_id: "client-1" }, request: null, assignees: [{ user_id: "dee" }] }];
+    state.team = [{ user_id: "dee", role: "field_crew" }];
+    await receiveText(fakeDb(state), text("STOP"), null);
+    expect(state.notices.map((n) => n.user_id)).toEqual(["owner-1"]);
   });
 });

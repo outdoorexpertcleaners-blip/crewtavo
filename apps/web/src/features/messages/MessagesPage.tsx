@@ -4,6 +4,10 @@
  * right. Conversations by client (emails, texts, notes), with replies by email or text, and texts
  * from unknown numbers to attach to a client. A line (messages.line) is the Quo line a text went
  * out on or came in to.
+ *
+ * Field crew and crew leads use it too: on a job they deal with the client directly (gate codes,
+ * "can you move the truck?"). They read the inbox and reply by text or add a note; email stays the
+ * office's (access.ts).
  */
 import { textsOff, textsOffReason } from "@crewtavo/core/marketing";
 import { phoneDisplay } from "@crewtavo/core/phone";
@@ -20,12 +24,14 @@ import { initials } from "@/components/ui/Avatar";
 import { ApiError, api, searchTerm, supabase, unwrap } from "@/lib/api";
 import { formatDateTime, timeAgo } from "@/lib/format";
 import { useListAnimation } from "@/lib/motion";
-import { hasRole, useSession } from "@/lib/session";
+import { useSession } from "@/lib/session";
+import { lookupOnly } from "../clients/access";
 import { ClientPicker, type PickedClient } from "../clients/ClientForm";
 import { MessageBody } from "../clients/MessageBody";
 import { messageFrom, messagePeople } from "../clients/messagePeople";
 import { useTextLines } from "../field/FieldText";
 import { ConnectEmailHint } from "../settings/ConnectEmailHint";
+import { repliesByTextOnly } from "./access";
 import { UnknownRows, UnknownThread, useUnknownNumbers } from "./UnknownNumbers";
 import { matchingNumbers } from "./unknownTexts";
 
@@ -111,7 +117,6 @@ export function MessagesPage() {
   // Conversations move to the top as messages come in.
   const list = useListAnimation<HTMLDivElement>();
 
-  const canCompose = hasRole(session, "admin", "office", "estimator");
   return (
     <div className="messages-page quo" data-open={selected || unknown ? "" : undefined}>
       {!session.config.features.email && !session.config.features.sms && (
@@ -140,7 +145,7 @@ export function MessagesPage() {
         <section className="inbox-list quo-list" aria-label="Conversations">
           <div className="quo-list-head">
             <strong>{line ? lines.find((l) => l.brand === line)?.name ?? "Messages" : "Chats"}</strong>
-            {canCompose && <button type="button" className="icon-btn" aria-label="New message" title="New message" onClick={() => setComposing(true)}><Icon name="edit" size={18} /></button>}
+            <button type="button" className="icon-btn" aria-label="New message" title="New message" onClick={() => setComposing(true)}><Icon name="edit" size={18} /></button>
           </div>
           {/* On a phone or tablet the rail is hidden (under 1100px), so the lines are chips here. */}
           {lines.length > 0 && (
@@ -272,13 +277,13 @@ function Thread({ clientId, onBack }: { clientId: string; onBack: () => void }) 
       </div>
       <Composer key={client.id} client={client} line={[...rows].reverse().find((m) => m.channel === "sms" && (m.line === "washing" || m.line === "lights"))?.line as Line | undefined} onSent={() => { queryClient.invalidateQueries({ queryKey: ["client", clientId] }); queryClient.invalidateQueries({ queryKey: ["messages", session.company.id] }); }} />
     </div>
-    <ContactPanel client={client} />
+    <ContactPanel client={client} lookupOnly={lookupOnly(session)} />
     </div>
   );
 }
 
 /** The client's details beside the conversation, as Quo shows the contact. */
-function ContactPanel({ client }: { client: { id: string; display_name: string; email: string | null; phone: string | null; company_name?: string | null; status?: string | null } }) {
+function ContactPanel({ client, lookupOnly }: { client: { id: string; display_name: string; email: string | null; phone: string | null; company_name?: string | null; status?: string | null }; lookupOnly: boolean }) {
   return (
     <aside className="quo-contact" aria-label="Contact">
       <span className="quo-avatar quo-avatar-lg">{initials(client.display_name)}</span>
@@ -294,7 +299,8 @@ function ContactPanel({ client }: { client: { id: string; display_name: string; 
         {client.company_name && <><dt><Icon name="clients" size={14} />Company</dt><dd>{client.company_name}</dd></>}
         {client.status && <><dt><Icon name="tag" size={14} />Status</dt><dd style={{ textTransform: "capitalize" }}>{client.status}</dd></>}
       </dl>
-      <Link to={`/clients/${client.id}`} className="small">Open their page: requests, quotes and jobs</Link>
+      {/* The crew's view of a client's page is a lookup, without the work sold to them (clients/access.ts). */}
+      <Link to={`/clients/${client.id}`} className="small">{lookupOnly ? "Open their page" : "Open their page: requests, quotes and jobs"}</Link>
     </aside>
   );
 }
@@ -308,10 +314,12 @@ function Composer({ client, line, onSent }: { client: { id: string; display_name
   const brand = useTextLines(null, client.id, lines.length > 1 && !line);
   // Texting works through Quo's lines or the server's own texting.
   const texts = features.sms || lines.length > 0;
+  // The crew replies by text or adds a note; email is the office's.
+  const textOnly = repliesByTextOnly(session);
   const [picked, setPicked] = useState<Line | null>(null);
   // Send from: what the office picked, else the line the conversation is on, else the client's brand.
   const from: Line = picked ?? line ?? brand.data?.brand ?? "washing";
-  const [channel, setChannel] = useState<"email" | "sms" | "note">(client.phone && texts && !textsOff(client) ? "sms" : client.email && features.email ? "email" : "note");
+  const [channel, setChannel] = useState<"email" | "sms" | "note">(client.phone && texts && !textsOff(client) ? "sms" : client.email && features.email && !textOnly ? "email" : "note");
   const [subject, setSubject] = useState(`A note from ${session.company.name}`);
   const [body, setBody] = useState("");
   const send = useMutation({
@@ -338,7 +346,7 @@ function Composer({ client, line, onSent }: { client: { id: string; display_name
       <div className="row wrap" style={{ gap: 10 }}>
         <div className="segmented" role="group" aria-label="Send as">
           <button type="button" aria-pressed={channel === "sms"} onClick={() => { setChannel("sms"); send.reset(); }}><Icon name="messages" size={14} />Text</button>
-          <button type="button" aria-pressed={channel === "email"} onClick={() => { setChannel("email"); send.reset(); }}><Icon name="mail" size={14} />Email</button>
+          {!textOnly && <button type="button" aria-pressed={channel === "email"} onClick={() => { setChannel("email"); send.reset(); }}><Icon name="mail" size={14} />Email</button>}
           <button type="button" aria-pressed={channel === "note"} onClick={() => { setChannel("note"); send.reset(); }}><Icon name="note" size={14} />Note</button>
         </div>
         {/* Which Quo line the text goes from, when the business has both. */}

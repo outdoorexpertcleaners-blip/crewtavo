@@ -37,6 +37,8 @@ interface Call {
   path: string;
   params: URLSearchParams;
   body: any;
+  /** Who the call was made as: the person's token, or the server's key. */
+  auth: string | null;
 }
 
 const JANE: Row = { id: JANE_ID, company_id: CO, display_name: "Jane Doe", email: null, phone: "(470) 555-0101", sms_opt_out_at: null };
@@ -51,7 +53,7 @@ function serve(world: { tables?: Record<string, Row[]>; answer?: (call: Call) =>
     const url = new URL(String(input));
     const path = url.pathname.replace(/^\/rest\/v1\//, "");
     const text = typeof init?.body === "string" ? init.body : "";
-    const call: Call = { method: (init?.method ?? "GET").toUpperCase(), path, params: url.searchParams, body: text ? JSON.parse(text) : undefined };
+    const call: Call = { method: (init?.method ?? "GET").toUpperCase(), path, params: url.searchParams, body: text ? JSON.parse(text) : undefined, auth: new Headers(init?.headers).get("authorization") };
     calls.push(call);
     const own = world.answer?.(call);
     if (own !== undefined) return Response.json(own);
@@ -150,6 +152,70 @@ describe("the office picking the line in Messages", () => {
     const res = await post("/messages/send", { client_id: JANE_ID, channel: "sms", body: "Your lights are booked", line: "lights" });
     expect(res.status).toBe(200);
     expect(sendSms.mock.calls[0]![1]).toMatchObject({ brand: "lights" });
+  });
+});
+
+describe("the crew replying in Messages", () => {
+  const world = (role: string, clients: Row[] = [JANE]) => ({ tables: { memberships: [member(role)], clients, companies: [{ id: CO, name: "Outdoor Expert", settings: {} }] } });
+
+  it("lets field crew and crew leads text a client from the line they pick, kept with who sent it, written by the server", async () => {
+    for (const role of ["field_crew", "crew_lead"]) {
+      sendSms.mockClear();
+      const calls = serve(world(role));
+      const res = await post("/messages/send", { client_id: JANE_ID, channel: "sms", body: "Can you move the truck?", line: "lights" });
+      expect([role, res.status, await res.json()]).toEqual([role, 200, { id: "msg-1", sent: true, to: "(470) 555-0101" }]);
+      expect(sendSms.mock.calls[0]![1]).toMatchObject({ to: "(470) 555-0101", brand: "lights" });
+      // The first text to a number says how to stop them, as from the field.
+      expect(sendSms.mock.calls[0]![1].body).toMatch(/^Can you move the truck\?.*STOP/s);
+      const written = calls.filter((c) => c.method === "POST" && c.path === "messages");
+      expect(written.map((c) => c.body)).toEqual([expect.objectContaining({ client_id: JANE_ID, channel: "sms", direction: "out", body: "Can you move the truck?", line: "lights", sent_by: USER, status: "sent" })]);
+      expect(written[0]!.auth).not.toContain(token);
+    }
+  });
+
+  it("texts only the client's own phone: a number typed in is ignored", async () => {
+    serve(world("field_crew"));
+    const res = await post("/messages/send", { client_id: JANE_ID, channel: "sms", to: "+15405550199", body: "Hi" });
+    expect(res.status).toBe(200);
+    expect(sendSms.mock.calls[0]![1]).toMatchObject({ to: "(470) 555-0101" });
+  });
+
+  it("doesn't let the crew email: that stays the office's and sales'", async () => {
+    for (const role of ["field_crew", "crew_lead"]) {
+      const calls = serve(world(role));
+      const res = await post("/messages/send", { client_id: JANE_ID, channel: "email", subject: "Hi", body: "Hi" });
+      expect([role, res.status]).toEqual([role, 403]);
+      expect(messageRows(calls)).toEqual([]);
+    }
+    expect(sendSms).not.toHaveBeenCalled();
+  });
+
+  it("isn't for subs, and doesn't text a client who said stop or one they can't read", async () => {
+    serve(world("subcontractor"));
+    expect((await post("/messages/send", { client_id: JANE_ID, channel: "sms", body: "Hi" })).status).toBe(403);
+    serve(world("field_crew", [{ ...JANE, sms_opt_out_at: "2026-11-01T00:00:00Z" }]));
+    expect((await post("/messages/send", { client_id: JANE_ID, channel: "sms", body: "Hi" })).status).toBe(400);
+    serve(world("field_crew", []));
+    expect((await post("/messages/send", { client_id: JANE_ID, channel: "sms", body: "Hi" })).status).toBe(404);
+    expect(sendSms).not.toHaveBeenCalled();
+  });
+
+  it("leaves the office's texts as they were: sent as typed, to the number given, written as the person", async () => {
+    const calls = serve(world("office"));
+    const res = await post("/messages/send", { client_id: JANE_ID, channel: "sms", to: "+15405550199", body: "Hi" });
+    expect(res.status).toBe(200);
+    expect(sendSms.mock.calls[0]![1]).toMatchObject({ to: "+15405550199", body: "Hi" });
+    expect(calls.find((c) => c.method === "POST" && c.path === "messages")!.auth).toContain(token);
+  });
+
+  it("gives the whole team the lines to pick from, never a sub", async () => {
+    for (const role of ["field_crew", "crew_lead", "office"]) {
+      serve(world(role));
+      const res = await app.request("/api/quo/lines", { headers: { Authorization: `Bearer ${token}`, "X-Company-Id": CO } }, env);
+      expect([role, res.status]).toEqual([role, 200]);
+    }
+    serve(world("subcontractor"));
+    expect((await app.request("/api/quo/lines", { headers: { Authorization: `Bearer ${token}`, "X-Company-Id": CO } }, env)).status).toBe(403);
   });
 });
 

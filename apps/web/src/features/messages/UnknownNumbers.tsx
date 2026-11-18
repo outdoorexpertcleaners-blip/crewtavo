@@ -2,7 +2,9 @@
  * Texts from numbers that aren't a client's or a contact's (public.unknown_texts): listed in
  * Messages under "Unknown numbers", so none is lost. Opening one shows its texts and offers to
  * attach the number to a client, as their phone or as a new contact, which moves the conversation
- * onto that client's timeline (public.attach_unknown_texts); or to delete it.
+ * onto that client's timeline (public.attach_unknown_texts); or to delete it. The whole team reads
+ * them (a client texting the crew from a new phone); attaching is for the office and sales, deleting
+ * for the office.
  */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Fragment, useState, type FormEvent } from "react";
@@ -17,10 +19,9 @@ import { supabase, unwrap } from "@/lib/api";
 import { formatDateTime, timeAgo } from "@/lib/format";
 import { hasRole, useSession } from "@/lib/session";
 import { ClientPicker, type PickedClient } from "../clients/ClientForm";
+import { attachesUnknownNumbers, seesUnknownNumbers } from "./access";
 import { byNumber, numberWords, type UnknownNumber } from "./unknownTexts";
 
-/** Who sees unknown numbers: whoever starts conversations with clients (the database holds to the same). */
-export const seesUnknownNumbers = (session: Parameters<typeof hasRole>[0]) => hasRole(session, "admin", "office", "estimator");
 
 const unknownKey = (companyId: string) => ["messages", companyId, "unknown"];
 
@@ -102,7 +103,8 @@ export function UnknownThread({ phoneKey, onBack, onAttached }: { phoneKey: stri
           <span className="strong ellipsis">{numberWords(from)}</span>
           <span className="muted small ellipsis">Not one of your clients' numbers</span>
         </span>
-        <Button size="sm" variant="primary" icon="plus" onClick={() => setAttaching(true)}>Add to a client</Button>
+        <a className="icon-btn" href={`tel:${from}`} aria-label={`Call ${numberWords(from)}`} title="Call"><Icon name="phone" size={20} /></a>
+        {attachesUnknownNumbers(session) && <Button size="sm" variant="primary" icon="plus" onClick={() => setAttaching(true)}>Add to a client</Button>}
         {hasRole(session, "admin", "office") && <Button size="sm" variant="ghost" icon="trash" aria-label="Delete these texts" loading={remove.isPending} onClick={askDelete} />}
       </div>
       <div className="thread-body">
@@ -121,7 +123,13 @@ export function UnknownThread({ phoneKey, onBack, onAttached }: { phoneKey: stri
           );
         })}
       </div>
-      <div className="composer"><span className="muted small">Add this number to a client to reply and keep the conversation with their other messages.</span></div>
+      <div className="composer">
+        <span className="muted small">
+          {attachesUnknownNumbers(session)
+            ? "Add this number to a client to reply and keep the conversation with their other messages."
+            : "Call them back, or ask the office to add this number to a client so you can reply by text."}
+        </span>
+      </div>
       {attaching && (
         <AttachDialog
           from={from}

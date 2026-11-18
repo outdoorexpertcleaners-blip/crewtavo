@@ -1,9 +1,10 @@
 /**
- * Field crew ("Employee") in the app: their menus are My day, Schedule, Clock and Clients, with their
- * profile for Settings, on the sidebar and the phone's tab bar; any other screen opened by its
+ * Field crew ("Employee") in the app: their menus are My day, Clock in, Messages, Schedule and
+ * Clients, with their profile for Settings, on the sidebar and the phone's tab bar; any other screen opened by its
  * address sends them to My day; a visit opened from the whole team's schedule goes to the field
  * app's page, where on someone else's visit they only look; and a client's page is a lookup, without
- * the work sold to them. Every other level keeps what it had.
+ * the work sold to them. In Messages they reply by text, not email, and read texts from unknown
+ * numbers without attaching them. Every other level keeps what it had (crew leads gain Messages).
  */
 import { ROLES, STAFF } from "@crewtavo/core/roles";
 import { describe, expect, it } from "vitest";
@@ -11,6 +12,7 @@ import {
   canOpen, CREW_TABS, crewCanOpen, homePath, MOBILE_TABS, mobileTabs, NAV_GROUPS, navVisible, OTHER_SCREENS, SETTINGS_ITEM, settingsItem, SUB_TABS,
 } from "../src/components/shell/nav";
 import { lookupOnly } from "../src/features/clients/access";
+import { attachesUnknownNumbers, repliesByTextOnly, seesUnknownNumbers } from "../src/features/messages/access";
 import { onlyLooking } from "../src/features/field/visitAccess";
 import { opensInField } from "../src/features/schedule/myCrews";
 import { profileOnly, settingsGroups } from "../src/features/settings/sections";
@@ -23,10 +25,10 @@ const EVERY_SCREEN = [...NAV_GROUPS.flat(), ...OTHER_SCREENS, SETTINGS_ITEM];
 const shown = (role: string, permissions: string[] = []) => EVERY_SCREEN.filter((item) => navVisible(person(role, permissions), item)).map((item) => item.to);
 
 describe("field crew's menus", () => {
-  it("are My day, Schedule, Clock and Clients, whatever the business has turned on or their role allows", () => {
-    expect(shown("field_crew")).toEqual(["/field", "/clock", "/schedule", "/clients"]);
+  it("are My day, Clock in, Messages, Schedule and Clients, whatever the business has turned on or their role allows", () => {
+    expect(shown("field_crew")).toEqual(["/field", "/clock", "/messages", "/schedule", "/clients"]);
     // Areas a custom role might list don't add screens either.
-    expect(shown("field_crew", ["sales", "invoices", "reports", "timesheets", "equipment", "kb_edit"])).toEqual(["/field", "/clock", "/schedule", "/clients"]);
+    expect(shown("field_crew", ["sales", "invoices", "reports", "timesheets", "equipment", "kb_edit"])).toEqual(["/field", "/clock", "/messages", "/schedule", "/clients"]);
   });
 
   it("have their profile in place of Settings", () => {
@@ -34,9 +36,13 @@ describe("field crew's menus", () => {
     for (const role of ["owner", "admin", "office", "estimator", "crew_lead"]) expect(settingsItem({ role }), role).toBe(SETTINGS_ITEM);
   });
 
-  it("give them their own tab bar on the phone: My day, Schedule, Clock and Clients", () => {
-    expect(mobileTabs(person("field_crew")).map((t) => t.to)).toEqual(["/field", "/schedule", "/clock", "/clients"]);
+  it("give them their own tab bar on the phone: My day, Schedule, Messages, Clock in and Clients", () => {
+    expect(mobileTabs(person("field_crew")).map((t) => t.to)).toEqual(["/field", "/schedule", "/messages", "/clock", "/clients"]);
     expect(mobileTabs(person("field_crew"))).toBe(CREW_TABS);
+    // Five, with More: no more than the team's own bar.
+    expect(CREW_TABS.length).toBeLessThanOrEqual(MOBILE_TABS.length);
+    // Every tab is a screen they can open.
+    for (const tab of CREW_TABS) expect(crewCanOpen(tab.to), tab.to).toBe(true);
   });
 
   it("leave everyone else's tab bar as it was", () => {
@@ -55,15 +61,19 @@ describe("field crew's menus", () => {
 
   it("leave the other levels' sidebars as they were", () => {
     // Crew leads keep Home, Requests, Jobs, Timesheets and the rest, and gain the Clock.
-    expect(shown("crew_lead", ["schedule", "timesheets", "equipment"])).toEqual(expect.arrayContaining(["/", "/field", "/clock", "/schedule", "/requests", "/jobs", "/clock", "/equipment", "/kb"]));
+    expect(shown("crew_lead", ["schedule", "timesheets", "equipment"])).toEqual(expect.arrayContaining(["/", "/field", "/clock", "/messages", "/schedule", "/requests", "/jobs", "/clock", "/equipment", "/kb"]));
+    // Messages keeps the owner's order: Clock in, Pipeline, Messages, Schedule.
+    expect(shown("office").filter((to) => ["/clock", "/pipeline", "/messages", "/schedule"].includes(to))).toEqual(["/clock", "/pipeline", "/messages", "/schedule"]);
+    // Subs don't get it.
+    expect(shown("subcontractor")).not.toContain("/messages");
     expect(shown("office", ["invoices", "reports"])).toEqual(expect.arrayContaining(["/", "/schedule", "/clients", "/messages", "/pipeline", "/quotes", "/invoices", "/finance", "/clock"]));
     expect(shown("office")).toContain("/clock");
   });
 });
 
 describe("screens field crew can open by their address", () => {
-  it("are My day and any visit, the schedule, the clock, the clients and a client, and Settings (their profile)", () => {
-    for (const path of ["/field", "/field/", "/field/visits/0b8f1c1e-1a2b-4c3d-8e9f-001122334455", "/schedule", "/schedule/", "/clock", "/clients", "/clients/", "/clients/0b8f1c1e-1a2b-4c3d-8e9f-001122334455", "/settings"]) {
+  it("are My day and any visit, the schedule, the clock, Messages, the clients and a client, and Settings (their profile)", () => {
+    for (const path of ["/field", "/field/", "/field/visits/0b8f1c1e-1a2b-4c3d-8e9f-001122334455", "/schedule", "/schedule/", "/clock", "/messages", "/messages/", "/clients", "/clients/", "/clients/0b8f1c1e-1a2b-4c3d-8e9f-001122334455", "/settings"]) {
       expect(crewCanOpen(path), path).toBe(true);
       expect(canOpen({ role: "field_crew" }, path), path).toBe(true);
     }
@@ -71,7 +81,7 @@ describe("screens field crew can open by their address", () => {
 
   it("aren't Home or anything internal: those go to My day", () => {
     for (const path of [
-      "/", "/pipeline", "/workflows", "/workflows/1", "/messages", "/quotes", "/quotes/1", "/invoices", "/invoices/1", "/payouts", "/requests", "/requests/1",
+      "/", "/pipeline", "/workflows", "/workflows/1", "/messages/1", "/messagesx", "/quotes", "/quotes/1", "/invoices", "/invoices/1", "/payouts", "/requests", "/requests/1",
       "/jobs", "/jobs/1", "/finance", "/metrics", "/marketing", "/apps", "/automations", "/booking", "/timesheets", "/equipment", "/kb", "/chat", "/drive", "/drive/trash",
       "/subs", "/applicants", "/measure", "/field/jobs", "/field/jobs/1", "/field/paperwork", "/clients/duplicates", "/clients/1/edit", "/settings/x", "/clockx", "/schedulex", "/roofing", "/snow",
     ]) {
@@ -136,5 +146,16 @@ describe("the schedule and visits for field crew", () => {
 describe("a client's page for field crew", () => {
   it("is a lookup, without the requests, quotes and jobs sold to them", () => {
     expect(ROLES.filter((role) => lookupOnly({ role }))).toEqual(["field_crew"]);
+  });
+});
+
+describe("Messages for the crew", () => {
+  it("reply by text or note, not email: field crew and crew leads", () => {
+    expect(ROLES.filter((role) => repliesByTextOnly({ role }))).toEqual(["crew_lead", "field_crew", "subcontractor"]);
+  });
+
+  it("show texts from unknown numbers to the whole team, but only the office and sales attach them to a client", () => {
+    expect(ROLES.filter((role) => seesUnknownNumbers({ role }))).toEqual(STAFF);
+    expect(ROLES.filter((role) => attachesUnknownNumbers({ role }))).toEqual(["owner", "admin", "office", "estimator"]);
   });
 });

@@ -6,7 +6,7 @@
  * Test only is on from the start and nothing here turns it off: until the business goes live, only
  * the test numbers are texted, and a text from any other number is dropped without being kept.
  */
-import { ADMINS, SALES } from "@crewtavo/core";
+import { ADMINS, STAFF } from "@crewtavo/core";
 import { asksToStopTexts, smsKeyword } from "@crewtavo/core/marketing";
 import { parseTestNumbers, quoBrandOf, quoIncomingText, quoNumberAllowed, quoSettings, type QuoIncomingText, type QuoLine, type QuoSettings } from "@crewtavo/core/quo";
 import { Hono } from "hono";
@@ -68,8 +68,11 @@ async function current(admin: Db, companyId: string): Promise<QuoSettings | null
   return data && data.status !== "disconnected" ? quoSettings(data.settings) : null;
 }
 
-/** The lines texts go from, for Messages' inboxes (names and numbers only). Empty without Quo. */
-quo.get("/quo/lines", requireUser, requireCompany(SALES), async (c) => {
+/**
+ * The lines texts go from, for Messages' inboxes (names and numbers only). Empty without Quo. For
+ * the whole team: field crew and crew leads reply to clients from Messages too.
+ */
+quo.get("/quo/lines", requireUser, requireCompany(STAFF), async (c) => {
   const account = await companyQuo(c.env, c.var.companyId);
   const lines = account ? (["washing", "lights"] as const).flatMap((brand) => (account.settings.lines[brand] ? [{ brand, name: account.settings.lines[brand]!.name, number: account.settings.lines[brand]!.number }] : [])) : [];
   return c.json({ lines, test_only: account?.settings.test_only ?? false, practice: account?.settings.practice ?? false });

@@ -170,7 +170,7 @@ export function AppShell() {
     await session.signOut();
   };
   const settings = settingsItem(session);
-  // Field crew don't read the office's inbox, and their Settings is their profile.
+  // Field crew's Settings is their profile. (They read Messages, like the office: on a job they deal with the client.)
   const crew = session.role === "field_crew";
   const shownEmail = isPlaceholderEmail(session.profile.email) ? null : session.profile.email;
 
@@ -269,7 +269,7 @@ export function AppShell() {
                 <kbd className="kbd">{navigator.platform.toLowerCase().includes("mac") ? "⌘K" : t("Ctrl K")}</kbd>
               </button>
               <button type="button" className="icon-btn mobile-only" onClick={openPalette} aria-label={t("Search")}><Icon name="search" size={20} /></button>
-              {!crew && <Link className="icon-btn hide-mobile" to="/messages" aria-label={t("Messages")} title={t("Messages")}><Icon name="messages" size={20} /></Link>}
+              <Link className="icon-btn hide-mobile" to="/messages" aria-label={t("Messages")} title={t("Messages")}><Icon name="messages" size={20} /></Link>
             </>
           )}
           <HelpButton />

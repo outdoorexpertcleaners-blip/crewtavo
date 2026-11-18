@@ -1,6 +1,7 @@
 -- Database tests for texts from unknown numbers (20261113000310_unknown_texts.sql): the server
--- keeps them, the office and estimators read them, the office deletes them, and attaching a number
--- to a client (as their phone, or as a new contact) moves its texts onto that client's timeline.
+-- keeps them, the whole team reads them (field crew too since 20261119000400_crew_reads_all_texts.sql),
+-- the office deletes them, and attaching a number to a client (as their phone, or as a new
+-- contact) moves its texts onto that client's timeline.
 -- Run with scripts/test-db.sh (plain Postgres + prelude.sql). Any failed check stops with an error.
 \set ON_ERROR_STOP on
 \set QUIET on
@@ -79,12 +80,33 @@ select t_ut.check((select count(*) = 4 from public.unknown_texts), 'an estimator
 delete from public.unknown_texts where phone_key = '5405550188';
 select t_ut.check((select count(*) = 4 from public.unknown_texts), 'but doesn''t delete them');
 select t_ut.as_user(:'finn');
-select t_ut.check((select count(*) = 0 from public.unknown_texts), 'field crew don''t read them');
+-- The whole team reads them since 20261119000400_crew_reads_all_texts.sql (a client texting the crew
+-- from a new phone), but attaching and deleting stay as they were.
+select t_ut.check((select count(*) = 4 from public.unknown_texts), 'field crew read them too');
+delete from public.unknown_texts where phone_key = '5405550188';
+select t_ut.check((select count(*) = 4 from public.unknown_texts), 'but don''t delete them');
 select t_ut.expect_error(format($q$select public.attach_unknown_texts(%L, '+15405550163', %L, 'contact', 'Hal')$q$, :'co', :'ada'), 'or attach a number');
 select t_ut.as_user(:'nell');
 select t_ut.check((select count(*) = 1 and bool_and(body = 'For the other business') from public.unknown_texts), 'another business reads only its own');
 select t_ut.expect_error(format($q$select public.attach_unknown_texts(%L, '+15405550163', %L, 'contact', 'Hal')$q$, :'co', :'ada'), 'and can''t attach this one''s');
 select t_ut.check(not has_function_privilege('anon', 'public.attach_unknown_texts(uuid, text, uuid, text, text)', 'execute'), 'nor can anyone signed out');
+rollback;
+
+\o
+\echo 'Messages with no client, for field crew'
+\o /dev/null
+
+-- 20261119000400_crew_reads_all_texts.sql: field crew read a message with no client, as crew leads
+-- do, but a quote the business sent stays with the office and sales, as before.
+begin;
+insert into public.messages (company_id, client_id, channel, direction, status, body, related_type) values
+  (:'co', null, 'sms', 'in', 'received', 'From nobody yet', null),
+  (:'co', null, 'email', 'out', 'sent', 'Your quote ($900.00): https://ops.test/hub/SIGNED', 'quote');
+set local role authenticated;
+select t_ut.as_user(:'finn');
+select t_ut.check((select count(*) = 1 and bool_and(body = 'From nobody yet') from public.messages where company_id = :'co' and client_id is null), 'field crew read a message with no client, but not a quote we sent');
+select t_ut.as_user(:'esme');
+select t_ut.check((select count(*) = 2 from public.messages where company_id = :'co' and client_id is null), 'an estimator reads both');
 rollback;
 
 \o

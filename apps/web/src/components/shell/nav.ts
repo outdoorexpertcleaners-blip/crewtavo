@@ -36,7 +36,8 @@ export const NAV_GROUPS: NavItem[][] = [
     // pay period (features/clock/ClockPage.tsx), with approvals and pay a tap away on Timesheets.
     { to: "/clock", label: msg("Clock in"), icon: "history", roles: ["admin", "office", "estimator", "crew_lead", "field_crew"], also: ["/timesheets"], keywords: "time clock clock in clock out punch hours break lunch my time timesheets timesheet pay period payroll" },
     { to: "/pipeline", label: msg("Pipeline"), icon: "pipeline", roles: ["admin", "office", "estimator"], keywords: "sales board pipeline leads deals opportunities" },
-    { to: "/messages", label: msg("Messages"), icon: "messages", roles: ["admin", "office", "estimator"], keywords: "texts sms email inbox conversations quo" },
+    // The crew too: on a job they deal with the client directly (gate codes, "can you move the truck?").
+    { to: "/messages", label: msg("Messages"), icon: "messages", roles: ["admin", "office", "estimator", "crew_lead", "field_crew"], keywords: "texts sms email inbox conversations quo" },
     { to: "/schedule", label: msg("Schedule"), icon: "calendar", keywords: "calendar google calendar visits appointments dispatch route crews tasks" },
     { to: "/quotes", label: msg("Quotes"), icon: "quote", roles: ["admin", "office", "estimator"], also: ["/measure"], keywords: "estimates proposals bids" },
     { to: "/jobs", label: msg("Jobs"), icon: "job", keywords: "work orders projects recurring visits job costing" },
@@ -92,11 +93,12 @@ export const SETTINGS_ITEM: NavItem = { to: "/settings", label: msg("Settings"),
 export const PROFILE_ITEM: NavItem = { to: "/settings?tab=profile", label: msg("Profile"), icon: "user", only: ["subcontractor"] };
 
 /**
- * Field crew ("Employee"): the screens their menus show, in this order. They see the whole team's
- * schedule and every client, and nothing about money or how the business is run (no Home, no
- * requests, jobs, quotes or reports). Settings shows them only their own profile (settingsGroups).
+ * Field crew ("Employee"): the screens their menus show (in NAV_GROUPS' order). They see the whole
+ * team's schedule, every client and the business's texts with clients (Messages: they reply by text
+ * on the job), and nothing about money or how the business is run (no Home, no requests, jobs,
+ * quotes or reports). Settings shows them only their own profile (settingsGroups).
  */
-export const CREW_SCREENS = ["/field", "/schedule", "/clock", "/clients"] as const;
+export const CREW_SCREENS = ["/field", "/clock", "/messages", "/schedule", "/clients"] as const;
 
 /** The sidebar's last link: Settings, or a sub's or field crew's profile. */
 export const settingsItem = (session: { role: string }) => (session.role === "subcontractor" || session.role === "field_crew" ? PROFILE_ITEM : SETTINGS_ITEM);
@@ -117,10 +119,11 @@ export const SUB_TABS: NavItem[] = [
   { to: "/settings?tab=profile", label: msg("Profile"), icon: "user", only: ["subcontractor"] },
 ];
 
-/** Field crew's bottom bar: their four screens; Settings (their profile) is under More. */
+/** Field crew's bottom bar: their five screens, as many as the team's; Settings (their profile) is under More. */
 export const CREW_TABS: NavItem[] = [
   { to: "/field", label: msg("My day"), icon: "clock" },
   { to: "/schedule", label: msg("Schedule"), icon: "calendar" },
+  { to: "/messages", label: msg("Messages"), icon: "messages" },
   { to: "/clock", label: msg("Clock in"), icon: "history" },
   { to: "/clients", label: msg("Clients"), icon: "clients" },
 ];
@@ -140,14 +143,14 @@ export const subCanOpen = (pathname: string) => /^\/field(\/paperwork|\/jobs(\/[
 
 /**
  * The screens field crew can open: My day and any visit (their own to work, anyone's to look at),
- * the schedule, the clock, the clients and a client's page, and Settings (which shows them only
- * their profile). Anything else opened by its address (Home, the pipeline, quotes, invoices,
+ * the schedule, the clock, Messages, the clients and a client's page, and Settings (which shows
+ * them only their profile). Anything else opened by its address (Home, the pipeline, quotes, invoices,
  * finance, timesheets' approvals...) goes to My day. The database keeps the money closed to them
  * either way; this keeps them off screens that would only show them empty lists or errors. A sub's
  * own field screens (/field/jobs, what they're paid; /field/paperwork) aren't theirs either.
  */
 export const crewCanOpen = (pathname: string) =>
-  /^\/field(\/visits\/[^/]+)?\/?$/.test(pathname) || /^\/(schedule|clock|settings)\/?$/.test(pathname) || (/^\/clients(\/[^/]+)?\/?$/.test(pathname) && !/^\/clients\/duplicates\/?$/.test(pathname));
+  /^\/field(\/visits\/[^/]+)?\/?$/.test(pathname) || /^\/(schedule|clock|messages|settings)\/?$/.test(pathname) || (/^\/clients(\/[^/]+)?\/?$/.test(pathname) && !/^\/clients\/duplicates\/?$/.test(pathname));
 
 /** Whether this person can open a screen by its address: subs and field crew have short lists, everyone else every screen. */
 export function canOpen(session: { role: string }, pathname: string): boolean {

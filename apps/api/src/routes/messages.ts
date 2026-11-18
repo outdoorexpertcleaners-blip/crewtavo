@@ -6,8 +6,13 @@
  * (clients.sms_opt_out_at) until they text START, and no number that texted STOP is texted
  * (sms_stops, services/textsOff.ts). The office turns texts off, and back on, for someone who
  * asked another way (POST /clients/:id/texts).
+ *
+ * Field crew and crew leads reply to clients from Messages too, by text only (the office's email
+ * stays the office's): the client's own phone, never a number typed in, from the line they pick,
+ * within the same hourly cap as texts from the field (routes/fieldTexts.ts FIELD_TEXTS_PER_HOUR),
+ * with the stop line on a number's first text, and written by the server with who sent it.
  */
-import { OFFICE, SALES } from "@crewtavo/core";
+import { OFFICE, SALES, STAFF } from "@crewtavo/core";
 import { asksToStopTexts, smsKeyword, STOP_HOWS } from "@crewtavo/core/marketing";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -18,6 +23,7 @@ import { requireCompany, requireUser } from "../lib/auth";
 import { safeEqual } from "../lib/crypto";
 import { isEmail, renderEmail } from "../lib/email";
 import { appUrl, dbError, HttpError, must, param, readJson, uuid } from "../lib/http";
+import { allow } from "../lib/limit";
 import { sentToClient } from "../lib/links";
 import { sendEmail, sendSms } from "../lib/notify";
 import { inboundAccounts } from "../lib/twilio";
@@ -26,11 +32,16 @@ import { companyAddress } from "../services/automations";
 import { brandFor } from "../services/brand";
 import { logoImage } from "../services/logo";
 import { receiveText } from "../services/inboundTexts";
+import { textWithStopLine } from "../services/stopLine";
+import { FIELD_TEXTS_PER_HOUR } from "./fieldTexts";
 import { noteRefusedText, numberStopped, numberStoppedRefusal, phoneKey, setTexts, TextsRefusal, textsOffRefusal, textsOffTo } from "../services/textsOff";
 
 export const messages = new Hono<AppEnv>();
 
-messages.post("/messages/send", requireUser, requireCompany(SALES), async (c) => {
+/** Whether this level sends only texts from Messages, to the client's own phone (the crew, not the office or sales). */
+export const textsOnly = (role: string) => !(SALES as readonly string[]).includes(role);
+
+messages.post("/messages/send", requireUser, requireCompany(STAFF), async (c) => {
   const body = await readJson(
     c,
     z.object({
@@ -43,36 +54,48 @@ messages.post("/messages/send", requireUser, requireCompany(SALES), async (c) =>
       line: z.enum(["washing", "lights"]).optional(),
     }),
   );
-  const { db, companyId } = c.var;
+  const { db, companyId, userId } = c.var;
+  // The crew texts; email is the office's and sales'.
+  const crew = textsOnly(c.var.role);
+  if (crew && body.channel !== "sms") throw new HttpError(403, "You don't have permission to do that. Ask an admin if you need it.");
+  // As the person: a client they can't read is not found.
   const client = must(await db.from("clients").select("id, display_name, email, phone, sms_opt_out_at").eq("id", body.client_id).eq("company_id", companyId).maybeSingle(), "Client not found.");
-  const company = must(await db.from("companies").select("name, email, phone, address, settings").eq("id", companyId).maybeSingle());
   let result: { sent: boolean; id?: string; reason?: string; line?: "washing" | "lights" };
   let to: string;
   if (body.channel === "email") {
+    const company = must(await db.from("companies").select("name, email, phone, address, settings").eq("id", companyId).maybeSingle());
     to = body.to || client.email || "";
     if (!isEmail(to)) throw new HttpError(400, `${client.display_name} has no valid email address.`);
     if (!body.subject) throw new HttpError(400, "Add a subject.");
     const footer = [company.name, companyAddress(company.address as Record<string, string>), company.phone].filter(Boolean).join(" · ");
     result = await sendEmail(c.env, { to, subject: body.subject, ...renderEmail({ companyName: company.name, logo: logoImage(appUrl(c), companyId, company.settings), text: body.body, footer }), replyTo: company.email ?? undefined, fromName: company.name }, companyId);
   } else {
-    to = body.to || client.phone || "";
+    // The crew texts the client's own phone only, as from the field: no number typed in.
+    to = (crew ? client.phone?.trim() : body.to || client.phone) || "";
     if (!to) throw new HttpError(400, `${client.display_name} has no phone number.`);
     // Their own phone, after they texted STOP. Another number (a spouse's, say) is the office's to
     // text, unless that number texted STOP itself.
     if (textsOffTo(client, to)) throw new HttpError(400, textsOffRefusal(client.display_name));
     if (await numberStopped(adminClient(c.env), companyId, to)) throw new HttpError(400, numberStoppedRefusal(to));
     if (body.body.length > 1600) throw new HttpError(400, "Texts are limited to 1,600 characters.");
-    // From the line the office picked, else the one for the client's brand (their latest quote or
-    // request), when texts go through Quo.
+    if (crew && !(await allow(c.env, `field-text:${userId}`, FIELD_TEXTS_PER_HOUR, 3600))) throw new HttpError(429, "That's a lot of texts in an hour. Wait a bit, or ask the office.");
+    // From the line picked, else the one for the client's brand (their latest quote or request),
+    // when texts go through Quo.
     const brand = body.line ?? (await brandFor(adminClient(c.env), companyId, { clientId: client.id }));
-    result = await sendSms(c.env, { to, body: body.body, company: companyId, ...(brand ? { brand } : {}) });
+    const message = { to, company: companyId, ...(brand ? { brand } : {}) };
+    // The crew's, as from the field: a number's first text says how to stop them (services/stopLine.ts).
+    result = crew
+      ? await textWithStopLine(adminClient(c.env), companyId, to, body.body, (text) => sendSms(c.env, { ...message, body: text }))
+      : await sendSms(c.env, { ...message, body: body.body });
     await noteRefusedText(adminClient(c.env), client, to, result, companyId);
   }
-  const { data: row, error } = await db
+  // The crew's text is written by the server, as from the field: they read messages but don't write
+  // the business's texts themselves.
+  const { data: row, error } = await (crew ? adminClient(c.env) : db)
     .from("messages")
     .insert({
       company_id: companyId, client_id: client.id, channel: body.channel, direction: "out", subject: body.channel === "email" ? body.subject : null,
-      body: body.body, status: result.sent ? "sent" : "failed", external_id: result.id ?? null, line: result.line ?? null, sent_by: c.var.userId,
+      body: body.body, status: result.sent ? "sent" : "failed", external_id: result.id ?? null, line: result.line ?? null, sent_by: userId,
       recipients: [{ to, name: sentToClient(body.channel, to, client) ? client.display_name : to, ...(result.sent ? {} : { failed: true }) }],
     })
     .select("id")
