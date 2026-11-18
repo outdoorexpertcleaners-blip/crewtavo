@@ -479,3 +479,11 @@ describe("the Stripe key", () => {
     expect(panel).toContain('to="/settings?tab=payments"');
   });
 });
+
+describe("Stripe's test key form", () => {
+  it("is the same form in test mode", async () => {
+    const { STRIPE_NEW_KEY, STRIPE_NEW_TEST_KEY } = await import("../src/features/apps/catalog");
+    expect(STRIPE_NEW_TEST_KEY.startsWith("https://dashboard.stripe.com/test/apikeys/create?name=Crewtavo&")).toBe(true);
+    expect(STRIPE_NEW_TEST_KEY.split("?")[1]).toBe(STRIPE_NEW_KEY.split("?")[1]);
+  });
+});

@@ -37,7 +37,7 @@ import { AppIcon, AppTile } from "./AppIcon";
 import { AppKeysCard } from "./AppKeysCard";
 import { ChatGptPlanCard, TeamPlansSwitch, useChatGptPlan } from "./ChatGptPlan";
 import { CalendarRow, GoogleCalendarPanel, LinkCalendarsPanel, AddCalendarForm, useCalendars, type CalendarSource } from "./CalendarPanels";
-import { categoryName, infoFor, isFullSecretKey, LINK_ACCESS, MORE_LABELS, PASSWORD_HINT, STRIPE_NEW_KEY, useApps, usesMarketing, type AiState, type AppInfo, type AppRow } from "./catalog";
+import { categoryName, infoFor, isFullSecretKey, LINK_ACCESS, MORE_LABELS, PASSWORD_HINT, STRIPE_NEW_KEY, STRIPE_NEW_TEST_KEY, useApps, usesMarketing, type AiState, type AppInfo, type AppRow } from "./catalog";
 import { DrivePanel } from "./DrivePanel";
 import { GoogleBeforeSignIn, GoogleBusinessPanel } from "./GoogleBusinessPanel";
 import { InstallRing, type InstallPhase } from "./InstallRing";
@@ -803,14 +803,20 @@ export function KeyCard({ app, onSaved }: { app: AppRow; onSaved: () => void }) 
       {stripeSteps && (
         <>
           <ol className="app-steps">
-            <li>Click <strong>Get a key from Stripe</strong> and sign in if Stripe asks. A new key named Crewtavo opens with what it needs already set, so leave the list as it is (most of it stays at None).</li>
+            <li>Click <strong>Get a test key</strong> to try it with Stripe's test cards first (no real money), or <strong>Get a key from Stripe</strong> for real payments. Sign in if Stripe asks. A new key named Crewtavo opens with what it needs already set, so leave the list as it is (most of it stays at None).</li>
             <li>Scroll to the bottom of Stripe's page, click <strong>Create key</strong> and enter the code Stripe sends you.</li>
             <li>Copy the key Stripe shows you, then paste it below.</li>
           </ol>
-          <a className="btn btn-primary" style={{ justifySelf: "start" }} href={STRIPE_NEW_KEY} target="_blank" rel="noreferrer">
-            <Icon name="external" size={16} />
-            Get a key from Stripe
-          </a>
+          <div className="row wrap" style={{ gap: 8 }}>
+            <a className="btn btn-primary" href={STRIPE_NEW_TEST_KEY} target="_blank" rel="noreferrer">
+              <Icon name="external" size={16} />
+              Get a test key
+            </a>
+            <a className="btn" href={STRIPE_NEW_KEY} target="_blank" rel="noreferrer">
+              <Icon name="external" size={16} />
+              Get a key from Stripe
+            </a>
+          </div>
         </>
       )}
       {falSteps && (

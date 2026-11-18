@@ -208,6 +208,8 @@ export const PASSWORD_HINT = "To make sure it's you. No password yet? Set one un
 
 /** Stripe's create-key form with the permissions above already set. */
 export const STRIPE_NEW_KEY = `https://dashboard.stripe.com/apikeys/create?name=Crewtavo&${STRIPE_KEY_PERMISSIONS.map((p) => `permissions%5B%5D=rak_${p}`).join("&")}`;
+/** The same form in Stripe's test mode: a test key (rk_test_), test cards only, no real money. */
+export const STRIPE_NEW_TEST_KEY = STRIPE_NEW_KEY.replace("https://dashboard.stripe.com/apikeys/", "https://dashboard.stripe.com/test/apikeys/");
 
 /** A live full secret key, which can do anything in the Stripe account, payouts included: warned about, but taken. */
 export const isFullSecretKey = (key: string) => key.trim().startsWith("sk_live_");
