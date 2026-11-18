@@ -2908,3 +2908,27 @@ describe("what the key can do", () => {
     expect(db.rpcs.filter((r) => r.fn === "autopay_account_left").map((r) => r.args)).toEqual([{ p_company: CO, p_livemode: true, p_account: "acct_A" }]);
   });
 });
+
+describe("a client without an email", () => {
+  it("still gets Stripe's page to pay: an invoice Stripe doesn't need an email for, never charged by itself", async () => {
+    db.tables.clients![0]!.email = null;
+    await connect(stripeKey("sk_test_A", "acct_A"));
+    const url = await stripeCheckout(env, db.db, CO, INV, 0);
+    expect(url).toContain("acct_A_test_");
+    const made = stripe.posts.filter((p) => p.path === "/v1/invoices");
+    expect(made).toHaveLength(1);
+    expect(made[0]!.body.get("collection_method")).toBe("charge_automatically");
+    expect(made[0]!.body.get("due_date")).toBeNull();
+    expect(made[0]!.body.get("default_payment_method")).toBeNull();
+    expect(made[0]!.body.get("auto_advance")).toBe("false");
+    // Here it's an invoice the client pays themselves, not autopay's.
+    expect(rowsFor(INV)[0]).toMatchObject({ collection: "send_invoice", status: "open" });
+  });
+
+  it("with an email, is sent the usual way", async () => {
+    await connect(stripeKey("sk_test_A", "acct_A"));
+    await stripeCheckout(env, db.db, CO, INV, 0);
+    const made = stripe.posts.filter((p) => p.path === "/v1/invoices");
+    expect(made[0]!.body.get("collection_method")).toBe("send_invoice");
+  });
+});

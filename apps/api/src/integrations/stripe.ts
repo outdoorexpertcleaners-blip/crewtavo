@@ -469,6 +469,14 @@ async function linkedTo(ctx: Ctx, invoiceId: string): Promise<{ linked: Linked[]
   return { linked, live };
 }
 
+/** The client's email, when they have one Stripe would take. */
+async function clientEmail(ctx: Ctx, clientId: string): Promise<string | null> {
+  const { data, error } = await ctx.admin.from("clients").select("email").eq("company_id", ctx.companyId).eq("id", clientId).maybeSingle();
+  fail(error);
+  const email = data?.email?.trim();
+  return email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : null;
+}
+
 /** The client's Stripe customer: linked already, the customer with their email, or a new one. */
 async function customerFor(ctx: Ctx, clientId: string, again = false): Promise<string> {
   const link = { company_id: ctx.companyId, provider: "stripe", entity: "client", local_id: clientId };
@@ -521,6 +529,11 @@ async function createStripeInvoice(
   let final: StripeInvoice;
   let done: { status: string; number: string | null; hosted_url: string | null };
   try {
+    // Stripe only takes send_invoice for a customer with an email. A client without one gets a
+    // charge_automatically invoice with no payment method instead, which Stripe never charges by
+    // itself (auto_advance stays off): they pay it on the same hosted page from the Pay button. It's
+    // still a send_invoice row here (stripe_invoices.collection), so nothing takes it for autopay.
+    const noEmail = !automatic && !(await clientEmail(ctx, invoice.client_id));
     const params = (customer: string) => ({
       customer,
       currency: ctx.currency,
@@ -531,6 +544,8 @@ async function createStripeInvoice(
       discounts: "",
       ...(automatic
         ? { collection_method: "charge_automatically", default_payment_method: options.paymentMethod }
+        : noEmail
+        ? { collection_method: "charge_automatically" }
         : {
             collection_method: "send_invoice",
             // Stripe wants a due date in the future; one that has passed shows as due now.
