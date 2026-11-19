@@ -15,6 +15,7 @@ import type { Env } from "../env";
 import { companyFooter, firstName, renderEmail } from "../lib/email";
 import { dbError, HttpError, must } from "../lib/http";
 import { emailReady, sendEmail } from "../lib/notify";
+import { brandFor } from "./brand";
 import { adminClient } from "../lib/supabase";
 import { logoImage } from "./logo";
 import { visitBusyTimes } from "./onlineBooking";
@@ -117,7 +118,9 @@ async function tellClient(env: Env, s: Scope, requestId: string, note: string | 
       : [`About your visit on ${when}`, `We can't ${cancel ? "cancel" : "move"} your ${visit.title} visit, so it stays on ${when}.${note ? `\n\n${note}` : ""}`];
   const text = [`Hi ${firstName(client.display_name)},`, line, `Questions? Reply to this email${co.phone ? ` or call ${co.phone}` : ""}.`, co.name].join("\n\n");
   const email = renderEmail({ companyName: co.name, logo: baseUrl ? logoImage(baseUrl, co.id, co.settings) : null, text, footer: companyFooter(co) });
-  const delivery = await sendToEach(people, (person) => sendEmail(env, { to: person.to, subject, text: email.text, html: email.html, replyTo: co.email ?? undefined, fromName: co.name }, co.id));
+  // About a Christmas lights visit: from the lights mailbox, when one is connected.
+  const brand = await brandFor(admin, co.id, { subject: "visit", id: visit.id, clientId: client.id });
+  const delivery = await sendToEach(people, (person) => sendEmail(env, { to: person.to, subject, text: email.text, html: email.html, replyTo: co.email ?? undefined, fromName: co.name, brand }, co.id));
   if (!delivery.went.length) return false;
   await admin.from("messages").insert({
     company_id: co.id, client_id: client.id, channel: "email", direction: "out", status: "sent", subject, body: text,

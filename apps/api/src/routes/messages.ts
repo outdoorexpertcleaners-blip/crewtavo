@@ -68,7 +68,9 @@ messages.post("/messages/send", requireUser, requireCompany(STAFF), async (c) =>
     if (!isEmail(to)) throw new HttpError(400, `${client.display_name} has no valid email address.`);
     if (!body.subject) throw new HttpError(400, "Add a subject.");
     const footer = [company.name, companyAddress(company.address as Record<string, string>), company.phone].filter(Boolean).join(" · ");
-    result = await sendEmail(c.env, { to, subject: body.subject, ...renderEmail({ companyName: company.name, logo: logoImage(appUrl(c), companyId, company.settings), text: body.body, footer }), replyTo: company.email ?? undefined, fromName: company.name }, companyId);
+    // From the lights mailbox for a Christmas lights client (the line picked, else their latest quote or request), when one is connected.
+    const brand = body.line ?? (await brandFor(adminClient(c.env), companyId, { clientId: client.id }));
+    result = await sendEmail(c.env, { to, subject: body.subject, ...renderEmail({ companyName: company.name, logo: logoImage(appUrl(c), companyId, company.settings), text: body.body, footer }), replyTo: company.email ?? undefined, fromName: company.name, brand }, companyId);
   } else {
     // The crew texts the client's own phone only, as from the field: no number typed in.
     to = (crew ? client.phone?.trim() : body.to || client.phone) || "";

@@ -4,6 +4,10 @@
  * guide; Gmail, Zoho and the other mailboxes take an app password and need no DNS changes. Crewtavo
  * signs in and sends a test before saving. Connecting, changing or disconnecting it asks for the
  * person's own password, since the owners hear about Stripe changes by this email.
+ *
+ * Below it, the second brand's mailbox (Christmas lights, /api/email/lights): its clients' quotes,
+ * invoices, receipts and reminders go from it, under the brand's name, while everything else stays
+ * on the main one. Until it's connected, those go from the main one too.
  */
 import { emailDomain, isPersonalMailDomain, MAIL_PRESETS, mailPreset, type MailPreset, type MailStep } from "@crewtavo/core/email";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -42,7 +46,14 @@ interface Mailbox {
   last_error: string | null;
   connected_at: string | null;
 }
-interface EmailState { mailbox: Mailbox | null; fallback: "server" | "dev" | null; on_railway?: boolean }
+interface EmailState {
+  mailbox: Mailbox | null;
+  fallback: "server" | "dev" | null;
+  on_railway?: boolean;
+  /** The Christmas lights brand's own mailbox, and the brand's name (null until proposal settings name it). */
+  lights?: Mailbox | null;
+  lights_name?: string | null;
+}
 
 /** Each provider's own logo on a white tile, like the Apps page (see assets/apps/README.md). */
 const LOGOS: Partial<Record<MailPreset["id"], string>> = {
@@ -170,15 +181,110 @@ export function EmailSettings() {
           </div>
         </div>
       )}
+
+      <LightsMailbox mailbox={state.data.lights ?? null} brand={state.data.lights_name ?? null} main={mailbox?.from_email ?? null} onRailway={onRailway} onChanged={refresh} />
+    </div>
+  );
+}
+
+/**
+ * The second brand's mailbox (Christmas lights): connected like the main one, with its own test and
+ * disconnect. Its clients' emails go from it under the brand's name; without it, from the main sender.
+ */
+function LightsMailbox({ mailbox, brand, main, onRailway, onChanged }: { mailbox: Mailbox | null; brand: string | null; main: string | null; onRailway: boolean; onChanged: () => void }) {
+  const [editing, setEditing] = useState(false);
+  const [askDisconnect, setAskDisconnect] = useState(false);
+  const title = brand ? `${brand} emails` : "Second brand: Christmas lights emails";
+  const who = brand ?? "Christmas lights";
+  const test = useMutation({
+    meta: { inline: true },
+    mutationFn: () => api.post<{ to: string }>("/email/lights/test", {}),
+    onSuccess: (r) => toast.success(`Test email sent to ${r.to}`),
+  });
+  const disconnect = useMutation({
+    meta: { success: `${who} email disconnected`, inline: true },
+    mutationFn: (password: string) => api.delete("/email/lights", undefined, { current_password: password }),
+    onSuccess: () => {
+      setAskDisconnect(false);
+      onChanged();
+    },
+  });
+
+  return (
+    <div className="stack" aria-labelledby="lights-email-title">
+      <div className="card card-pad stack-sm">
+        <strong id="lights-email-title" style={{ fontSize: 16 }}>{title}</strong>
+        <span className="muted">
+          Quotes, invoices, receipts and reminders for {who} clients go out from this mailbox, under {brand ?? "the lights brand's name"}, and replies land in it. Team invites, sign-in codes and everything else stay on the main email above.
+          {!mailbox && ` Until you connect one, they go from ${main ?? "the main email"}.`}
+        </span>
+        {mailbox && !editing && (
+          <div className="stack" style={{ marginTop: 8 }}>
+            <div className={styles.status}>
+              <ProviderMark preset={mailbox.preset} />
+              <div className="grow">
+                <div className={styles.address}>{mailbox.from_email}</div>
+                <span className="muted small">{mailPreset(mailbox.preset)?.label ?? "Email"}{mailbox.from_name ? ` · as ${mailbox.from_name}` : brand ? ` · as ${brand}` : ""}{mailbox.connected_at ? ` · connected ${timeAgo(mailbox.connected_at)}` : ""}</span>
+              </div>
+              <StatusPill label={mailbox.status === "connected" ? "Connected" : "Needs attention"} tone={mailbox.status === "connected" ? "good" : "danger"} />
+            </div>
+            {mailbox.status === "error" && (
+              <div className="callout callout-danger">
+                <Icon name="alert" size={20} />
+                <div className="grow small" style={{ fontWeight: 400 }}>
+                  {`${mailbox.last_error ?? "The mail server stopped accepting the sign-in."} Until it's fixed, ${who} emails go from the main email. If you changed the account's password or deleted the app password, connect it again.`}
+                </div>
+              </div>
+            )}
+            <FormError error={test.error} />
+            <div className="row wrap" style={{ gap: 8 }}>
+              <Button icon="send" loading={test.isPending} onClick={() => test.mutate()}>Send me a test</Button>
+              <Button icon="edit" onClick={() => setEditing(true)}>{mailbox.status === "error" ? "Connect again" : "Change"}</Button>
+              <span style={{ flex: 1 }} />
+              <Button variant="ghost" loading={disconnect.isPending} onClick={() => setAskDisconnect(true)}>Disconnect</Button>
+            </div>
+          </div>
+        )}
+        {!mailbox && !editing && (
+          <div className="row wrap" style={{ gap: 8, marginTop: 8 }}>
+            <Button icon="mail" onClick={() => setEditing(true)}>Connect a Gmail mailbox</Button>
+          </div>
+        )}
+      </div>
+      {editing && (
+        <ConnectForm
+          existing={mailbox}
+          onRailway={onRailway}
+          lights={{ name: brand }}
+          onCancel={() => setEditing(false)}
+          onSaved={() => {
+            setEditing(false);
+            onChanged();
+          }}
+        />
+      )}
+      {askDisconnect && (
+        <DisconnectWithPassword
+          title={`Disconnect the ${who} email?`}
+          body={`${who} emails will go out from ${main ?? "the main email"} instead.`}
+          busy={disconnect.isPending}
+          error={disconnect.error}
+          onDisconnect={(password) => disconnect.mutate(password)}
+          onClose={() => {
+            setAskDisconnect(false);
+            disconnect.reset();
+          }}
+        />
+      )}
     </div>
   );
 }
 
 /** Disconnect's question, with the person's password; it's cleared once sent, and a wrong one says so here. */
-function DisconnectWithPassword({ body, busy, error, onDisconnect, onClose }: { body: string; busy: boolean; error: unknown; onDisconnect: (password: string) => void; onClose: () => void }) {
+function DisconnectWithPassword({ title = "Disconnect email?", body, busy, error, onDisconnect, onClose }: { title?: string; body: string; busy: boolean; error: unknown; onDisconnect: (password: string) => void; onClose: () => void }) {
   const [password, setPassword] = useState("");
   return (
-    <Dialog open onClose={onClose} title="Disconnect email?" size="sm">
+    <Dialog open onClose={onClose} title={title} size="sm">
       <form
         className="stack-sm"
         onSubmit={(e: FormEvent) => {
@@ -218,12 +324,16 @@ function ProviderButton({ preset: p, pressed, onChoose }: { preset: MailPreset; 
   );
 }
 
-function ConnectForm({ existing, onRailway, onSaved, onCancel }: { existing: Mailbox | null; onRailway: boolean; onSaved: () => void; onCancel?: () => void }) {
+/**
+ * Connecting a mailbox. `lights` is the Christmas lights brand's (PUT /email/lights): a mailbox you
+ * already have (Gmail first), no Resend, and a sender name that's the brand's unless one is typed.
+ */
+function ConnectForm({ existing, onRailway, onSaved, onCancel, lights }: { existing: Mailbox | null; onRailway: boolean; onSaved: () => void; onCancel?: () => void; lights?: { name: string | null } }) {
   const session = useSession();
-  const [presetId, setPresetId] = useState<MailPreset["id"] | null>(existing?.preset ?? null);
+  const [presetId, setPresetId] = useState<MailPreset["id"] | null>(existing?.preset ?? (lights ? "gmail" : null));
   const preset = mailPreset(presetId);
-  const [fromEmail, setFromEmail] = useState(existing?.from_email ?? session.profile.email ?? "");
-  const [fromName, setFromName] = useState(existing?.from_name ?? session.company.name);
+  const [fromEmail, setFromEmail] = useState(existing?.from_email ?? (lights ? "" : session.profile.email ?? ""));
+  const [fromName, setFromName] = useState(existing?.from_name ?? (lights ? "" : session.company.name));
   const [password, setPassword] = useState("");
   const [host, setHost] = useState(existing?.host ?? "");
   const [port, setPort] = useState(existing?.port ? String(existing.port) : "");
@@ -250,7 +360,7 @@ function ConnectForm({ existing, onRailway, onSaved, onCancel }: { existing: Mai
   const save = useMutation({
     meta: { inline: true },
     mutationFn: () =>
-      api.put<{ connected: boolean; test_sent_to: string | null }>("/email", {
+      api.put<{ connected: boolean; test_sent_to: string | null }>(lights ? "/email/lights" : "/email", {
         preset: presetId,
         from_email: fromEmail.trim(),
         from_name: fromName.trim() || null,
@@ -260,7 +370,7 @@ function ConnectForm({ existing, onRailway, onSaved, onCancel }: { existing: Mai
         current_password: currentPassword,
       }),
     onSuccess: (r) => {
-      toast.success("Email connected", { description: r.test_sent_to ? `We sent a test email to ${r.test_sent_to}.` : undefined });
+      toast.success(lights ? `${lights.name ?? "Christmas lights"} email connected` : "Email connected", { description: r.test_sent_to ? `We sent a test email to ${r.test_sent_to}.` : undefined });
       onSaved();
     },
     onSettled: () => setCurrentPassword(""),
@@ -273,14 +383,24 @@ function ConnectForm({ existing, onRailway, onSaved, onCancel }: { existing: Mai
 
   return (
     <form className="card card-pad stack" onSubmit={(e: FormEvent) => { e.preventDefault(); if (!keyProblem && !fromProblem) save.mutate(); }}>
-      <div className="stack-sm" role="group" aria-labelledby="provider-label">
-        <strong id="provider-label">How do you want to send email?</strong>
-        {MAIL_PRESETS.filter((p) => p.recommended).map((p) => <ProviderButton key={p.id} preset={p} pressed={presetId === p.id} onChoose={choose} />)}
-        <span className={styles.or}>Or send from a mailbox you already have</span>
+      <div className="stack-sm" role="group" aria-labelledby={lights ? "lights-provider-label" : "provider-label"}>
+        {lights ? (
+          <strong id="lights-provider-label">Which mailbox sends {lights.name ?? "Christmas lights"} emails?</strong>
+        ) : (
+          <>
+            <strong id="provider-label">How do you want to send email?</strong>
+            {MAIL_PRESETS.filter((p) => p.recommended).map((p) => <ProviderButton key={p.id} preset={p} pressed={presetId === p.id} onChoose={choose} />)}
+            <span className={styles.or}>Or send from a mailbox you already have</span>
+          </>
+        )}
         <div className={styles.providers}>
           {MAIL_PRESETS.filter((p) => !p.recommended).map((p) => <ProviderButton key={p.id} preset={p} pressed={presetId === p.id} onChoose={choose} />)}
         </div>
-        {onRailway && <span className="muted small">Crewtavo is running on Railway. Railway's trial and Hobby plans block sending from a mailbox, so choose Resend unless you're on Railway Pro.</span>}
+        {onRailway && (
+          <span className="muted small">
+            {lights ? "Crewtavo is running on Railway. Railway's trial and Hobby plans block sending from a mailbox, so this needs Railway Pro." : "Crewtavo is running on Railway. Railway's trial and Hobby plans block sending from a mailbox, so choose Resend unless you're on Railway Pro."}
+          </span>
+        )}
       </div>
 
       {preset && (
@@ -336,8 +456,8 @@ function ConnectForm({ existing, onRailway, onSaved, onCancel }: { existing: Mai
               </Field>
             </div>
           )}
-          <Field label="Sender name" hint="What clients see as who it's from.">
-            <input className="input" value={fromName} onChange={(e) => setFromName(e.target.value)} maxLength={120} />
+          <Field label="Sender name" optional={Boolean(lights)} hint={lights ? `What clients see as who it's from. Leave blank to use ${lights.name ?? "the lights brand's name from proposal settings"}.` : "What clients see as who it's from."}>
+            <input className="input" value={fromName} onChange={(e) => setFromName(e.target.value)} maxLength={120} placeholder={lights?.name ?? undefined} />
           </Field>
 
           {preset.kind === "smtp" && (

@@ -35,6 +35,7 @@ import { HttpError } from "../lib/http";
 import { clientLinks } from "../lib/links";
 import { reportError } from "../lib/monitoring";
 import { emailReady, sendEmail, sendSms, smsReady } from "../lib/notify";
+import { brandFor } from "./brand";
 import { adminClient, type Db } from "../lib/supabase";
 import { companyAddress } from "./automations";
 import { logoImage } from "./logo";
@@ -255,12 +256,13 @@ async function logMessage(admin: Db, row: { company_id: string; client_id: strin
 /**
  * An email from the company to its client, the way the rest of the server sends them: its logo
  * (loaded from `base`, the app's address), address and reply-to. `button` labels its link buttons.
+ * `brand` (services/brand.ts) sends a Christmas lights client's from the lights mailbox, when one is connected.
  */
-function emailFrom(env: Env, company: Company, to: string, subject: string, text: string, base = appBase(env), button?: string) {
+function emailFrom(env: Env, company: Company, to: string, subject: string, text: string, base = appBase(env), button?: string, brand: "washing" | "lights" | null = null) {
   const footer = [company.name, companyAddress(company.address as Record<string, string>), company.phone].filter(Boolean).join(" · ");
   return sendEmail(
     env,
-    { to, subject, ...renderEmail({ companyName: company.name, logo: base ? logoImage(base, company.id, company.settings) : null, text, footer, button }), replyTo: company.email ?? undefined, fromName: company.name },
+    { to, subject, ...renderEmail({ companyName: company.name, logo: base ? logoImage(base, company.id, company.settings) : null, text, footer, button }), replyTo: company.email ?? undefined, fromName: company.name, brand },
     company.id,
   );
 }
@@ -553,7 +555,8 @@ export async function sendAutopayReceipt(env: Env, admin: Db, chargeId: string):
   };
   const subject = `Receipt for invoice #${invoice.number}`;
 
-  const delivery = await sendToEach(people, (person) => emailFrom(env, company, person.to, subject, write(person.contact_id ? "contact" : "own")), "The receipt wasn't sent.");
+  const brand = await brandFor(admin, company.id, { subject: "invoice", id: invoice.id, clientId: client.id });
+  const delivery = await sendToEach(people, (person) => emailFrom(env, company, person.to, subject, write(person.contact_id ? "contact" : "own"), base, undefined, brand), "The receipt wasn't sent.");
   // Sent to nobody: tried again. Once it reached someone it's logged, so it isn't sent twice.
   if (!delivery.went.length) throw new Error(delivery.failed[0]!.reason);
   await logMessage(admin, { company_id: company.id, client_id: client.id, channel: "email", subject, body: write("office"), related_type: "invoice", related_id: invoice.id, external_id: key, recipients: recipientsColumn(delivery) });
@@ -636,7 +639,8 @@ export async function sendAutopayNotice(env: Env, admin: Db, chargeId: string, s
       parts.push(`Thanks,\n${company.name}`);
       return parts.join("\n\n");
     };
-    const result = await emailFrom(env, company, client.email.trim(), subject, write("own"));
+    const brand = await brandFor(admin, company.id, { subject: "invoice", id: invoice.id, clientId: client.id });
+    const result = await emailFrom(env, company, client.email.trim(), subject, write("own"), undefined, undefined, brand);
     if (!result.sent) throw new Error(result.reason ?? "The notice wasn't sent.");
     await logMessage(admin, { company_id: company.id, client_id: client.id, channel: "email", subject, body: write("office"), related_type: "invoice", related_id: invoice.id, external_id: key });
     return "sent";
@@ -696,7 +700,8 @@ export async function sendAutopayAgreed(env: Env, admin: Db, authorizationId: st
       parts.push(`Thanks,\n${company.name}`);
       return parts.join("\n\n");
     };
-    const result = await emailFrom(env, company, who.email.trim(), subject, write("own"));
+    const brand = await brandFor(admin, company.id, { clientId: who.id });
+    const result = await emailFrom(env, company, who.email.trim(), subject, write("own"), undefined, undefined, brand);
     if (!result.sent) throw new Error(result.reason ?? "The copy of the agreement wasn't sent.");
     await logMessage(admin, { company_id: company.id, client_id: who.id, channel: "email", subject, body: write("office"), related_type: "autopay", related_id: who.id, external_id: key });
     return "sent";
@@ -842,7 +847,7 @@ export async function sendAutopayInvite(
   const sms = (url: string) => words(url).sms;
   // The button says what tapping it does here; receipts and notices keep "Manage autopay".
   const button = card ? "Confirm autopay" : "Save your card";
-  const result = input.channel === "email" ? await emailFrom(env, company, client.email!.trim(), subject, text(links.own), base, button) : await textWithStopLine(admin, input.companyId, client.phone!, sms(links.own), (text) => sendSms(env, { to: client.phone!, body: text, company: input.companyId }));
+  const result = input.channel === "email" ? await emailFrom(env, company, client.email!.trim(), subject, text(links.own), base, button, await brandFor(admin, input.companyId, { clientId: client.id })) : await textWithStopLine(admin, input.companyId, client.phone!, sms(links.own), (text) => sendSms(env, { to: client.phone!, body: text, company: input.companyId }));
   if (input.channel === "sms") await noteRefusedText(admin, client, client.phone!, result, input.companyId);
   if (!result.sent) throw new Error(result.reason ?? "The invite wasn't sent.");
   await logMessage(admin, {

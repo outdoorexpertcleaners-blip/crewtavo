@@ -760,10 +760,12 @@ export async function performAction(env: Env, admin: Db, ctx: RunContext, action
       // The client's own address gets their own links; a contact's, and the timeline's copy, the
       // office's copies (officeVars), which can't agree to autopay or tip on the client's card.
       const kept = { ...ctx, vars: await officeVars(env, ctx, baseUrl) };
+      // From the brand's mailbox (services/brand.ts): a Christmas lights one when it's connected, else the main one.
+      const brand = await brandFor(admin, ctx.company.id, { subject: ctx.subject, id: ctx.id, clientId: client.id });
       const delivery = await sendToEach(people, (person) => {
         const from = person.contact_id ? kept : ctx;
         const email = renderEmail({ companyName: ctx.company.name, logo: baseUrl ? logoImage(baseUrl, ctx.company.id, ctx.company.settings) : null, text: render(action.body, from), footer: companyFooter(ctx.company) });
-        return sendEmail(env, { to: person.to, subject: render(action.subject, from), text: email.text, html: email.html, replyTo: ctx.company.email ?? undefined, fromName: ctx.company.name }, ctx.company.id);
+        return sendEmail(env, { to: person.to, subject: render(action.subject, from), text: email.text, html: email.html, replyTo: ctx.company.email ?? undefined, fromName: ctx.company.name, brand }, ctx.company.id);
       }, "The email wasn't sent.");
       if (!delivery.went.length) throw new Error(delivery.failed[0]!.reason);
       await admin.from("messages").insert({

@@ -36,6 +36,8 @@ export async function emailClient(
     buttons?: Record<string, string>;
     /** Links written out under their button too, to copy (lib/email.ts renderEmail). */
     showUrls?: readonly string[];
+    /** The brand it's about (services/brand.ts): a Christmas lights client's goes from the lights mailbox, when one is connected. */
+    brand?: "washing" | "lights" | null;
   },
 ): Promise<SendResult> {
   const unsubscribe = d.unsubscribe === false ? null : await clientLink(env, d.baseUrl, { c: d.companyId, t: "unsub", id: d.client.id });
@@ -57,6 +59,7 @@ export async function emailClient(
       }),
       replyTo: d.company.email ?? undefined,
       fromName: d.company.name,
+      brand: d.brand ?? null,
       ...(unsubscribe
         ? { headers: { "List-Unsubscribe": `<${unsubscribe.replace("/u/", "/api/public/unsubscribe/")}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } }
         : {}),

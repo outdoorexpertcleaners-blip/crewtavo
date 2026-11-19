@@ -16,6 +16,7 @@ import { firstName, isEmail, renderEmail } from "../lib/email";
 import { asJson, dbError, HttpError, must } from "../lib/http";
 import { clientLinks, sentToClient } from "../lib/links";
 import { sendEmail, sendSms } from "../lib/notify";
+import { brandFor } from "./brand";
 import { adminClient, type Db } from "../lib/supabase";
 import { companyAddress } from "./automations";
 import { loadOptions, manualApproval } from "./contracts";
@@ -208,13 +209,15 @@ export async function deliver(s: SalesScope, kind: "quote" | "invoice", record: 
   const { data: onFile } = await s.db.from("clients").select("id, display_name, email, phone, sms_opt_out_at").eq("id", record.client_id).maybeSingle();
   const client = onFile ?? { id: record.client_id, display_name: record.client?.display_name ?? "This client", email: record.client?.email ?? null, phone: record.client?.phone ?? null, sms_opt_out_at: null };
   const people = await sendTo(admin, s.companyId, channel, client, body, company.settings);
+  // A Christmas lights quote or invoice is emailed from the lights mailbox, when one is connected.
+  const brand = channel === "email" ? await brandFor(admin, s.companyId, { subject: kind, id: record.id, clientId: record.client_id }) : null;
   const delivery =
     channel === "email"
       ? await sendToEach(people, (person) => {
           const subject = body.subject || defaults.subject || `${label} from ${company.name}`;
           const footer = [company.name, companyAddress(company.address as Record<string, string>), company.phone].filter(Boolean).join(" · ");
           const text = message(linkFor("email", person.to));
-          return sendEmail(s.env, { to: person.to, subject, ...renderEmail({ companyName: company.name, logo: logoImage(s.baseUrl, s.companyId, company.settings), text, footer }), replyTo: company.email ?? undefined, fromName: company.name }, s.companyId);
+          return sendEmail(s.env, { to: person.to, subject, ...renderEmail({ companyName: company.name, logo: logoImage(s.baseUrl, s.companyId, company.settings), text, footer }), replyTo: company.email ?? undefined, fromName: company.name, brand }, s.companyId);
         })
       : await sendToEach(people, async (person) => {
           const result = await textWithStopLine(admin, s.companyId, person.to, `${company.name}: ${intro} ${linkFor("sms", person.to)}`, (text) => sendSms(s.env, { to: person.to, body: text, company: s.companyId }));

@@ -22,6 +22,7 @@ import { AUTOMATED_CAMPAIGNS, campaignKeyOf, linkButton, REENGAGE_DAILY_CAP, REE
 import type { Env } from "../env";
 import { isEmail } from "../lib/email";
 import { emailReady } from "../lib/notify";
+import { brandFor } from "./brand";
 import { adminClient, type Db } from "../lib/supabase";
 import { companyFooter, officeVars, Skip, type RunContext } from "./automations";
 import { emailClient } from "./marketingEmail";
@@ -243,6 +244,8 @@ export async function sendCampaignEmail(
   if (row.in_flight) throw new WaitUntil(new Date(Date.now() + 16 * 60_000), "An email to them was already on its way");
 
   await paced(ctx.company.id);
+  // About a Christmas lights quote or client: from the lights mailbox, when one is connected.
+  const brand = await brandFor(admin, ctx.company.id, { subject: ctx.subject, id: ctx.id, clientId: client.id });
   const result = await emailClient(env, {
     companyId: ctx.company.id,
     company: ctx.company,
@@ -254,6 +257,7 @@ export async function sendCampaignEmail(
     track: trackedLinks(baseUrl!, row.track_token, links),
     // Every campaign email has the link, the quote follow-up included.
     unsubscribe: true,
+    brand,
     // {{link}} on its own line is a button named for where it goes: the Hub's home, or the quote.
     buttons: typeof ctx.vars.link === "string" ? { [ctx.vars.link]: linkButton(campaign.key) } : undefined,
   });
@@ -280,6 +284,7 @@ export async function sendCampaignEmail(
       baseUrl: baseUrl!,
       footer: companyFooter(ctx.company),
       unsubscribe: false,
+      brand,
       buttons: typeof kept.vars.link === "string" ? { [kept.vars.link]: linkButton(campaign.key) } : undefined,
     }),
   );

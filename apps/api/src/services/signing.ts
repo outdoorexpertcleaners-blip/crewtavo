@@ -18,6 +18,7 @@ import { asJson, dbError, HttpError, must } from "../lib/http";
 import { clientLinks, sentToClient } from "../lib/links";
 import { reportError } from "../lib/monitoring";
 import { sendEmail, sendSms } from "../lib/notify";
+import { brandFor } from "./brand";
 import { adminClient, type Db } from "../lib/supabase";
 import { companyAddress } from "./automations";
 import { checkContract, contractInput, freezeContract, freezeOption, initialsImage, isPriced, loadOptions, optionTiers, packageFill, postedId, resolveContract, sectionsHashSchema, type OptionRow } from "./contracts";
@@ -282,9 +283,11 @@ async function deliverCopy(s: SigningScope, quote: Quote, company: Company, link
       if (!isEmail(to)) return { sent: false, reason: "That email address doesn't look right." };
       const footer = [company.name, companyAddress(company.address as Record<string, string>), company.phone].filter(Boolean).join(" · ");
       const text = email(linkFor("email", to));
+      // A Christmas lights estimate goes from the lights mailbox, when one is connected.
+      const brand = await brandFor(adminClient(s.env), s.companyId, { subject: "quote", id: quote.id, clientId: quote.client_id });
       result = await sendEmail(
         s.env,
-        { to, subject, ...renderEmail({ companyName: company.name, logo: logoImage(s.baseUrl, s.companyId, company.settings), text, footer }), replyTo: company.email ?? undefined, fromName: company.name },
+        { to, subject, ...renderEmail({ companyName: company.name, logo: logoImage(s.baseUrl, s.companyId, company.settings), text, footer }), replyTo: company.email ?? undefined, fromName: company.name, brand },
         s.companyId,
       );
     } else {

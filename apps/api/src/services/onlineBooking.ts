@@ -18,6 +18,7 @@ import { buildCalendar } from "../lib/ics";
 import { clientLink } from "../lib/links";
 import { asJson, dbError, HttpError, must } from "../lib/http";
 import { emailReady, sendEmail, sendSms, smsReady } from "../lib/notify";
+import { brandFor } from "./brand";
 import { adminClient, type Db } from "../lib/supabase";
 import { logoImage } from "./logo";
 import { recipientsColumn, recipientsFor, sendToEach } from "./recipients";
@@ -225,7 +226,9 @@ export async function confirmBooking(
           co.name,
         ].join("\n\n");
         const email = renderEmail({ companyName: co.name, logo: baseUrl ? logoImage(baseUrl, co.id, co.settings) : null, text, footer: companyFooter(co) });
-        const delivery = await sendToEach(people, (person) => sendEmail(env, { to: person.to, subject, text: email.text, html: email.html, replyTo: co.email ?? undefined, fromName: co.name }, co.id));
+        // A Christmas lights booking is confirmed from the lights mailbox, when one is connected.
+        const brand = await brandFor(admin, co.id, booking.visitId ? { subject: "visit", id: booking.visitId, clientId: client.id } : { subject: "request", id: booking.requestId, clientId: client.id });
+        const delivery = await sendToEach(people, (person) => sendEmail(env, { to: person.to, subject, text: email.text, html: email.html, replyTo: co.email ?? undefined, fromName: co.name, brand }, co.id));
         if (delivery.went.length) {
           result.emailed = true;
           await admin.from("messages").insert({

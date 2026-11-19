@@ -1,5 +1,8 @@
 /**
  * Email and SMS. Email goes out through, in order:
+ *   0. for an email to a client about something of the second brand (Christmas lights: `brand`,
+ *      services/brand.ts brandFor), that brand's own mailbox when one is connected (Settings → Email,
+ *      LIGHTS_MAILBOX), from the brand's name, with replies to that mailbox;
  *   1. the company's own connected mailbox (Settings → Email): Gmail, Zoho, Microsoft 365... over
  *      SMTP with an app password, or the company's Resend key;
  *   2. the server's Resend account (RESEND_API_KEY, EMAIL_FROM), if whoever installed it set one;
@@ -12,6 +15,7 @@
  * and by push when its email or texts stop going out, and not only on Settings → Email.
  */
 import { isPersonalMailDomain, isPlaceholderEmail } from "@crewtavo/core/email";
+import { brandName, spokenName } from "@crewtavo/core/proposal";
 import type { Env } from "../env";
 import { decryptJson } from "./crypto";
 import { reportError } from "./monitoring";
@@ -42,7 +46,20 @@ export interface EmailMessage {
   headers?: Record<string, string>;
   /** Display name for the sender, usually the company name. */
   fromName?: string;
+  /**
+   * The brand a client's email is about (services/brand.ts brandFor). "lights" goes from the
+   * lights mailbox when one is connected; anything else, or none, from the main sender.
+   */
+  brand?: "washing" | "lights" | null;
 }
+
+/**
+ * Where each mailbox is kept (integrations and integration_secrets, by provider): the business's
+ * main one, and the second brand's (Christmas lights), which only its clients' emails use.
+ */
+export const MAIN_MAILBOX = "email";
+export const LIGHTS_MAILBOX = "email_lights";
+export type MailboxSlot = typeof MAIN_MAILBOX | typeof LIGHTS_MAILBOX;
 
 /** Non-secret mailbox settings, stored in integrations.settings (provider "email"). */
 export interface MailboxSettings {
@@ -61,31 +78,44 @@ export interface MailboxSecret {
   api_key?: string;
 }
 
-type Mailbox = { settings: MailboxSettings; secret: MailboxSecret; status: string };
+type Mailbox = {
+  provider: MailboxSlot;
+  settings: MailboxSettings;
+  secret: MailboxSecret;
+  status: string;
+  /** The lights mailbox's sender name when none was typed: the brand's name (proposal settings), said without "LLC". */
+  brandName?: string;
+};
 
 const cache = new Map<string, { at: number; value: Mailbox | null }>();
 const CACHE_MS = 60_000;
 /** A provider that doesn't answer in time counts as unreachable, so the send is recorded as failed. */
 const TIMEOUT_MS = 15_000;
 
-/** The company's connected mailbox, if any (cached for a minute; campaigns send many at once). */
-export async function loadMailbox(env: Env, companyId: string): Promise<Mailbox | null> {
-  const hit = cache.get(companyId);
+/**
+ * The company's connected mailbox, if any: its main one, or with LIGHTS_MAILBOX the lights brand's
+ * (cached for a minute; campaigns send many at once).
+ */
+export async function loadMailbox(env: Env, companyId: string, provider: MailboxSlot = MAIN_MAILBOX): Promise<Mailbox | null> {
+  const key = `${companyId}:${provider}`;
+  const hit = cache.get(key);
   if (hit && Date.now() - hit.at < CACHE_MS) return hit.value;
   const admin = adminClient(env);
-  const [row, secret] = await Promise.all([
-    admin.from("integrations").select("status, settings").eq("company_id", companyId).eq("provider", "email").maybeSingle(),
-    admin.from("integration_secrets").select("ciphertext").eq("company_id", companyId).eq("provider", "email").maybeSingle(),
+  const [row, secret, company] = await Promise.all([
+    admin.from("integrations").select("status, settings").eq("company_id", companyId).eq("provider", provider).maybeSingle(),
+    admin.from("integration_secrets").select("ciphertext").eq("company_id", companyId).eq("provider", provider).maybeSingle(),
+    provider === LIGHTS_MAILBOX ? admin.from("companies").select("name, settings").eq("id", companyId).maybeSingle() : Promise.resolve({ data: null }),
   ]);
   let value: Mailbox | null = null;
   if (row.data && row.data.status !== "disconnected" && secret.data) {
     try {
-      value = { settings: row.data.settings as unknown as MailboxSettings, secret: await decryptJson<MailboxSecret>(env, secret.data.ciphertext), status: row.data.status };
+      value = { provider, settings: row.data.settings as unknown as MailboxSettings, secret: await decryptJson<MailboxSecret>(env, secret.data.ciphertext), status: row.data.status };
+      if (company.data) value.brandName = spokenName(brandName(company.data.settings, "lights", company.data.name));
     } catch (error) {
       reportError(error, { feature: "mailbox" });
     }
   }
-  cache.set(companyId, { at: Date.now(), value });
+  cache.set(key, { at: Date.now(), value });
   return value;
 }
 
@@ -93,7 +123,8 @@ export async function loadMailbox(env: Env, companyId: string): Promise<Mailbox 
 let someMailbox: { at: number; value: boolean } | null = null;
 
 export const forgetMailbox = (companyId: string) => {
-  cache.delete(companyId);
+  cache.delete(`${companyId}:${MAIN_MAILBOX}`);
+  cache.delete(`${companyId}:${LIGHTS_MAILBOX}`);
   someMailbox = null;
   // The next email says afresh how sending is going.
   working.delete(`${companyId}:email`);
@@ -105,7 +136,7 @@ export const forgetMailbox = (companyId: string) => {
  */
 export async function anyMailbox(env: Env): Promise<boolean | null> {
   if (someMailbox && Date.now() - someMailbox.at < CACHE_MS) return someMailbox.value;
-  const { data, error } = await adminClient(env).from("integrations").select("company_id").eq("provider", "email").neq("status", "disconnected").limit(1);
+  const { data, error } = await adminClient(env).from("integrations").select("company_id").eq("provider", MAIN_MAILBOX).neq("status", "disconnected").limit(1);
   if (error) {
     reportError(new Error(`Couldn't tell whether any company has a mailbox: ${error.message}`), { feature: "mailbox" });
     return null;
@@ -177,9 +208,31 @@ export async function checkMailbox(env: Env, companyId: string, mailbox: Mailbox
   return result.sent;
 }
 
-export async function sendEmail(env: Env, message: EmailMessage, companyId?: string | null): Promise<SendResult> {
+/**
+ * Send an email for a company (or, without one, from the server's own sender). `only` (Settings →
+ * Email's test of the lights mailbox) sends a lights email through the lights mailbox or not at all.
+ */
+export async function sendEmail(env: Env, message: EmailMessage, companyId?: string | null, options: { only?: boolean } = {}): Promise<SendResult> {
   // A sub's stand-in address (a sign-in without an email of their own) never gets anything.
   if (isPlaceholderEmail(message.to)) return { sent: false, reason: "They have no email address. Text them instead." };
+  if (companyId && message.brand === "lights") {
+    const lights = await loadMailbox(env, companyId, LIGHTS_MAILBOX).catch(() => null);
+    if (!lights && options.only) return { sent: false, reason: "The Christmas lights mailbox isn't connected." };
+    if (lights) {
+      const result = await sendFromLights(lights, message);
+      await noteMailboxHealth(env, companyId, lights, result);
+      // A refused sign-in sent nothing: it shows on Settings → Email, and the main sender takes the
+      // email, so the client still gets it. Anything else (the server didn't answer) may have gone,
+      // so it isn't sent a second way.
+      if (result.sent || options.only || sendProblem(result) !== "sign_in") {
+        // The bell's "emails aren't going out" is about the main sender (invites, codes, washing):
+        // a lights email that went mustn't clear it, and a refused lights sign-in shows on the
+        // lights section of Settings → Email instead. Other lights failures still count.
+        if (!result.sent && sendProblem(result) !== "sign_in") await noteSending(env, companyId, "email", result);
+        return result;
+      }
+    }
+  }
   if (companyId) {
     const mailbox = await loadMailbox(env, companyId).catch(() => null);
     if (mailbox) {
@@ -194,6 +247,14 @@ export async function sendEmail(env: Env, message: EmailMessage, companyId?: str
   const result = await resendSend(env.RESEND_API_KEY, env.EMAIL_FROM, message);
   if (companyId) await noteSending(env, companyId, "email", result);
   return result;
+}
+
+/**
+ * An email through the lights mailbox: from the name typed for it, else the brand's own name, and
+ * replies to that mailbox, not the business's main address.
+ */
+export function sendFromLights(lights: Pick<Mailbox, "settings" | "secret" | "brandName">, message: EmailMessage): Promise<SendResult> {
+  return sendWithMailbox(lights.settings, lights.secret, { ...message, fromName: lights.brandName || message.fromName, replyTo: lights.settings.from_email });
 }
 
 /** A send that worked is reported to the database again after this long; in between, it's taken as still working. */
@@ -285,7 +346,7 @@ async function noteMailboxHealth(env: Env, companyId: string, mailbox: Mailbox, 
     .from("integrations")
     .update({ status: next, last_error: result.sent ? null : (result.reason ?? "").slice(0, 500) })
     .eq("company_id", companyId)
-    .eq("provider", "email");
+    .eq("provider", mailbox.provider);
 }
 
 async function resendSend(apiKey: string, from: string, message: EmailMessage): Promise<SendResult> {
