@@ -108,8 +108,14 @@
 .reviews img { width: 630px; max-width: 100%; }
 
 /* After Accept: Crewtavo's own approval inside the section card. */
-.approval { color: var(--ink, #333); }
-.after { max-width: 1140px; margin: 24px auto 0; padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
+.approval { color: var(--ink, #333); min-width: 0; }
+/* The Hub's paper (.hub-document in features.css) breaks out of the Hub's narrow 640px column to
+   min(848px, 100vw - 32px), centered on that column. Here the column is the section card beside the
+   menu (about 660px at 1024px wide), so that breakout spilled ~60px past the right edge of the
+   screen: the page scrolled sideways and the buttons under it went with it. Here the paper keeps to
+   its column, and DocumentSheet scales the pages down to fit it. */
+.approval :global(.hub-document), .after :global(.hub-document) { width: auto; max-width: 100%; margin-inline: 0; }
+.after {max-width: 1140px; margin: 24px auto 0; padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
 
 /* Approved, declined or expired: logo left, a card right, as CF's expired page. */
 .solo {
