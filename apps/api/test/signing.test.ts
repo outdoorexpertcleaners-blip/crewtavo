@@ -626,7 +626,8 @@ describe("the signed copy", () => {
     const res = await call(`/quotes/${QUOTE}/send-copy`, { channel: "sms" });
     const body = await res.json();
     expect(body).toEqual({ sent: true, link: expect.stringContaining("/hub/") });
-    expect(sendSms).toHaveBeenCalledWith(env, { to: "(614) 555-0142", company: ROOFER, body: expect.stringMatching(/^Ridgeline Roofing: Here's your signed estimate\. You can view, print or save it any time: https:\/\/ops\.example\.com\/hub\/\S+\n\nReply STOP to opt out\.$/) });
+    // From the line for the estimate's brand (services/brand.ts): a roof estimate is the main (washing) one.
+    expect(sendSms).toHaveBeenCalledWith(env, { to: "(614) 555-0142", company: ROOFER, brand: "washing", body: expect.stringMatching(/^Ridgeline Roofing: Here's your signed estimate\. You can view, print or save it any time: https:\/\/ops\.example\.com\/hub\/\S+\n\nReply STOP to opt out\.$/) });
     // The text has the client's own link; the person sending it and the timeline get the office's copy.
     expect((await hubLinkIn(sendSms.mock.calls[0]![1].body))!.via).toBeUndefined();
     expect(await hubLinkIn(sendSms.mock.calls[0]![1].body)).toMatchObject({ own: 1 });
@@ -634,6 +635,16 @@ describe("the signed copy", () => {
     expect(state.tables.messages).toEqual([expect.objectContaining({ channel: "sms", subject: "Signed estimate #1042", related_type: "quote", related_id: QUOTE })]);
     expect(state.tables.messages![0]!.body).toMatch(/^Ridgeline Roofing: Here's your signed estimate\./);
     expect(await hubLinkIn(state.tables.messages![0]!.body)).toMatchObject({ t: "quote", id: QUOTE, via: "office" });
+  });
+
+  it("texts a Christmas lights estimate from the lighting line, and keeps it under that line", async () => {
+    roofer({ status: "approved", approval: { name: "Alex Morgan", signature: HOMEOWNER } });
+    state.tables.quotes![0]!.brand = "lights";
+    sendSms.mockImplementationOnce(async () => ({ sent: true, id: "sms-1", line: "lights" }));
+    const res = await call(`/quotes/${QUOTE}/send-copy`, { channel: "sms" });
+    expect((await res.json()).sent).toBe(true);
+    expect(sendSms.mock.calls[0]![1]).toMatchObject({ brand: "lights" });
+    expect(state.tables.messages).toEqual([expect.objectContaining({ channel: "sms", related_id: QUOTE, line: "lights" })]);
   });
 
   it("isn't texted to a client who texted STOP, but goes to another number", async () => {

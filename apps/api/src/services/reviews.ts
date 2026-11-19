@@ -48,6 +48,7 @@ import { clientLink, reviewLink } from "../lib/links";
 import { reportError } from "../lib/monitoring";
 import { emailReady, sendSms, smsReady, type SendResult } from "../lib/notify";
 import { adminClient, type Db } from "../lib/supabase";
+import { brandFor } from "./brand";
 import { emailClient } from "./marketingEmail";
 import { senderAddressProblem, tellAddressNeeded } from "./senderAddress";
 import { noteTold } from "./stopLine";
@@ -164,18 +165,21 @@ const vars = (company: Company, client: ReviewClient, link: string) => ({
 async function deliver(
   env: Env,
   admin: Db,
-  d: { companyId: string; company: Company; client: ReviewClient; channels: SendChannel[]; text: string; subject: string; record: string; requestId: string; sentBy: string | null; baseUrl: string },
+  d: { companyId: string; company: Company; client: ReviewClient; channels: SendChannel[]; text: string; subject: string; record: string; requestId: string; sentBy: string | null; baseUrl: string; jobId?: string | null },
 ): Promise<{ sent: SendChannel[]; errors: string[]; failures: Failure[] }> {
   const sent: SendChannel[] = [];
   const failures: Failure[] = [];
+  // About the job it's for, else the client's latest quote (services/brand.ts): a Christmas lights
+  // client's ask goes from the lights Quo line and the lights mailbox, when one is connected.
+  const brand = await brandFor(admin, d.companyId, { subject: d.jobId ? "job" : null, id: d.jobId ?? null, clientId: d.client.id });
   for (const channel of d.channels) {
     let result: SendResult;
     // A text says how to stop them; the email has one-click unsubscribe.
     const body = channel === "sms" ? withStopLine(d.text) : d.text;
     if (channel === "email") {
-      result = await emailClient(env, { companyId: d.companyId, company: d.company, client: d.client, subject: d.subject, text: body, baseUrl: d.baseUrl, footer: companyFooter(d.company) });
+      result = await emailClient(env, { companyId: d.companyId, company: d.company, client: d.client, subject: d.subject, text: body, baseUrl: d.baseUrl, footer: companyFooter(d.company), brand });
     } else {
-      result = await sendSms(env, { to: d.client.phone!, body }, d.companyId);
+      result = await sendSms(env, { to: d.client.phone!, body, brand }, d.companyId);
       await noteRefusedText(admin, d.client, d.client.phone!, result, d.companyId);
       // They've been told how to stop, so their next text from the business doesn't say it again.
       if (result.sent) await noteTold(admin, d.companyId, d.client.phone!);
@@ -194,6 +198,8 @@ async function deliver(
     await admin.from("messages").insert({
       company_id: d.companyId, client_id: d.client.id, channel, direction: "out", subject: channel === "email" ? d.record : null, body,
       related_type: "review", related_id: d.requestId, external_id: result.id ?? null, sent_by: d.sentBy,
+      // The Quo line a text went out on, so it shows under that line in Messages.
+      line: channel === "sms" ? (result.line ?? null) : null,
     });
   }
   return { sent, errors: failures.map((f) => f.reason), failures };
@@ -293,7 +299,7 @@ export async function sendReviewRequest(env: Env, admin: Db, args: ReviewArgs): 
   const text = renderTemplate(settings.review_message || DEFAULT_REVIEW_MESSAGE, vars(company, client, link));
   const outcome = await deliver(env, admin, {
     companyId: args.companyId, company, client, channels, text, subject: `How did we do? A quick favor from ${company.name}`, record: "Review request",
-    requestId: id, sentBy: args.createdBy, baseUrl: args.baseUrl,
+    requestId: id, sentBy: args.createdBy, baseUrl: args.baseUrl, jobId: args.jobId ?? null,
   });
   if (!outcome.sent.length) {
     await admin.from("review_requests").update({ status: "failed", error: outcome.errors[0] ?? null }).eq("id", id);
@@ -392,7 +398,7 @@ export async function sendDueReminders(env: Env) {
     const text = renderTemplate(reviewSettings(settings).reminderMessage, vars(company, client!, link));
     const outcome = await deliver(env, admin, {
       companyId: row.company_id, company, client: client!, channels: plan.channels, text, subject: `A quick reminder from ${company.name}`, record: "Review reminder",
-      requestId: row.id, sentBy: null, baseUrl,
+      requestId: row.id, sentBy: null, baseUrl, jobId: row.job_id,
     });
     // A failed reminder counts too, so it can't go round again, and Recent requests says it failed
     // and why; the next one keeps its time.

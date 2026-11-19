@@ -34,7 +34,7 @@ import { firstName, isEmail, renderEmail } from "../lib/email";
 import { HttpError } from "../lib/http";
 import { clientLinks } from "../lib/links";
 import { reportError } from "../lib/monitoring";
-import { emailReady, sendEmail, sendSms, smsReady } from "../lib/notify";
+import { emailReady, sendEmail, sendSms, smsReady, type SendResult } from "../lib/notify";
 import { brandFor } from "./brand";
 import { adminClient, type Db } from "../lib/supabase";
 import { companyAddress } from "./automations";
@@ -245,7 +245,7 @@ async function alreadySent(admin: Db, companyId: string, key: string): Promise<b
 }
 
 /** The client's timeline gets what was sent. A failure here is logged: the email went, so it isn't sent again. */
-async function logMessage(admin: Db, row: { company_id: string; client_id: string; channel: string; subject: string | null; body: string; related_type: string; related_id: string; external_id: string | null; sent_by?: string | null; recipients?: ReturnType<typeof recipientsColumn> }) {
+async function logMessage(admin: Db, row: { company_id: string; client_id: string; channel: string; subject: string | null; body: string; related_type: string; related_id: string; external_id: string | null; sent_by?: string | null; recipients?: ReturnType<typeof recipientsColumn>; line?: "washing" | "lights" | null }) {
   const { error } = await admin.from("messages").insert({ ...row, direction: "out", status: "sent", sent_by: row.sent_by ?? null });
   if (error) {
     console.error("Couldn't log an autopay message", error.message);
@@ -639,8 +639,7 @@ export async function sendAutopayNotice(env: Env, admin: Db, chargeId: string, s
       parts.push(`Thanks,\n${company.name}`);
       return parts.join("\n\n");
     };
-    const brand = await brandFor(admin, company.id, { subject: "invoice", id: invoice.id, clientId: client.id });
-    const result = await emailFrom(env, company, client.email.trim(), subject, write("own"), undefined, undefined, brand);
+    const result = await emailFrom(env, company, client.email.trim(), subject, write("own"), undefined, undefined, await brandFor(admin, company.id, { subject: "invoice", id: invoice.id, clientId: client.id }));
     if (!result.sent) throw new Error(result.reason ?? "The notice wasn't sent.");
     await logMessage(admin, { company_id: company.id, client_id: client.id, channel: "email", subject, body: write("office"), related_type: "invoice", related_id: invoice.id, external_id: key });
     return "sent";
@@ -649,10 +648,12 @@ export async function sendAutopayNotice(env: Env, admin: Db, chargeId: string, s
   if (client.phone && (await smsReady(env, company.id)) && !textsOff(client) && !(await numberStopped(admin, company.id, client.phone))) {
     const body = (who: Who) => `${company.name}: ${short}${invoiceLink ? ` ${invoiceLink[who]}` : ""}`;
     const to = client.phone;
-    const result = await textWithStopLine(admin, company.id, to, body("own"), (text) => sendSms(env, { to, body: text, company: company.id }));
+    // From the Quo line for the invoice's brand (services/brand.ts): a Christmas lights job's from the lights line.
+    const brand = await brandFor(admin, company.id, { subject: "invoice", id: invoice.id, clientId: client.id });
+    const result = await textWithStopLine(admin, company.id, to, body("own"), (text) => sendSms(env, { to, body: text, company: company.id, brand }));
     await noteRefusedText(admin, client, client.phone, result, company.id);
     if (!result.sent) throw new Error(result.reason ?? "The notice wasn't sent.");
-    await logMessage(admin, { company_id: company.id, client_id: client.id, channel: "sms", subject: null, body: body("office"), related_type: "invoice", related_id: invoice.id, external_id: key });
+    await logMessage(admin, { company_id: company.id, client_id: client.id, channel: "sms", subject: null, body: body("office"), related_type: "invoice", related_id: invoice.id, external_id: key, line: result.line ?? null });
     return "sent";
   }
   return "skipped: no way to reach them";
@@ -700,8 +701,7 @@ export async function sendAutopayAgreed(env: Env, admin: Db, authorizationId: st
       parts.push(`Thanks,\n${company.name}`);
       return parts.join("\n\n");
     };
-    const brand = await brandFor(admin, company.id, { clientId: who.id });
-    const result = await emailFrom(env, company, who.email.trim(), subject, write("own"), undefined, undefined, brand);
+    const result = await emailFrom(env, company, who.email.trim(), subject, write("own"), undefined, undefined, await brandFor(admin, company.id, { clientId: who.id }));
     if (!result.sent) throw new Error(result.reason ?? "The copy of the agreement wasn't sent.");
     await logMessage(admin, { company_id: company.id, client_id: who.id, channel: "email", subject, body: write("office"), related_type: "autopay", related_id: who.id, external_id: key });
     return "sent";
@@ -709,10 +709,12 @@ export async function sendAutopayAgreed(env: Env, admin: Db, authorizationId: st
   if (who.phone && (await smsReady(env, company.id)) && !textsOff(who) && !(await numberStopped(admin, company.id, who.phone))) {
     const body = (link: Who) => `${company.name}: ${intro} Not you, or changed your mind? ${links ? `Turn it off here: ${links[link]}` : "Contact us to turn it off."}`;
     const to = who.phone;
-    const result = await textWithStopLine(admin, company.id, to, body("own"), (text) => sendSms(env, { to, body: text, company: company.id }));
+    // From the Quo line for the client's brand (their latest quote, else request).
+    const brand = await brandFor(admin, company.id, { clientId: who.id });
+    const result = await textWithStopLine(admin, company.id, to, body("own"), (text) => sendSms(env, { to, body: text, company: company.id, brand }));
     await noteRefusedText(admin, who, who.phone, result, company.id);
     if (!result.sent) throw new Error(result.reason ?? "The copy of the agreement wasn't sent.");
-    await logMessage(admin, { company_id: company.id, client_id: who.id, channel: "sms", subject: null, body: body("office"), related_type: "autopay", related_id: who.id, external_id: key });
+    await logMessage(admin, { company_id: company.id, client_id: who.id, channel: "sms", subject: null, body: body("office"), related_type: "autopay", related_id: who.id, external_id: key, line: result.line ?? null });
     return "sent";
   }
   return "skipped: no way to reach them";
@@ -847,7 +849,9 @@ export async function sendAutopayInvite(
   const sms = (url: string) => words(url).sms;
   // The button says what tapping it does here; receipts and notices keep "Manage autopay".
   const button = card ? "Confirm autopay" : "Save your card";
-  const result = input.channel === "email" ? await emailFrom(env, company, client.email!.trim(), subject, text(links.own), base, button, await brandFor(admin, input.companyId, { clientId: client.id })) : await textWithStopLine(admin, input.companyId, client.phone!, sms(links.own), (text) => sendSms(env, { to: client.phone!, body: text, company: input.companyId }));
+  // From the client's brand (their latest quote, else request): the lights mailbox or Quo line for a Christmas lights client.
+  const brand = await brandFor(admin, input.companyId, { clientId: client.id });
+  const result: SendResult = input.channel === "email" ? await emailFrom(env, company, client.email!.trim(), subject, text(links.own), base, button, brand) : await textWithStopLine(admin, input.companyId, client.phone!, sms(links.own), (text) => sendSms(env, { to: client.phone!, body: text, company: input.companyId, brand }));
   if (input.channel === "sms") await noteRefusedText(admin, client, client.phone!, result, input.companyId);
   if (!result.sent) throw new Error(result.reason ?? "The invite wasn't sent.");
   await logMessage(admin, {
@@ -861,6 +865,7 @@ export async function sendAutopayInvite(
     related_id: client.id,
     external_id: result.id ?? null,
     sent_by: input.createdBy,
+    line: input.channel === "sms" ? (result.line ?? null) : null,
   });
   return { sent: true, detail: input.channel === "email" ? "Sent by email." : "Sent by text." };
 }

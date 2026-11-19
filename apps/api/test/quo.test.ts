@@ -73,6 +73,14 @@ describe("a text through Quo", () => {
     expect(twilio()).toBe(0);
   });
 
+  it("goes from the wash line when it names no brand: the office's alerts, sign-in codes, subs' texts", async () => {
+    const { co, rows } = await withQuo({ test_numbers: ["+14705550101"], lines: { washing: wash, lights } });
+    const { quo } = serve(rows);
+    expect(await sendSms(env, { to: "(470) 555-0101", body: "New request from Jane Doe" }, co)).toEqual({ sent: true, id: "AC-sent", line: "washing" });
+    expect(await sendSms(env, { to: "(470) 555-0101", body: "Your code is 123456", company: co })).toEqual({ sent: true, id: "AC-sent", line: "washing" });
+    expect(quo.map((q) => q.body.from)).toEqual(["PNwash", "PNwash"]);
+  });
+
   it("isn't sent at all to a number that isn't a test number", async () => {
     const { co, rows } = await withQuo({ test_numbers: ["+14705550101"], lines: { washing: wash } });
     const { quo, twilio } = serve(rows);

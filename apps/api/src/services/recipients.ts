@@ -68,6 +68,8 @@ export interface Delivery {
   failed: Array<Recipient & { reason: string; result: SendResult }>;
   /** The provider's id of the first one that went, kept on the message. */
   id: string | null;
+  /** The Quo line the first text that went was sent from (washing or lights), kept on the message as messages.line. */
+  line?: "washing" | "lights" | null;
 }
 
 /** Sends to each in turn. One that fails doesn't stop the rest. */
@@ -78,6 +80,7 @@ export async function sendToEach(recipients: readonly Recipient[], send: (recipi
     if (result.sent) {
       delivery.went.push(recipient);
       delivery.id ??= result.id ?? null;
+      delivery.line ??= result.line ?? null;
     } else delivery.failed.push({ ...recipient, reason: result.reason ?? fallback, result });
   }
   return delivery;

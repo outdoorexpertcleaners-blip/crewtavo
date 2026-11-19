@@ -211,6 +211,8 @@ export async function confirmBooking(
       ? [`You're booked for ${when}`, `You're booked: ${booking.title} on ${when}.`]
       : [`We got your request for ${when}`, `We got your request for ${booking.title} on ${when}. This time isn't confirmed yet: we'll let you know as soon as it is.`];
     const call = co.phone ? ` or call ${co.phone}` : "";
+    // A Christmas lights booking is confirmed from the lights mailbox and Quo line, when they're set up.
+    const brand = await brandFor(admin, co.id, booking.visitId ? { subject: "visit", id: booking.visitId, clientId: client.id } : { subject: "request", id: booking.requestId, clientId: client.id });
 
     if (await emailReady(env, co.id)) {
       const people = await recipientsFor(admin, co.id, client, "email", co.settings);
@@ -226,8 +228,6 @@ export async function confirmBooking(
           co.name,
         ].join("\n\n");
         const email = renderEmail({ companyName: co.name, logo: baseUrl ? logoImage(baseUrl, co.id, co.settings) : null, text, footer: companyFooter(co) });
-        // A Christmas lights booking is confirmed from the lights mailbox, when one is connected.
-        const brand = await brandFor(admin, co.id, booking.visitId ? { subject: "visit", id: booking.visitId, clientId: client.id } : { subject: "request", id: booking.requestId, clientId: client.id });
         const delivery = await sendToEach(people, (person) => sendEmail(env, { to: person.to, subject, text: email.text, html: email.html, replyTo: co.email ?? undefined, fromName: co.name, brand }, co.id));
         if (delivery.went.length) {
           result.emailed = true;
@@ -243,7 +243,7 @@ export async function confirmBooking(
       if (people.length) {
         const body = `${co.name}: ${line}${co.phone ? ` Questions? Call ${co.phone}.` : ""}`;
         const delivery = await sendToEach(people, async (person) => {
-          const sent = await textWithStopLine(admin, co.id, person.to, body, (text) => sendSms(env, { to: person.to, body: text }, co.id));
+          const sent = await textWithStopLine(admin, co.id, person.to, body, (text) => sendSms(env, { to: person.to, body: text, brand }, co.id));
           await noteRefusedText(admin, client, person.to, sent, co.id);
           return sent;
         });
@@ -252,6 +252,8 @@ export async function confirmBooking(
           await admin.from("messages").insert({
             company_id: co.id, client_id: client.id, channel: "sms", direction: "out", status: "sent", body,
             ...about, external_id: delivery.id, sent_by: booking.sentBy ?? null, recipients: recipientsColumn(delivery),
+            // The Quo line it went out on, so it shows under that line in Messages.
+            line: delivery.line ?? null,
           });
         }
       }

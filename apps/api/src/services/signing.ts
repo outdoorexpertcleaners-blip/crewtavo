@@ -275,7 +275,9 @@ async function deliverCopy(s: SigningScope, quote: Quote, company: Company, link
   const sms = (link: string) => `${company.name}: Here's your signed estimate. You can view, print or save it any time: ${link}`;
   const linkFor = (channel: "email" | "sms", to: string) => (sentToClient(channel, to, client) ? links.own : links.office);
   const subject = `Your signed estimate from ${company.name}`;
-  let result: { sent: boolean; reason?: string; id?: string };
+  let result: { sent: boolean; reason?: string; id?: string; line?: "washing" | "lights" };
+  // A Christmas lights estimate goes from the lights mailbox, when one is connected, and is texted from the lights Quo line.
+  const brand = await brandFor(adminClient(s.env), s.companyId, { subject: "quote", id: quote.id, clientId: quote.client_id });
   try {
     if (body.channel === "email") {
       const to = body.to || client?.email;
@@ -283,8 +285,6 @@ async function deliverCopy(s: SigningScope, quote: Quote, company: Company, link
       if (!isEmail(to)) return { sent: false, reason: "That email address doesn't look right." };
       const footer = [company.name, companyAddress(company.address as Record<string, string>), company.phone].filter(Boolean).join(" · ");
       const text = email(linkFor("email", to));
-      // A Christmas lights estimate goes from the lights mailbox, when one is connected.
-      const brand = await brandFor(adminClient(s.env), s.companyId, { subject: "quote", id: quote.id, clientId: quote.client_id });
       result = await sendEmail(
         s.env,
         { to, subject, ...renderEmail({ companyName: company.name, logo: logoImage(s.baseUrl, s.companyId, company.settings), text, footer }), replyTo: company.email ?? undefined, fromName: company.name, brand },
@@ -299,7 +299,7 @@ async function deliverCopy(s: SigningScope, quote: Quote, company: Company, link
       if (texted && textsOffTo(texted, to)) return { sent: false, reason: textsOffRefusal(who) };
       // Nor to any other number that texted STOP.
       if (await numberStopped(adminClient(s.env), s.companyId, to)) return { sent: false, reason: numberStoppedRefusal(to) };
-      result = await textWithStopLine(adminClient(s.env), s.companyId, to, sms(linkFor("sms", to)), (text) => sendSms(s.env, { to, body: text, company: s.companyId }));
+      result = await textWithStopLine(adminClient(s.env), s.companyId, to, sms(linkFor("sms", to)), (text) => sendSms(s.env, { to, body: text, company: s.companyId, brand }));
       if (texted) await noteRefusedText(adminClient(s.env), texted, to, result, s.companyId);
     }
   } catch (error) {
@@ -317,6 +317,8 @@ async function deliverCopy(s: SigningScope, quote: Quote, company: Company, link
       related_type: "quote",
       related_id: quote.id,
       external_id: result.id ?? null,
+      // The Quo line a text went out on, so it shows under that line in Messages.
+      line: body.channel === "sms" ? (result.line ?? null) : null,
     });
     if (logged.error) console.error("Couldn't log the signed copy", logged.error);
   }

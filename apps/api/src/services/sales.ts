@@ -209,8 +209,9 @@ export async function deliver(s: SalesScope, kind: "quote" | "invoice", record: 
   const { data: onFile } = await s.db.from("clients").select("id, display_name, email, phone, sms_opt_out_at").eq("id", record.client_id).maybeSingle();
   const client = onFile ?? { id: record.client_id, display_name: record.client?.display_name ?? "This client", email: record.client?.email ?? null, phone: record.client?.phone ?? null, sms_opt_out_at: null };
   const people = await sendTo(admin, s.companyId, channel, client, body, company.settings);
-  // A Christmas lights quote or invoice is emailed from the lights mailbox, when one is connected.
-  const brand = channel === "email" ? await brandFor(admin, s.companyId, { subject: kind, id: record.id, clientId: record.client_id }) : null;
+  // A Christmas lights quote or invoice is emailed from the lights mailbox, when one is connected,
+  // and texted from the lights Quo line.
+  const brand = await brandFor(admin, s.companyId, { subject: kind, id: record.id, clientId: record.client_id });
   const delivery =
     channel === "email"
       ? await sendToEach(people, (person) => {
@@ -220,7 +221,7 @@ export async function deliver(s: SalesScope, kind: "quote" | "invoice", record: 
           return sendEmail(s.env, { to: person.to, subject, ...renderEmail({ companyName: company.name, logo: logoImage(s.baseUrl, s.companyId, company.settings), text, footer }), replyTo: company.email ?? undefined, fromName: company.name, brand }, s.companyId);
         })
       : await sendToEach(people, async (person) => {
-          const result = await textWithStopLine(admin, s.companyId, person.to, `${company.name}: ${intro} ${linkFor("sms", person.to)}`, (text) => sendSms(s.env, { to: person.to, body: text, company: s.companyId }));
+          const result = await textWithStopLine(admin, s.companyId, person.to, `${company.name}: ${intro} ${linkFor("sms", person.to)}`, (text) => sendSms(s.env, { to: person.to, body: text, company: s.companyId, brand }));
           await noteRefusedText(admin, client, person.to, result, s.companyId);
           return result;
         });
@@ -236,6 +237,8 @@ export async function deliver(s: SalesScope, kind: "quote" | "invoice", record: 
       related_id: record.id,
       external_id: delivery.id,
       recipients: recipientsColumn(delivery),
+      // The Quo line a text went out on, so it shows under that line in Messages.
+      line: channel === "sms" ? (delivery.line ?? null) : null,
     });
   }
   const first = delivery.failed[0];

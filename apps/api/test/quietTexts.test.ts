@@ -240,3 +240,25 @@ describe("a rule that texts a client at 10:40pm", () => {
     expect(sendSms).not.toHaveBeenCalled();
   });
 });
+
+describe("the line a rule's text goes from (services/brand.ts)", () => {
+  /** The same visit, on a job from a Christmas lights quote. */
+  const lightsVisit = { ...visit, job: { ...visit.job, quote: { brand: "lights", lines: [{ name: "Roofline lighting" }] }, lines: [] } };
+
+  it("is the lighting line for a Christmas lights visit, whatever the trigger", async () => {
+    at(MORNING);
+    for (const trigger of ["visit.scheduled", "visit.reminder", "visit.completed"]) {
+      sendSms.mockClear();
+      engine(rule({ trigger }), { visits: [lightsVisit] });
+      expect(await executeRun(env, adminClient(env), run(), env.APP_URL!), trigger).toBe("done");
+      expect(sendSms.mock.calls.map((c) => c[1].brand), trigger).toEqual(["lights"]);
+    }
+  });
+
+  it("names no brand (the wash line) for a visit nothing says is Christmas lights", async () => {
+    at(MORNING);
+    engine(rule());
+    expect(await executeRun(env, adminClient(env), run(), env.APP_URL!)).toBe("done");
+    expect(sendSms.mock.calls.map((c) => c[1].brand ?? null)).toEqual([null]);
+  });
+});
