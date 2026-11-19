@@ -104,9 +104,9 @@ export const timing = { pollMs: 5_000, waitMs: 60_000 };
 export const MARKETING_OFF_POSTS = "Marketing is off, so nothing posts. An owner or admin can install it again in Apps.";
 export const SIGNIN_LOST = "Sign-in expired. Reconnect Facebook & Instagram in Apps.";
 export const MAY_HAVE_POSTED = "It may have posted. Check before posting it again.";
-const APP_URL_PRIVATE = "Crewtavo's address isn't public, so Meta and Google can't fetch the photos.";
+const APP_URL_PRIVATE = "The app's address isn't public, so Meta and Google can't fetch the photos.";
 /** Said before a post of pictures is scheduled, rather than when it fails. */
-export const PRIVATE_ADDRESS_POSTS = "Crewtavo's address isn't public, so Meta and Google can't fetch the pictures. Save it as a draft, or use Share elsewhere.";
+export const PRIVATE_ADDRESS_POSTS = "The app's address isn't public, so Meta and Google can't fetch the pictures. Save it as a draft, or use Share elsewhere.";
 
 const minutesFromNow = (n: number) => new Date(Date.now() + n * 60_000).toISOString();
 
@@ -222,7 +222,7 @@ export const GOOGLE_REASONS: Record<GoogleReason, string> = {
   signin: "Reconnect Google Business Profile in Apps.",
   pick: "Pick your location in Apps.",
   location: "Pick your location in Apps.",
-  error: "Google isn't answering just now. Crewtavo tries again.",
+  error: "Google isn't answering just now. The app tries again.",
 };
 
 /** The Reviews tab's view of where posts can go, for GET /social. */
@@ -330,7 +330,7 @@ export async function postReview(admin: Db, post: Pick<Post, "id" | "company_id"
  * telling someone already connected to connect would be wrong.
  */
 export function reviewGoneWords(google: { status: string | null; location: string | null } | null, reviewKey: string | null): string {
-  const gone = "The review isn't in Crewtavo anymore.";
+  const gone = "The review isn't in the app anymore.";
   if (!google?.status || google.status === "disconnected") return `${gone} Connect Google Business Profile to bring it back.`;
   const from = /^(locations\/[^/]+)\//.exec(reviewKey ?? "")?.[1];
   if (from && google.location && google.location !== from) return `${gone} Google Business Profile is set to another location now.`;
@@ -575,24 +575,24 @@ async function failureEnding(ctx: Ctx, network: Network, row: NetworkRow, error:
         return { status: "failed", error: `${name} didn't allow it${error.permission ? `: the ${error.permission} permission wasn't granted` : ""}. Reconnect Facebook & Instagram in Apps.`, kind: "permission" };
       }
       case "limit":
-        return waitOrFail(row, 60, "Instagram's daily limit is used up. Crewtavo tries again in an hour.", "Instagram's daily limit stayed used up for a day, so this didn't post.", "limit", steps);
+        return waitOrFail(row, 60, "Instagram's daily limit is used up. The app tries again in an hour.", "Instagram's daily limit stayed used up for a day, so this didn't post.", "limit", steps);
       case "rate":
-        return retryOrFail(row, `${name} asked Crewtavo to slow down. It tries again soon.`, "rate", steps);
+        return retryOrFail(row, `${name} asked the app to slow down. It tries again soon.`, "rate", steps);
       case "duplicate":
         return { status: "failed", error: "Facebook turned this down as the same as a recent post.", kind: "duplicate" };
       case "image":
         return { status: "failed", error: `${name} couldn't use the picture.`, kind: "image" };
       default:
-        return error.retry ? retryOrFail(row, `${name} had a problem. Crewtavo tries again soon.`, "other", steps) : { status: "failed", error: `${name} turned it down: ${error.message}`, kind: "other" };
+        return error.retry ? retryOrFail(row, `${name} had a problem. The app tries again soon.`, "other", steps) : { status: "failed", error: `${name} turned it down: ${error.message}`, kind: "other" };
     }
   }
   if (error instanceof GoogleBusinessError) {
-    if (error.kind === "busy" || error.kind === "error") return retryOrFail(row, "Google had a problem. Crewtavo tries again soon.", "other");
+    if (error.kind === "busy" || error.kind === "error") return retryOrFail(row, "Google had a problem. The app tries again soon.", "other");
     if (error.kind === "signin") return { status: "failed", error: GOOGLE_REASONS.signin, kind: "not_connected" };
     if (error.kind === "approval" || error.kind === "not_enabled") return { status: "failed", error: GOOGLE_REASONS.approval, kind: "not_connected" };
     return { status: "failed", error: GOOGLE_REASONS.pick, kind: "not_connected" };
   }
-  return retryOrFail(row, `${name} couldn't be reached. Crewtavo tries again soon.`, "other", steps);
+  return retryOrFail(row, `${name} couldn't be reached. The app tries again soon.`, "other", steps);
 }
 
 /**
@@ -672,7 +672,7 @@ async function postInstagram(ctx: Ctx, row: NetworkRow, images: PostImage[]): Pr
   try {
     const limit = await igPublishingLimit(ctx.env, igId, token);
     if (limit.used >= limit.total) {
-      return waitOrFail(row, 60, `Instagram's daily limit of ${limit.total} posts is used up. Crewtavo tries again in an hour.`, `Instagram's daily limit of ${limit.total} posts stayed used up for a day, so this didn't post.`, "limit", steps);
+      return waitOrFail(row, 60, `Instagram's daily limit of ${limit.total} posts is used up. The app tries again in an hour.`, `Instagram's daily limit of ${limit.total} posts stayed used up for a day, so this didn't post.`, "limit", steps);
     }
     // Containers hold the pictures they were made with: made from others (a photo taken out since), or too long ago, they're made again.
     if (!fresh(steps.made_at) || !sameImages(steps.images, images)) steps = { made_at: new Date().toISOString(), images: images.map((i) => i.url) };
@@ -697,8 +697,8 @@ async function postInstagram(ctx: Ctx, row: NetworkRow, images: PostImage[]): Pr
       await sleep(timing.pollMs);
       status = await igContainerStatus(ctx.env, steps.container!, token);
     }
-    if (status === "IN_PROGRESS") return waitOrFail(row, 2, "Instagram is still getting the photos ready. Crewtavo checks again in a couple of minutes.", "Instagram never finished getting the photos ready, so this didn't post.", "other", steps);
-    if (status === "EXPIRED") return retryOrFail(row, "Instagram let the post's photos expire. Crewtavo makes them again.", "other", {});
+    if (status === "IN_PROGRESS") return waitOrFail(row, 2, "Instagram is still getting the photos ready. The app checks again in a couple of minutes.", "Instagram never finished getting the photos ready, so this didn't post.", "other", steps);
+    if (status === "EXPIRED") return retryOrFail(row, "Instagram let the post's photos expire. The app makes them again.", "other", {});
     // A container Instagram turned down is never used again: Post again makes a new one.
     if (status === "ERROR") return { status: "failed", error: "Instagram couldn't use the photos.", kind: "image", steps: {} };
     if (status === "PUBLISHED") {
@@ -794,7 +794,7 @@ export async function postOne(env: Env, admin: Db, claimed: Claimed): Promise<vo
         return;
       }
       if (storageWritesPaused()) {
-        for (const n of todo) await end(ctx, n, retryOrFail(ctx.rows.get(n)!, "Files are being moved. Crewtavo tries again in a few minutes.", "other"));
+        for (const n of todo) await end(ctx, n, retryOrFail(ctx.rows.get(n)!, "Files are being moved. The app tries again in a few minutes.", "other"));
         return;
       }
       try {
@@ -802,7 +802,7 @@ export async function postOne(env: Env, admin: Db, claimed: Claimed): Promise<vo
       } catch (failure) {
         const ending: (n: Network) => Ending = (n) => failure instanceof ShareImageError
           ? { status: "failed", error: failure.message, kind: "image" }
-          : retryOrFail(ctx.rows.get(n)!, "The photos couldn't be made ready. Crewtavo tries again soon.", "other");
+          : retryOrFail(ctx.rows.get(n)!, "The photos couldn't be made ready. The app tries again soon.", "other");
         for (const n of todo) if ((await end(ctx, n, ending(n))) === null) return;
         if (!(failure instanceof ShareImageError)) reportError(failure, { feature: "social posts", post: post.id });
         return;

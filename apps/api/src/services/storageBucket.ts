@@ -158,7 +158,7 @@ interface Instance {
 function instanceOf(env: Env): Instance | string {
   const vars = env as InstanceEnv;
   const stack = stackServices(vars as unknown as Record<string, string | undefined>);
-  if (!stack) return "Moving files needs Crewtavo's own storage service, and this Crewtavo uses another one.";
+  if (!stack) return "Moving files needs the app's own storage service, and this app uses another one.";
   const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY ?? (vars.JWT_SECRET ? apiKey(vars.JWT_SECRET, "service_role") : undefined);
   const dbUrl = vars.SUPABASE_DB_URL || vars.DATABASE_URL;
   if (!dbUrl || !serviceKey) return "Moving files needs the database's address (SUPABASE_DB_URL), which the Railway template sets on the crewtavo service. Put it back there, then try again.";
@@ -485,7 +485,7 @@ const parked = (r: MoveRecord) => r.step === "by_hand";
 class Stop extends Error {}
 /** Crewtavo has no Railway access any more (removed, or Login with Railway lapsed). */
 class NoAccess extends Stop {}
-const NO_ACCESS = "Crewtavo lost its Railway connection. Connect Railway again in Settings → Hosting, then try again.";
+const NO_ACCESS = "The app lost its Railway connection. Connect Railway again in Settings → Hosting, then try again.";
 /** The move waits for the owner (by hand): saved, and nothing more to do now. */
 class Parked extends Error {}
 /** Another server took the move over. */
@@ -553,10 +553,10 @@ class Move {
     beat.unref?.();
     try {
       const storageId = await this.railway((access) => serviceIdByName(this.env, access, "storage"));
-      if (!storageId) throw new Stop("Crewtavo can't find the storage service in this Railway project, so files have to be moved by hand.");
+      if (!storageId) throw new Stop("The app can't find the storage service in this Railway project, so files have to be moved by hand.");
       this.storageId = storageId;
       this.layout = layoutOf(await this.railway((access) => serviceVariables(this.env, access, storageId)));
-      if (this.layout.shared) throw new Stop("This storage service serves several projects, so Crewtavo can't move its files.");
+      if (this.layout.shared) throw new Stop("This storage service serves several projects, so the app can't move its files.");
       this.sql = database(this.instance.dbUrl);
       // Copies a move back couldn't take out last time go first.
       for (const stray of [...this.strays.values()]) await this.takeOutStray(stray);
@@ -590,7 +590,7 @@ class Move {
         if (!reads) {
           const back = await this.undo();
           throw new Stop(
-            `Storage didn't answer for 15 minutes, so Crewtavo didn't switch over${back ? "" : "; put storage's settings back in Railway (see below)"}. Try again once storage is running.`,
+            `Storage didn't answer for 15 minutes, so the app didn't switch over${back ? "" : "; put storage's settings back in Railway (see below)"}. Try again once storage is running.`,
           );
         }
         if (reads === "volume") {
@@ -602,7 +602,7 @@ class Move {
       return this.checkBucket();
     }
     if (this.layout.backend === "bucket") throw new Stop("Files are already in a bucket.");
-    if (!this.layout.folder) throw new Stop("Crewtavo can't tell which folder on the volume storage keeps files in (GLOBAL_S3_BUCKET isn't set on it), so files have to be moved by hand.");
+    if (!this.layout.folder) throw new Stop("The app can't tell which folder on the volume storage keeps files in (GLOBAL_S3_BUCKET isn't set on it), so files have to be moved by hand.");
     await this.update({ step: "bucket", folder: this.layout.folder });
     const bucket = await findOrMakeBucket(this.env, (call) => this.railway(call), this.storageId, r.bucket, CARRY_ON);
     if (!("id" in bucket)) return this.park(bucket);
@@ -617,11 +617,11 @@ class Move {
 
   /** The bucket's S3 keys: a new bucket can take a minute before Railway has them. */
   private async bucketStore(bucket: RailwayBucket | null): Promise<BucketStore> {
-    if (!bucket) throw new Stop("Crewtavo lost track of which bucket it was moving files to. Try again.");
+    if (!bucket) throw new Stop("The app lost track of which bucket it was moving files to. Try again.");
     for (let attempt = 1; ; attempt++) {
       const credentials = await this.railway((access) => bucketCredentials(this.env, access, bucket.id)).catch((error) => {
         if (refused(error)) {
-          throw new Stop("Railway didn't let Crewtavo read the bucket's keys, which it needs to copy files into it. Log in with Railway again as someone who can change this project (Remove access, then Log in with Railway), then try again.");
+          throw new Stop("Railway didn't let the app read the bucket's keys, which it needs to copy files into it. Log in with Railway again as someone who can change this project (Remove access, then Log in with Railway), then try again.");
         }
         throw error;
       });
@@ -722,7 +722,7 @@ class Move {
     const encoding = res.headers.get("content-encoding");
     if (o.contentEncoding || (encoding && encoding !== "identity")) {
       await drain(res);
-      return { ok: false, kind: "failed", why: "it's stored compressed, which Crewtavo doesn't copy" };
+      return { ok: false, kind: "failed", why: "it's stored compressed, which the app doesn't copy" };
     }
     if (!Number.isSafeInteger(length) || length < 0) {
       await drain(res);
@@ -757,7 +757,7 @@ class Move {
     }
     if (short.length) {
       await this.progress({ problems: short.slice(0, 5) }, true);
-      throw new Stop(`${plural(short.length, "file")} didn't copy to the bucket, so Crewtavo didn't switch over. Your files are all still on the volume, working as before. Try again in a few minutes.`);
+      throw new Stop(`${plural(short.length, "file")} didn't copy to the bucket, so the app didn't switch over. Your files are all still on the volume, working as before. Try again in a few minutes.`);
     }
   }
 
@@ -802,7 +802,7 @@ class Move {
       if (this.layout.backend === "volume") throw new Stop("Files are already on the volume.");
       if (!(await this.railway((access) => hasVolume(this.env, access, this.storageId)))) throw new Stop(NO_VOLUME);
       const folder = r.folder ?? this.layout.folder;
-      if (!folder) throw new Stop("Crewtavo can't tell which folder on the volume storage kept files in, so this has to be done by hand.");
+      if (!folder) throw new Stop("The app can't tell which folder on the volume storage kept files in, so this has to be done by hand.");
       const bucket = r.bucket ?? (await this.bucketInUse());
       await this.update({ step: "preparing", folder, bucket });
       this.store = await this.bucketStore(bucket);
@@ -823,7 +823,7 @@ class Move {
       const credentials = await this.railway((access) => bucketCredentials(this.env, access, bucket.id)).catch((error) => (error instanceof NoAccess ? Promise.reject(error) : null));
       if (credentials && credentials.bucketName === this.layout.s3Bucket) return bucket;
     }
-    throw new Stop("Crewtavo can't find the bucket storage uses in this Railway project, so this has to be done by hand.");
+    throw new Stop("The app can't find the bucket storage uses in this Railway project, so this has to be done by hand.");
   }
 
   /** Copies back what the volume doesn't have: files added or changed since the move to the bucket, or every file when that isn't known. */
@@ -889,7 +889,7 @@ class Move {
     const encoding = res.headers.get("content-encoding");
     if (o.contentEncoding || (encoding && encoding !== "identity") || !Number.isSafeInteger(length)) {
       await drain(res);
-      return { ok: false, kind: "failed", why: "it's stored in a way Crewtavo doesn't copy" };
+      return { ok: false, kind: "failed", why: "it's stored in a way the app doesn't copy" };
     }
     // Still the same file (not deleted or changed while this ran)?
     const before = await this.current(o);
@@ -922,7 +922,7 @@ class Move {
     const row = await this.rowAt(o.bucket, o.name);
     if (!row || row.id === o.id) return row;
     const stray = { bucket: o.bucket, name: o.name, id: row.id };
-    if (!(await this.takeOut(stray))) throw new Unremoved("it was deleted while it copied back, and Storage didn't let Crewtavo take the copy out yet");
+    if (!(await this.takeOut(stray))) throw new Unremoved("it was deleted while it copied back, and Storage didn't let the app take the copy out yet");
     return null;
   }
 
@@ -954,7 +954,7 @@ class Move {
       this.problems.delete(problem);
       return;
     }
-    this.problems.set(problem, `${shortName(stray)}: it was deleted while it copied back, and Storage didn't let Crewtavo take the copy out yet`);
+    this.problems.set(problem, `${shortName(stray)}: it was deleted while it copied back, and Storage didn't let the app take the copy out yet`);
   }
 
   private async checkVolume() {
@@ -965,7 +965,7 @@ class Move {
     if (this.strays.size) {
       const one = this.strays.size === 1;
       throw new Stop(
-        `Storage is back on the volume, but ${plural(this.strays.size, "file")} deleted while files moved back ${one ? "is" : "are"} still there: Storage didn't let Crewtavo take ${one ? "it" : "them"} out. Press Finish moving back to try again.`,
+        `Storage is back on the volume, but ${plural(this.strays.size, "file")} deleted while files moved back ${one ? "is" : "are"} still there: Storage didn't let the app take ${one ? "it" : "them"} out. Press Finish moving back to try again.`,
       );
     }
     // Never done while storage's settings would take it back to the bucket at its next restart.
@@ -1037,7 +1037,7 @@ class Move {
     await this.update({ undo: r.undo ?? undo });
     if (target === "bucket" && !(await this.bucketSettingsTaken())) {
       await this.undo();
-      throw new Stop("Railway didn't give storage the bucket's settings, so Crewtavo didn't switch over. Your files are all still on the volume. Try again in a few minutes.");
+      throw new Stop("Railway didn't give storage the bucket's settings, so the app didn't switch over. Your files are all still on the volume. Try again in a few minutes.");
     }
     try {
       await this.railway((access) => redeploy(this.env, access, this.storageId));
@@ -1049,7 +1049,7 @@ class Move {
         steps: [
           "Open the storage service in Railway.",
           "Press Deploy (or open Deployments and Redeploy the latest one). Storage is back in about a minute.",
-          "Crewtavo notices when it is, and carries on by itself.",
+          "The app notices when it is, and carries on by itself.",
         ],
         link: railwayPage(this.env, { id: this.storageId, tab: "deployments" }),
         watching: true,
@@ -1061,7 +1061,7 @@ class Move {
       if (!(error instanceof TimedOut)) throw error;
       const back = await this.undo();
       throw new Stop(
-        `Storage didn't start reading from the ${target === "bucket" ? "bucket" : "volume"} within 15 minutes, so ${back ? "Crewtavo put its settings back" : "put storage's settings back in Railway (see below)"}. ${
+        `Storage didn't start reading from the ${target === "bucket" ? "bucket" : "volume"} within 15 minutes, so ${back ? "the app put its settings back" : "put storage's settings back in Railway (see below)"}. ${
           target === "bucket" ? "Your files are all still on the volume." : "Your files are all still in the bucket."
         } Try again later.`,
       );
@@ -1164,7 +1164,7 @@ class Move {
       },
     });
     throw new Stop(
-      `Storage reads files from ${place} now, but ${seen ? `its settings in Railway still say ${other}, and Crewtavo couldn't change them` : "Crewtavo couldn't check its settings in Railway"}. Make sure they say ${place}, as below: until they do, storage would go back to ${other} the next time it restarts.`,
+      `Storage reads files from ${place} now, but ${seen ? `its settings in Railway still say ${other}, and the app couldn't change them` : "the app couldn't check its settings in Railway"}. Make sure they say ${place}, as below: until they do, storage would go back to ${other} the next time it restarts.`,
     );
   }
 
@@ -1177,7 +1177,7 @@ class Move {
       if (!(error instanceof TimedOut)) throw error;
       const back = this.record.undo ? await this.undo() : true;
       throw new Stop(
-        `Crewtavo stopped waiting for the change in Railway after 3 hours${back ? "" : "; put storage's variables back as they were"}. If you've made it since, press ${target === "bucket" ? "Move files" : "Move back"} again to carry on.`,
+        `The app stopped waiting for the change in Railway after 3 hours${back ? "" : "; put storage's variables back as they were"}. If you've made it since, press ${target === "bucket" ? "Move files" : "Move back"} again to carry on.`,
       );
     }
     return this.switched();
@@ -1190,13 +1190,13 @@ class Move {
             "Open the storage service in Railway, then Variables, then Raw Editor.",
             "Add the lines below (they point storage at the bucket), and press Update Variables.",
             "Press Deploy. Storage restarts, which takes about a minute.",
-            "Crewtavo notices the switch, copies anything added meanwhile and checks the files. You can leave this page.",
+            "The app notices the switch, copies anything added meanwhile and checks the files. You can leave this page.",
           ]
         : [
             "Open the storage service in Railway, then Variables.",
             `Change STORAGE_BACKEND to file, and STORAGE_S3_BUCKET to ${this.record.folder} (the volume's folder, where storage looks for files).`,
             "Press Deploy. Storage restarts, which takes about a minute.",
-            "Crewtavo notices the switch and copies back the files added since the move. You can leave this page.",
+            "The app notices the switch and copies back the files added since the move. You can leave this page.",
           ];
     return { title: target === "bucket" ? "Switch storage to the bucket in Railway" : "Switch storage back to the volume in Railway", steps, lines: Object.entries(variables).map(([k, v]) => `${k}=${v}`), link: railwayPage(this.env, { id: this.storageId, tab: "variables" }), watching: true };
   }
@@ -1316,11 +1316,11 @@ class Move {
         );
       }
     }
-    const text = `Crewtavo tells where files are kept by this file (on the ${on}). Leave it here.\n`;
+    const text = `The app tells where files are kept by this file (on the ${on}). Leave it here.\n`;
     const res = await this.storage.write(FILES, name, text, { length: new TextEncoder().encode(text).length, type: "text/plain", cache: "no-cache", replace: there });
     const status = res.status;
     await drain(res);
-    if (!res.ok) throw new Stop(`Storage didn't take Crewtavo's check file (${status}), so it can't tell when storage has switched over. Try again in a few minutes.`);
+    if (!res.ok) throw new Stop(`Storage didn't take the app's check file (${status}), so it can't tell when storage has switched over. Try again in a few minutes.`);
   }
 
   // --- helpers -----------------------------------------------------------------------------------
@@ -1603,9 +1603,9 @@ async function railwayView(env: Env, access: RailwayAccess, companyId: string, k
     volume: volume ? { usedGb: Math.round(volume.usedMb / 10) / 100, sizeGb: Math.round(volume.sizeMb / 10) / 100 } : null,
     unavailable:
       storageId === null
-        ? "Crewtavo can't find the storage service in this Railway project, so files have to be moved by hand."
+        ? "The app can't find the storage service in this Railway project, so files have to be moved by hand."
         : layout?.shared
-          ? "This storage service serves several projects, so Crewtavo can't move its files."
+          ? "This storage service serves several projects, so the app can't move its files."
           : null,
   };
   views.set(companyId, { at: Date.now(), view });
@@ -1643,7 +1643,7 @@ export async function startStorageMove(env: Env, admin: Db, companyId: string, d
   const instance = instanceOf(env);
   if (typeof instance === "string") throw new HttpError(400, instance);
   const access = await railwayAccess(env, admin, companyId);
-  if (!access) throw new HttpError(400, "Connect Crewtavo to Railway first, in Settings → Hosting. Then try again.");
+  if (!access) throw new HttpError(400, "Connect the app to Railway first, in Settings → Hosting. Then try again.");
   const previous = await readRecord(admin, companyId);
   const going = previous && storageMoving(previous) ? previous : null;
   if (going && (running.has(companyId) || (!parked(going) && !stale(going)))) throw new HttpError(409, "Files are already moving. Settings → Hosting shows how far along it is.");
@@ -1664,7 +1664,7 @@ export async function startStorageMove(env: Env, admin: Db, companyId: string, d
   let layout: Layout | null = null;
   if (!going) {
     const storageId = await serviceIdByName(env, access, "storage").catch(rethrowPlain);
-    if (!storageId) throw new HttpError(400, "Crewtavo can't find the storage service in this Railway project, so files have to be moved by hand.");
+    if (!storageId) throw new HttpError(400, "The app can't find the storage service in this Railway project, so files have to be moved by hand.");
     layout = layoutOf(await serviceVariables(env, access, storageId).catch(rethrowPlain));
     if (direction === "to_bucket" && layout.backend === "bucket") throw new HttpError(409, "Files are already in a bucket.");
     if (direction === "to_volume" && layout.backend === "volume") throw new HttpError(409, "Files are already on the volume.");
@@ -1719,14 +1719,14 @@ export async function startStorageMove(env: Env, admin: Db, companyId: string, d
 export async function bucketForDrive(env: Env, admin: Db, companyId: string): Promise<void> {
   if (!onRailway(env) || !stackServices(env as unknown as Record<string, string | undefined>)) return;
   const access = await railwayAccess(env, admin, companyId);
-  if (!access) throw new HttpError(400, "Drive keeps photos and files in a Railway bucket, which Crewtavo makes with your Railway account. Connect Railway in Settings → Hosting, then press Install again.");
+  if (!access) throw new HttpError(400, "Drive keeps photos and files in a Railway bucket, which the app makes with your Railway account. Connect Railway in Settings → Hosting, then press Install again.");
   const record = await readRecord(admin, companyId);
   if (record && storageMoving(record) && !parked(record)) {
     if (record.direction === "to_bucket") return;
     throw new HttpError(409, "Files are moving back to the volume. Once that's finished (Settings → Hosting shows how far along it is), press Install again.");
   }
   const storageId = await serviceIdByName(env, access, "storage").catch(rethrowPlain);
-  if (!storageId) throw new HttpError(400, "Crewtavo can't find the storage service in this Railway project, so it can't make Drive's bucket. It's named storage in the template: put the name back in Railway, then press Install again.");
+  if (!storageId) throw new HttpError(400, "The app can't find the storage service in this Railway project, so it can't make Drive's bucket. It's named storage in the template: put the name back in Railway, then press Install again.");
   if (layoutOf(await serviceVariables(env, access, storageId).catch(rethrowPlain)).backend === "bucket") return;
   const instance = instanceOf(env);
   if (typeof instance === "string") throw new HttpError(400, instance);

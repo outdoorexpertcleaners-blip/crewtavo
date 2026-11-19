@@ -20,7 +20,7 @@ export class ApiError extends Error {
 }
 
 /** Said when Storage refused an upload for space but its own sentence didn't come through. */
-export const STORAGE_FULL = msg("Crewtavo's storage is full. An owner or admin can raise the limit in Settings → Storage, or empty the Trash.");
+export const STORAGE_FULL = msg("The app's storage is full. An owner or admin can raise the limit in Settings → Storage, or empty the Trash.");
 
 /**
  * An upload turned away for space: the company's storage limit, or the person's own, is used up

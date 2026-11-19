@@ -265,7 +265,7 @@ function WherePosts({ state }: { state: SocialState }) {
       <div className="row-between"><span>Google Business Profile</span>{google.ready ? <StatusPill label="Connected" tone="good" /> : <StatusPill label={google.reason === "approval" || google.reason === "not_enabled" ? "Waiting on Google" : "Not connected"} tone={google.reason === "approval" || google.reason === "not_enabled" ? "warning" : "muted"} />}</div>
       {!google.ready && google.message && (connect ? <span className="muted small">{google.message} <Link to="/apps/google_business">{GOOGLE_FIX[google.reason ?? ""] ?? "Open it in Apps"}</Link></span> : <span className="muted small">{google.message} Ask an owner or admin to look at it in Apps.</span>)}
       {!state.images_public && (
-        <span className="muted small">Crewtavo's address isn't public, so Meta and Google can't fetch photos or review cards from it. Words alone can still post, and Share elsewhere works for the rest.</span>
+        <span className="muted small">The app's address isn't public, so Meta and Google can't fetch photos or review cards from it. Words alone can still post, and Share elsewhere works for the rest.</span>
       )}
     </section>
   );
@@ -352,7 +352,7 @@ function AutoPosts({ state, timeZone }: { state: SocialState; timeZone: string }
         ))}
       </fieldset>
       {!NETWORKS.some(ready) && !paused && <span className="muted small">Connect Facebook & Instagram or Google Business Profile first.</span>}
-      {!state.images_public && <span className="muted small">Crewtavo's address isn't public, so Meta and Google can't fetch the review cards. Automatic posts need it to be.</span>}
+      {!state.images_public && <span className="muted small">The app's address isn't public, so Meta and Google can't fetch the review cards. Automatic posts need it to be.</span>}
       {last && <span className="muted small">They need one place to post. To stop them, turn them off.</span>}
       <FormError error={save.error} />
     </section>

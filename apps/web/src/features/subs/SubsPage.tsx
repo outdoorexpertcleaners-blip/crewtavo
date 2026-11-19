@@ -267,8 +267,8 @@ function SignInCountries() {
       {!session.config.features.sms && (
         <span className="muted small">
           {session.config.features.email
-            ? "Texting isn't set up on this Crewtavo yet, so codes go out by email instead, to subs with an email on file."
-            : "Texting isn't set up on this Crewtavo yet, so no codes go out for now."}
+            ? "Texting isn't set up on this app yet, so codes go out by email instead, to subs with an email on file."
+            : "Texting isn't set up on this app yet, so no codes go out for now."}
         </span>
       )}
       <FormError error={save.error} />

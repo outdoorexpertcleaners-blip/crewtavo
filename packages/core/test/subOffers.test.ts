@@ -72,10 +72,10 @@ describe("an offer in one line", () => {
       total: 2330,
     };
     expect(offerLine(roof)).toBe("Smith roof, Tue Nov 3, 24 squares, $2,330");
-    expect(offerText(roof)).toBe("Smith roof, Tue Nov 3, 24 squares, $2,330. Open Crewtavo to accept or decline.");
+    expect(offerText(roof)).toBe("Smith roof, Tue Nov 3, 24 squares, $2,330. Open the app to accept or decline.");
     // Nothing per unit, and no dates yet: the job and the price.
     expect(offerLine({ title: "Jones gutters", dates: [], lines: [{ basis: "per_job", unit: "job", quantity: 1, amount: 600 }], total: 600 })).toBe("Jones gutters, $600");
-    expect(changeText({ title: "Smith roof", total: 2210, agreed: "2040.00" })).toBe("New price for Smith roof: $2,210 (was $2,040). Open Crewtavo to accept or decline.");
+    expect(changeText({ title: "Smith roof", total: 2210, agreed: "2040.00" })).toBe("New price for Smith roof: $2,210 (was $2,040). Open the app to accept or decline.");
   });
 
   it("says when to answer by, in the company's time zone, as the text carries it", () => {
@@ -85,10 +85,10 @@ describe("an offer in one line", () => {
     expect(offerTimeWords(new Date("2026-11-03T05:05:00Z"), "America/Los_Angeles")).toBe("Mon Nov 2, 9:05 PM");
     const roof = { title: "Smith roof", dates: ["2026-11-03"], lines: [{ basis: "per_unit", unit: "sq", quantity: 24, amount: 2040 }], total: 2040 };
     expect(offerText(roof, { respondBy: "2026-11-02T22:00:00Z", timeZone: "America/New_York" }))
-      .toBe("Smith roof, Tue Nov 3, 24 squares, $2,040. Answer by Mon Nov 2, 5:00 PM. Open Crewtavo to accept or decline.");
-    expect(offerText(roof, { respondBy: null, timeZone: "America/New_York" })).toBe("Smith roof, Tue Nov 3, 24 squares, $2,040. Open Crewtavo to accept or decline.");
+      .toBe("Smith roof, Tue Nov 3, 24 squares, $2,040. Answer by Mon Nov 2, 5:00 PM. Open the app to accept or decline.");
+    expect(offerText(roof, { respondBy: null, timeZone: "America/New_York" })).toBe("Smith roof, Tue Nov 3, 24 squares, $2,040. Open the app to accept or decline.");
     expect(changeText({ title: "Smith roof", total: 2210, agreed: 2040 }, { respondBy: "2026-11-02T22:00:00Z", timeZone: "America/New_York" }))
-      .toBe("New price for Smith roof: $2,210 (was $2,040). Answer by Mon Nov 2, 5:00 PM. Open Crewtavo to accept or decline.");
+      .toBe("New price for Smith roof: $2,210 (was $2,040). Answer by Mon Nov 2, 5:00 PM. Open the app to accept or decline.");
   });
 });
 

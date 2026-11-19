@@ -166,7 +166,7 @@ function CompareCard() {
         <div className="stack-sm">
           <span className="muted small">
             See your Google rating and number of reviews next to up to five nearby competitors'. Your browser reads them from Google Places with{" "}
-            {ownKey ? <>your Google key from <Link to="/settings?tab=maps" style={{ textDecoration: "underline" }}>Settings → Maps</Link></> : googleKey ? "the Google key this Crewtavo was set up with" : "a Google key"} when you press Compare now: one lookup for each place every time, which Google may bill to the key's account. Crewtavo doesn't keep what Google says.
+            {ownKey ? <>your Google key from <Link to="/settings?tab=maps" style={{ textDecoration: "underline" }}>Settings → Maps</Link></> : googleKey ? "the Google key this app was set up with" : "a Google key"} when you press Compare now: one lookup for each place every time, which Google may bill to the key's account. The app doesn't keep what Google says.
           </span>
           {!googleKey && <NoKey />}
           {!s.can_switch && <span className="muted small">An owner or admin can turn it on here.</span>}
@@ -196,8 +196,8 @@ function CompareCard() {
           <FormError error={remove.error ?? toggle.error} />
           <span className="muted small">
             {run.at
-              ? `Google's figures as of ${formatTime(run.at)}. Crewtavo doesn't keep them, so there's no change over time to show: Compare now reads them from Google again.`
-              : "Compare now reads each place's rating and number of reviews from Google: one lookup for each place every time, which Google may bill to the key's account. Crewtavo doesn't keep what Google says, only which places to ask about."}
+              ? `Google's figures as of ${formatTime(run.at)}. The app doesn't keep them, so there's no change over time to show: Compare now reads them from Google again.`
+              : "Compare now reads each place's rating and number of reviews from Google: one lookup for each place every time, which Google may bill to the key's account. The app doesn't keep what Google says, only which places to ask about."}
             {waiting && !run.running ? " You can compare again in a minute." : ""}
           </span>
         </>
@@ -368,7 +368,7 @@ function AddPlaceDialog({ googleKey, places, onClose, onAdded }: { googleKey: st
 
   async function find(kind: "name" | "trade") {
     const text = kind === "name" ? searchText(q, company.address) : tradeSearchText(company.trade_preset, company.address);
-    if (!text) return setSearch({ busy: null, error: "Add your company's town in Settings → Company, so Crewtavo knows where to look. You can still search by name.", results: null });
+    if (!text) return setSearch({ busy: null, error: "Add your company's town in Settings → Company, so the app knows where to look. You can still search by name.", results: null });
     setSearch({ busy: kind, error: null, results: null });
     try {
       const found = await searchPlaces(googleKey, text);

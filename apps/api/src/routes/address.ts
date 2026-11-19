@@ -28,7 +28,7 @@ export const address = new Hono<AppEnv>();
 export const addressWellKnown = new Hono<AppEnv>();
 
 const instanceOnly = createMiddleware<AppEnv>(async (c, next) => {
-  if (c.env.CREWTAVO_SINGLE_COMPANY !== "1") throw new HttpError(404, "A web address is set for a whole Crewtavo instance, so it isn't available here.");
+  if (c.env.CREWTAVO_SINGLE_COMPANY !== "1") throw new HttpError(404, "A web address is set for the whole app, so it isn't available here.");
   await next();
 });
 const admins = [instanceOnly, requireUser, requireCompany(ADMINS, "settings")] as const;

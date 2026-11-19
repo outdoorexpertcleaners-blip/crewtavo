@@ -121,7 +121,7 @@ function CategoryPhoto({ category }: { category: { id: string; name: string; cov
       let path: string | null = null;
       if (file) {
         const jpeg = await coverPicture(file);
-        if (!jpeg) throw new Error("Crewtavo can't open that picture here. Try a JPEG or PNG.");
+        if (!jpeg) throw new Error("The app can't open that picture here. Try a JPEG or PNG.");
         path = await uploadFile(company.id, "kb", new File([jpeg], "cover.jpg", { type: "image/jpeg" }));
       }
       // The cover it had goes to the Trash by itself. A new one uploaded for a save that fails is left

@@ -57,7 +57,7 @@ function errorInfos(body: GoogleJson): Array<{ reason?: string; metadata?: Recor
 
 /** Google Cloud project problems (ErrorInfo reasons): the project itself, not the business's location. */
 const PROJECT_REASONS = ["CONSUMER_SUSPENDED", "CONSUMER_INVALID"];
-export const PROJECT_SUSPENDED = "the Google Cloud project Crewtavo signs in with is suspended or was deleted. Its owner can see why in Google Cloud.";
+export const PROJECT_SUSPENDED = "the Google Cloud project the app signs in with is suspended or was deleted. Its owner can see why in Google Cloud.";
 
 /**
  * Which problem an error is. `scope` is what was called: a list of accounts or locations, where a

@@ -201,7 +201,7 @@ export async function uploadOnce(path: string, body: Blob): Promise<void> {
   const status = Number((error as { status?: unknown }).status) || Number((error as { statusCode?: unknown }).statusCode) || 0;
   if (status === 409 || /already exists|duplicate/i.test(error.message)) return;
   if (/failed to fetch|networkerror|load failed/i.test(error.message)) throw new ApiError(OFFLINE, 0, "network");
-  if (isRestarting(status)) throw new ApiError(msg("Crewtavo is restarting. Try again in a moment."), status, "restarting");
+  if (isRestarting(status)) throw new ApiError(msg("The app is restarting. Try again in a moment."), status, "restarting");
   if (/jwt|unauthorized/i.test(error.message) && !/row-level security/i.test(error.message)) throw new ApiError(msg("Your session has expired. Sign in again."), 401);
   throw uploadRefused(error, msg("You don't have permission to upload here."));
 }

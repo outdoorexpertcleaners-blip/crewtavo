@@ -21,7 +21,7 @@ export function OwnLetterhead({ header, footer, onChange }: { header: Letterhead
     meta: { inline: true },
     mutationFn: async (file: File) => {
       const opened = await readLetterhead(file);
-      if (!opened) throw new Error("Crewtavo can't open that file. Try a PDF, PNG or JPEG of your letterhead.");
+      if (!opened) throw new Error("The app can't open that file. Try a PDF, PNG or JPEG of your letterhead.");
       return opened;
     },
     onSuccess: setPage,
@@ -39,7 +39,7 @@ export function OwnLetterhead({ header, footer, onChange }: { header: Letterhead
           {footer && <Picture picture={footer} caption="Along the bottom" />}
         </div>
       ) : (
-        <p className={styles.empty}>Until you upload it, your estimates and invoices print with Crewtavo's letterhead.</p>
+        <p className={styles.empty}>Until you upload it, your estimates and invoices print with the built-in letterhead.</p>
       )}
       <div className="stack-sm" style={{ gap: 6 }}>
         <Button size="sm" icon="upload" loading={read.isPending} slowHint={false} style={{ justifySelf: "start" }} onClick={() => input.current?.click()}>
@@ -196,8 +196,8 @@ function LetterheadDialog({ page, onClose, onSaved }: { page: LetterheadPage; on
               <dt>Footer</dt>
               <dd>{footerText}</dd>
             </dl>
-            <p>The header prints at the top of the first page, in place of Crewtavo's. The footer prints along the bottom, in place of the footer's words.</p>
-            <p>Drag a line to the very top or bottom of the page to leave that part out. Without a top, Crewtavo's header prints there, in the style you pick; without a bottom, the footer's words do.</p>
+            <p>The header prints at the top of the first page, in place of the built-in one. The footer prints along the bottom, in place of the footer's words.</p>
+            <p>Drag a line to the very top or bottom of the page to leave that part out. Without a top, the built-in header prints there, in the style you pick; without a bottom, the footer's words do.</p>
             {page.rough && (
               <div className="callout callout-warning">
                 <Icon name="alert" size={16} />

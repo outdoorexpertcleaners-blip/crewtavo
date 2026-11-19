@@ -66,11 +66,11 @@ export function AbcSupplyPanel({ app, onChanged }: { app: AppRow; onChanged: () 
         </div></li>
         <li><div className="stack-sm" style={{ gap: 8 }}>
           <span>Click <strong>Create New App</strong> and fill it in with these:</span>
-          <CopyRow label="Application Name" value="Crewtavo" />
+          <CopyRow label="Application Name" value="Outdoor Expert app" />
           <div className="app-copy"><span>Used by multiple ABC customers?</span><strong>No</strong><span /></div>
           <span className="small muted">That's ABC's question "Do you plan to integrate our APIs into a product or platform that will be used by multiple ABC customers?" The app is for your company only.</span>
           <CopyRow label="OAuth 2.0 Redirect URIs" value={PLACEHOLDER_REDIRECT} />
-          <span className="small muted">ABC fills this in already: leave it as it is. Crewtavo doesn't use it, but ABC's form needs one. Description and Application URL can stay empty.</span>
+          <span className="small muted">ABC fills this in already: leave it as it is. The app doesn't use it, but ABC's form needs one. Description and Application URL can stay empty.</span>
           <span>Then click <strong>Create App</strong>. ABC sets it up in its sandbox, with test prices, right away.</span>
         </div></li>
         <li>Under <strong>Manage Applications</strong>, click <strong>Manage</strong> next to the app and copy its <strong>Client ID</strong> and <strong>Client Secret</strong>. Keep them private, like a password. Paste them below with <strong>Sandbox</strong> ticked and click <strong>Connect</strong> to try it with ABC's test prices.</li>
@@ -137,7 +137,7 @@ function KeysForm({ sandboxFirst, onSaved, onCancel }: { sandboxFirst: boolean; 
         <Button type="submit" variant="primary" loading={save.isPending} disabled={!ready}>Connect</Button>
         {onCancel && <Button variant="ghost" onClick={onCancel}>Cancel</Button>}
       </div>
-      <span className="muted small">Crewtavo checks the keys with ABC before keeping them, then keeps them encrypted on your server. It only reads your account, ABC's catalog and your prices: it can't order anything.</span>
+      <span className="muted small">The app checks the keys with ABC before keeping them, then keeps them encrypted on your server. It only reads your account, ABC's catalog and your prices: it can't order anything.</span>
     </form>
   );
 }

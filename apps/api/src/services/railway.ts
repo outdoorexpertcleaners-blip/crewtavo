@@ -98,13 +98,13 @@ export async function forgetRefusedClient(admin: Db, companyId: string, error: u
 async function lapsed(admin: Db, companyId: string, error: unknown) {
   await admin
     .from("integrations")
-    .update({ status: "error", last_error: `Railway stopped accepting Crewtavo's sign-in (${failure(error)}). Connect Railway again.` })
+    .update({ status: "error", last_error: `Railway stopped accepting the app's sign-in (${failure(error)}). Connect Railway again.` })
     .match({ company_id: companyId, provider: "railway" });
 }
 
 async function refreshAndSave(env: Env, admin: Db, companyId: string, secret: StoredSecret, access: RailwayAccess): Promise<RailwayAccess> {
   const client = clientOf(secret);
-  if (!client) throw new RailwayError("Crewtavo's Railway sign-in is incomplete. Connect Railway again.");
+  if (!client) throw new RailwayError("The app's Railway sign-in is incomplete. Connect Railway again.");
   try {
     const fresh = await refreshAccess(client, access);
     await saveSecret(env, admin, companyId, "railway", {

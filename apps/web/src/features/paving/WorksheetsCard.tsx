@@ -62,7 +62,7 @@ export function WorksheetsCard({ quoteId, editable }: { quoteId: string; editabl
               </span>
             )}
             {/* Profit inside the prices reads as no margin everywhere else in Crewtavo. */}
-            {saved?.input.profit.by === "none" && <span className="muted small">Profit is in the prices on this one, where Crewtavo can't see it, so its margin shows as 0% (or just what the minimum charge adds).</span>}
+            {saved?.input.profit.by === "none" && <span className="muted small">Profit is in the prices on this one, where the app can't see it, so its margin shows as 0% (or just what the minimum charge adds).</span>}
             {w.notes && <span className="small" style={{ whiteSpace: "pre-wrap" }}>{w.notes}</span>}
             <div className="row wrap" style={{ gap: 8, marginTop: 2 }}>
               <Link className="btn btn-sm" to={`/paving/worksheets/${w.id}`}><Icon name="printer" size={14} />Print</Link>

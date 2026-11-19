@@ -158,7 +158,7 @@ export function EmailSettings() {
           </div>
           {askDisconnect && (
             <DisconnectWithPassword
-              body={fallback === "server" ? "Emails will go out from the address whoever installed Crewtavo set up." : "Quotes, invoices and invites won't be emailed until you connect a mailbox again. You can still copy their links."}
+              body={fallback === "server" ? "Emails will go out from the address whoever installed the app set up." : "Quotes, invoices and invites won't be emailed until you connect a mailbox again. You can still copy their links."}
               busy={disconnect.isPending}
               error={disconnect.error}
               onDisconnect={(password) => disconnect.mutate(password)}
@@ -177,7 +177,7 @@ export function EmailSettings() {
         <div className="callout callout-info">
           <Icon name="info" size={20} />
           <div className="grow small" style={{ fontWeight: 400 }}>
-            {fallback === "dev" ? "Test mode: until you connect a mailbox, emails go to the local Mailpit inbox (http://localhost:56324)." : "Until you connect a mailbox, emails go out from the address whoever installed Crewtavo set up."}
+            {fallback === "dev" ? "Test mode: until you connect a mailbox, emails go to the local Mailpit inbox (http://localhost:56324)." : "Until you connect a mailbox, emails go out from the address whoever installed the app set up."}
           </div>
         </div>
       )}
@@ -294,7 +294,7 @@ function DisconnectWithPassword({ title = "Disconnect email?", body, busy, error
         }}
       >
         <div className="muted" style={{ marginTop: -6 }}>{body}</div>
-        <Field label="Your Crewtavo password" hint={PASSWORD_HINT}>
+        <Field label="Your password" hint={PASSWORD_HINT}>
           <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" maxLength={200} required autoFocus />
         </Field>
         <FormError error={error} />
@@ -398,7 +398,7 @@ function ConnectForm({ existing, onRailway, onSaved, onCancel, lights }: { exist
         </div>
         {onRailway && (
           <span className="muted small">
-            {lights ? "Crewtavo is running on Railway. Railway's trial and Hobby plans block sending from a mailbox, so this needs Railway Pro." : "Crewtavo is running on Railway. Railway's trial and Hobby plans block sending from a mailbox, so choose Resend unless you're on Railway Pro."}
+            {lights ? "The app is running on Railway. Railway's trial and Hobby plans block sending from a mailbox, so this needs Railway Pro." : "The app is running on Railway. Railway's trial and Hobby plans block sending from a mailbox, so choose Resend unless you're on Railway Pro."}
           </span>
         )}
       </div>
@@ -483,7 +483,7 @@ function ConnectForm({ existing, onRailway, onSaved, onCancel, lights }: { exist
             </>
           )}
 
-          <Field label="Your Crewtavo password" hint={PASSWORD_HINT}>
+          <Field label="Your password" hint={PASSWORD_HINT}>
             <input className="input" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required maxLength={200} autoComplete="current-password" />
           </Field>
 

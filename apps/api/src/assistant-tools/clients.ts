@@ -14,7 +14,7 @@ const optional = (max: number) => text(max).nullable().optional();
 const address = z.object({ line1: text(200).min(1), city: optional(100), region: optional(100), postal_code: optional(20) });
 
 const clientFields = {
-  name: text(200).min(1).optional().describe("The client's name as it shows in Crewtavo: a person or a business."),
+  name: text(200).min(1).optional().describe("The client's name as it shows in the app: a person or a business."),
   company_name: optional(200),
   email: z.email().nullable().optional(),
   phone: optional(40),

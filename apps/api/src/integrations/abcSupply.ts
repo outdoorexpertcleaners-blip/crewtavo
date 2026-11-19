@@ -186,7 +186,7 @@ export async function requestToken(keys: AbcKeys, fetcher: FetchLike = fetch): P
 
 /** What an ABC answer that isn't OK means for whoever pressed the button. */
 function apiProblem(status: number, body: string): AbcProblem {
-  if (status === 401) return new AbcProblem("ABC Supply asked Crewtavo to sign in again.", 401);
+  if (status === 401) return new AbcProblem("ABC Supply asked the app to sign in again.", 401);
   if (status === 403) return new AbcProblem("ABC Supply says this app can't see that. In ABC's developer portal, check the app has access to your ABC account.", 403);
   if (status === 404) return new AbcProblem("ABC Supply doesn't have that item.", 404);
   if (status === 429) return new AbcProblem("ABC Supply is busy right now. Try again in a minute.", 429);

@@ -461,7 +461,7 @@ export function jobberExport(input: JobberInput): JobberExport {
     quoteRows.push({
       ...clientBlock(client, property),
       "Quote Number": q.number ?? "", "Quote Title": q.title, "Quote Status (Draft/Awaiting Response/Approved)": status,
-      "Quote Message": q.message ?? "", "Quote Internal Note": history.length ? `From Crewtavo. ${history.join(" ")}` : "",
+      "Quote Message": q.message ?? "", "Quote Internal Note": history.length ? `From the app. ${history.join(" ")}` : "",
       ...(q.discount_amount > 0 && { "Quote Discount Type (Unit/Percentage)": "Unit", "Quote Discount Amount (Unit/Percentage)": q.discount_amount }),
       ...(q.deposit_amount > 0 && { "Quote Deposit Type (Unit/Percentage)": "Unit", "Quote Deposit Amount (Unit/Percentage)": q.deposit_amount }),
       ...(q.tax_rate > 0 && { "Quote New Tax Rate Name": taxName(q.tax_rate), "Quote New Tax Rate (Percentage)": percent(q.tax_rate), "Tax Method (Inclusive/Exclusive)": "Exclusive" }),
@@ -496,7 +496,7 @@ export function jobberExport(input: JobberInput): JobberExport {
     // A paused job runs again from its resume date; one paused until someone resumes it isn't running.
     const paused = recurring && Boolean(job.paused_at);
     const runsFrom = !paused ? today : job.resume_on ? [job.resume_on, today].sort()[1]! : null;
-    if (paused) extra.push(job.resume_on ? `Paused in Crewtavo until ${jobDate(job.resume_on)}.` : "Paused in Crewtavo.");
+    if (paused) extra.push(job.resume_on ? `Paused in the app until ${jobDate(job.resume_on)}.` : "Paused in the app.");
     let start: string | null;
     let visit: JobberVisit | undefined;
     let length = "";
@@ -512,7 +512,7 @@ export function jobberExport(input: JobberInput): JobberExport {
       if (!recurring && dated.filter((v) => v.date! >= today && v.status !== "completed").length > 1) jobsMoreVisits++;
       invoicing = jobberInvoicing(job, recurring);
       // Jobber's import has no invoice day: a day other than the month's last is said.
-      if (invoicing[1] === "Periodic" && job.invoice_day) extra.push(`Invoiced monthly on ${invoiceDayText(job.invoice_day)} in Crewtavo.`);
+      if (invoicing[1] === "Periodic" && job.invoice_day) extra.push(`Invoiced monthly on ${invoiceDayText(job.invoice_day)} in the app.`);
     } else {
       const done = dated.filter((v) => v.date! < today);
       start = dated[0]?.date ?? job.starts_on;
@@ -531,7 +531,7 @@ export function jobberExport(input: JobberInput): JobberExport {
     }
     if (recurring && !repeat) {
       jobsAsNeeded++;
-      extra.push(`Repeats ${describeRule(job.recurrence_rule!)} in Crewtavo.`);
+      extra.push(`Repeats ${describeRule(job.recurrence_rule!)} in the app.`);
     }
     if (recurring && job.active_months?.length && job.active_months.length < 12) extra.push(`In season ${job.active_months.map((m) => MONTHS[m - 1]).join(", ")}.`);
     const from = visit?.starts_at ? localTime(new Date(visit.starts_at), timeZone) : recurring ? job.visit_start_time?.slice(0, 5) : null;
@@ -573,7 +573,7 @@ export function jobberExport(input: JobberInput): JobberExport {
     const paidSome = status === "Sent" && inv.amount_paid > 0;
     if (paidSome) partlyPaid++;
     const internal = [
-      paidSome && `Paid ${dollars(inv.amount_paid)} of ${dollars(inv.total)} in Crewtavo; ${dollars(inv.balance_due)} left. Record the payment in Jobber.`,
+      paidSome && `Paid ${dollars(inv.amount_paid)} of ${dollars(inv.total)} in the app; ${dollars(inv.balance_due)} left. Record the payment in Jobber.`,
       inv.retainage_amount > 0 && `Retainage held: ${dollars(inv.retainage_amount)}.`,
       inv.notes?.trim(),
     ].filter(Boolean);

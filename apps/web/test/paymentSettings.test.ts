@@ -378,7 +378,7 @@ describe("the client's Autopay card", () => {
       { id: "ch2", status: "failed", due_at: "2026-11-08T05:00:00Z", invoice_id: "inv-3", charged_amount: null, last_error: "Your card was declined.", invoice: { number: 3, total: 45 } },
     ]));
     const words = text(html);
-    for (const w of ["Autopay", "Active", "Visa ending 4242 · expires 08/28", "Agreed Oct 31, 2026 on their client page", "Charged from Crewtavo since Nov 3, 2026", "Pause", "Remove card", "Invoice #2", "$45.00", "Paid", "Failed"]) expect(words, w).toContain(w);
+    for (const w of ["Autopay", "Active", "Visa ending 4242 · expires 08/28", "Agreed Oct 31, 2026 on their client page", "Charged from the app since Nov 3, 2026", "Pause", "Remove card", "Invoice #2", "$45.00", "Paid", "Failed"]) expect(words, w).toContain(w);
     expect(html).toContain('href="/invoices/inv-2"');
     // On autopay already: no invite to send.
     expect(words).not.toContain("Send autopay invite");
@@ -468,7 +468,7 @@ describe("the Stripe key", () => {
       expect(STRIPE_KEY_PERMISSIONS, p).toContain(p);
       expect(STRIPE_NEW_KEY, p).toContain(`permissions%5B%5D=rak_${p}`);
     }
-    expect(STRIPE_NEW_KEY.startsWith("https://dashboard.stripe.com/apikeys/create?name=Crewtavo&")).toBe(true);
+    expect(STRIPE_NEW_KEY.startsWith("https://dashboard.stripe.com/apikeys/create?name=Outdoor%20Expert%20app&")).toBe(true);
   });
 
   it("is defined once, in the catalog, for the Apps page and the Stripe panel", () => {
@@ -483,7 +483,7 @@ describe("the Stripe key", () => {
 describe("Stripe's test key form", () => {
   it("is the same form in test mode", async () => {
     const { STRIPE_NEW_KEY, STRIPE_NEW_TEST_KEY } = await import("../src/features/apps/catalog");
-    expect(STRIPE_NEW_TEST_KEY.startsWith("https://dashboard.stripe.com/test/apikeys/create?name=Crewtavo&")).toBe(true);
+    expect(STRIPE_NEW_TEST_KEY.startsWith("https://dashboard.stripe.com/test/apikeys/create?name=Outdoor%20Expert%20app&")).toBe(true);
     expect(STRIPE_NEW_TEST_KEY.split("?")[1]).toBe(STRIPE_NEW_KEY.split("?")[1]);
   });
 });

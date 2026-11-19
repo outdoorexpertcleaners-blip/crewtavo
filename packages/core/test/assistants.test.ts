@@ -72,7 +72,7 @@ describe("assistant access", () => {
     expect(mayChange(access, "team")).toBe(true);
     for (const money of ["quotes", "invoices", "pay"] as const) expect(mayChange(access, money)).toBe(false);
     expect(describeAssistantAccess(access)).toBe("Full access, no money");
-    expect(assistantRefusal("invoices", false, access)).toBe("This assistant can't change money: quotes, invoices, payments, pay or promo codes. To let it, give it Full access in Crewtavo, under Settings → AI assistants.");
+    expect(assistantRefusal("invoices", false, access)).toBe("This assistant can't change money: quotes, invoices, payments, pay or promo codes. To let it, give it Full access in the app, under Settings → AI assistants.");
     expect(assistantRefusal("prices", true, { level: "read", areas: [] })).toMatch(/^This assistant can't change the price list\./);
   });
 });

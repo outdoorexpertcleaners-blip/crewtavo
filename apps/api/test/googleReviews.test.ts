@@ -845,7 +845,7 @@ describe("what's in the way", () => {
   it("a suspended Google Cloud project isn't a location problem: it's said, and tried again later", async () => {
     const { w, outcome } = await failing((c) => (isReviews(c) ? denied("CONSUMER_SUSPENDED", "Permission denied: Consumer 'projects/123456789012' has been suspended.") : undefined));
     expect(outcome).toMatchObject({ problem: "error" });
-    expect(integration(w).last_error).toBe("Reviews couldn't be brought in: the Google Cloud project Crewtavo signs in with is suspended or was deleted. Its owner can see why in Google Cloud.");
+    expect(integration(w).last_error).toBe("Reviews couldn't be brought in: the Google Cloud project the app signs in with is suspended or was deleted. Its owner can see why in Google Cloud.");
     expect(sync(w).next_sync_at).not.toBeNull();
     expect(rpcs(w, "note_review_access").filter((b) => b.p_kind === "location")).toEqual([]);
   });
@@ -1074,7 +1074,7 @@ describe("Sync now", () => {
     for (const problem of ["approval", "not_enabled"]) {
       const w = serve({ tables: await connected({ sync: { problem } }) });
       const res = await request("/reviews/google/sync", { method: "POST" });
-      expect([res.status, await res.json()]).toEqual([409, { error: "Google isn't letting Crewtavo in yet, so there's nothing to bring in. Crewtavo checks again every 6 hours." }]);
+      expect([res.status, await res.json()]).toEqual([409, { error: "Google isn't letting the app in yet, so there's nothing to bring in. The app checks again every 6 hours." }]);
       expect(rpcs(w, "rate_limit_hit")).toEqual([]);
       expect(w.calls.some(isReviews)).toBe(false);
     }
@@ -1176,7 +1176,7 @@ describe("review notifications", () => {
 
   it("go by push, and by email only for 1 and 2 stars, which come first", async () => {
     world([notice("review", "Lou left a 5-star review", "n1"), notice("review_low", "Max left a 1-star review", "n2")]);
-    expect(await deliverNotifications({ ...env, RESEND_API_KEY: "re_test", EMAIL_FROM: "Crewtavo <noreply@example.com>" })).toMatchObject({ email: 1, push: 2 });
+    expect(await deliverNotifications({ ...env, RESEND_API_KEY: "re_test", EMAIL_FROM: "The app <noreply@example.com>" })).toMatchObject({ email: 1, push: 2 });
     expect(sendEmail.mock.calls[0]![1]).toMatchObject({ subject: "Max left a 1-star review" });
     expect(sendPush.mock.calls.map((c) => c[2].title)).toEqual(["Max left a 1-star review", "Lou left a 5-star review"]);
   });

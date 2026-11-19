@@ -324,7 +324,7 @@ describe("a sub's own offers", () => {
 
 describe("the offer by text", () => {
   // What send_sub_offer leaves for Al: a notification under his "jobs" topic, linking to the offer.
-  const notice = { id: "n1", company_id: CO, user_id: AL, kind: "jobs", title: "Smith roof, Tue Nov 3, 24 squares, $2,040. Open Crewtavo to accept or decline.", body: "New job offer.", link: `/field/jobs/${PAY}`, read_at: null, delivery_token: "claim-1" };
+  const notice = { id: "n1", company_id: CO, user_id: AL, kind: "jobs", title: "Smith roof, Tue Nov 3, 24 squares, $2,040. Open the app to accept or decline.", body: "New job offer.", link: `/field/jobs/${PAY}`, read_at: null, delivery_token: "claim-1" };
   /** The notify task's claim on these, each still held when its turn comes and none sent by any channel yet. */
   const delivering = (notices: Row[]): World["rpc"] => ({
     claim_notification_deliveries: () => notices,
@@ -347,7 +347,7 @@ describe("the offer by text", () => {
   });
 
   it("links two at once to My jobs, and anything else mixed in to the start", async () => {
-    const second = { ...notice, id: "n2", title: "Jones gutters, Thu Nov 5, $600. Open Crewtavo to accept or decline.", link: "/field/jobs/other" };
+    const second = { ...notice, id: "n2", title: "Jones gutters, Thu Nov 5, $600. Open the app to accept or decline.", link: "/field/jobs/other" };
     const both = world();
     both.rpc = delivering([notice, second]);
     const jobs = serve(both);

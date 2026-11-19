@@ -161,7 +161,7 @@ function tokenClient(google: GoogleNs, clientId: string): TokenClient {
       if (!wait) return;
       // Declining isn't a failure worth a message.
       if (r.error || !r.access_token) return wait.failed(r.error === "access_denied" ? null : "Google didn't sign you in. Try again.");
-      if (!oauth2.hasGrantedAllScopes(r, SCOPE)) return wait.failed("To import, let Crewtavo see the files you pick in Google Drive. Try again and allow it.");
+      if (!oauth2.hasGrantedAllScopes(r, SCOPE)) return wait.failed("To import, let the app see the files you pick in Google Drive. Try again and allow it.");
       token = { value: r.access_token, expires: Date.now() + Number(r.expires_in ?? 3599) * 1000 };
       wait.done(r.access_token);
     },
@@ -170,7 +170,7 @@ function tokenClient(google: GoogleNs, clientId: string): TokenClient {
       waiting = null;
       if (!wait) return;
       if (e.type === "popup_closed") return wait.failed(null);
-      wait.failed(e.type === "popup_failed_to_open" ? "Google's sign-in window didn't open. Allow pop-ups for Crewtavo, then try again." : "Google sign-in didn't finish. Try again.");
+      wait.failed(e.type === "popup_failed_to_open" ? "Google's sign-in window didn't open. Allow pop-ups for the app, then try again." : "Google sign-in didn't finish. Try again.");
     },
   });
   client = { id: clientId, tokens };
@@ -197,7 +197,7 @@ export function openGooglePicker(
       .setAppId(keys.appId)
       .setOAuthToken(accessToken)
       .setOrigin(window.location.origin)
-      .setTitle("Pick files to copy into Crewtavo")
+      .setTitle("Pick files to copy into the app")
       .addView(myDrive)
       .addView(shared)
       .enableFeature(picker.Feature.MULTISELECT_ENABLED)

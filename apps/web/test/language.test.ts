@@ -231,7 +231,7 @@ describe("opening the app in Spanish", () => {
     const told = getToasts().slice(before);
     expect(told).toHaveLength(1);
     expect(told[0]!.title).toBe("No se pudo cargar el español");
-    expect(told[0]!.description).toContain("Crewtavo is in English for now");
+    expect(told[0]!.description).toContain("the app is in English for now");
     told[0]!.action!.onClick();
     expect(reload).toHaveBeenCalledTimes(1);
     // Not again at every reload of the same visit to the app.

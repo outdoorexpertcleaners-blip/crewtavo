@@ -249,7 +249,7 @@ export function TimesheetsPage() {
                     {isUnpaidBreak(r, pay)
                       ? <span className="tabular muted" title={pay === "unpaid" ? t("Breaks aren't paid time") : t("Breaks over {minutes} minutes aren't paid time", { minutes: SHORT_BREAK_MINUTES })}>{t("{hours} h unpaid", { hours: hours(r.started_at, r.ended_at).toFixed(2) })}</span>
                       : <span className="tabular strong">{hours(r.started_at, r.ended_at).toFixed(2)} h</span>}
-                    {r.auto_stopped_at && !r.approved_at && <span title={t("The clock was left running, so Crewtavo stopped it. Check the end time.")}><StatusPill label={t("Check end time")} tone="danger" /></span>}
+                    {r.auto_stopped_at && !r.approved_at && <span title={t("The clock was left running, so the app stopped it. Check the end time.")}><StatusPill label={t("Check end time")} tone="danger" /></span>}
                     {r.approved_at ? <StatusPill label={t("Approved")} tone="good" /> : r.ended_at ? <StatusPill label={t("Pending")} tone="warning" /> : <StatusPill label={t("Running")} tone="info" />}
                     <Menu
                       triggerClassName="btn btn-sm btn-ghost btn-icon"

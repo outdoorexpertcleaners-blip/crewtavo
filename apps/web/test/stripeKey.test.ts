@@ -36,7 +36,7 @@ const app = (id: string, extra: Partial<AppRow> = {}) =>
 describe("the Stripe key card", () => {
   it("asks for the Crewtavo password, and the key field stays a password field browsers don't fill", () => {
     const html = render(createElement(KeyCard, { app: app("stripe", { stripe: STRIPE }), onSaved: () => undefined }));
-    expect(text(html)).toContain("Your Crewtavo password");
+    expect(text(html)).toContain("Your password");
     expect(text(html)).toContain("No password yet? Set one under Settings → Profile.");
     expect(html).toMatch(/<input[^>]*type="password"[^>]*autoComplete="current-password"/);
     expect(html).toMatch(/<input[^>]*type="password"[^>]*autoComplete="off"[^>]*aria-label="Key from Stripe"/);
@@ -46,7 +46,7 @@ describe("the Stripe key card", () => {
 
   it("doesn't ask for a password for the other apps' keys", () => {
     const html = render(createElement(KeyCard, { app: app("anthropic"), onSaved: () => undefined }));
-    expect(text(html)).not.toContain("Your Crewtavo password");
+    expect(text(html)).not.toContain("Your password");
     expect(html).not.toContain("current-password");
   });
 

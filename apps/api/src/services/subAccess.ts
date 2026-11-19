@@ -203,7 +203,7 @@ async function giveAccess(s: SubAccessScope, sub: Sub): Promise<{ userId: string
     const earlier = await userIdForEmail(admin, email);
     if (earlier) {
       // This sub's own sign-in from before (its membership was removed): only ever this sub's.
-      if (!isSubLogin((await account(s.env, earlier)).app_metadata, s.companyId, sub.id)) throw new HttpError(409, "Couldn't give them a sign-in. Ask your Crewtavo host to look into it.");
+      if (!isSubLogin((await account(s.env, earlier)).app_metadata, s.companyId, sub.id)) throw new HttpError(409, "Couldn't give them a sign-in. Ask your app host to look into it.");
       login = { userId: earlier, email };
     } else {
       const { data, error } = await admin.auth.admin.createUser({
@@ -302,7 +302,7 @@ export async function sendSignInLink(s: SubAccessScope, subId: string, send: Sig
   const company = must(await s.db.from("companies").select("id, name, email, settings").eq("id", s.companyId).maybeSingle());
   // Only a sign-in made here for this sub, and nobody's own account (accessOf).
   if (out.access.shared) {
-    out.reason = `They already have their own Crewtavo sign-in. They sign in as they usually do (or with an email link from the sign-in page) and ${company.name} is there.`;
+    out.reason = `They already have their own sign-in. They sign in as they usually do (or with an email link from the sign-in page) and ${company.name} is there.`;
     return out;
   }
 

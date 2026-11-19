@@ -22,10 +22,10 @@ describe("docsPage", () => {
 describe("askUrl", () => {
   it("attaches the page's Markdown, or the docs index when there's no page", () => {
     expect(decodeURIComponent(askUrl("claude", "billing/invoices", "late fees?"))).toBe(
-      "https://claude.ai/new?q=Read https://crewtavo.com/docs/billing/invoices.md and help me with this question about Crewtavo: late fees?",
+      "https://claude.ai/new?q=Read https://crewtavo.com/docs/billing/invoices.md and help me with this question about the app (it's based on Crewtavo): late fees?",
     );
     expect(askUrl("chatgpt", null, "a & b")).toBe(
-      `https://chatgpt.com/?q=${encodeURIComponent("Read https://crewtavo.com/llms.txt and help me with this question about Crewtavo: a & b")}`,
+      `https://chatgpt.com/?q=${encodeURIComponent("Read https://crewtavo.com/llms.txt and help me with this question about the app (it's based on Crewtavo): a & b")}`,
     );
   });
 });

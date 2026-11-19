@@ -486,7 +486,7 @@ export function GoogleReadyDialog({ load, onChoose, onClose }: { load: () => Pro
           <p className="row" style={{ margin: 0 }} role="status"><Spinner size={16} /> Getting Google Drive ready…</p>
         )}
         {ready.error && <FormError error={ready.error} />}
-        {ready.data && <p style={{ margin: 0 }}>Sign in to Google if it asks, then pick the files to copy into Crewtavo, up to 20 at a time.</p>}
+        {ready.data && <p style={{ margin: 0 }}>Sign in to Google if it asks, then pick the files to copy into the app, up to 20 at a time.</p>}
         <div className="form-actions">
           <Button onClick={onClose}>Cancel</Button>
           {ready.error ? (

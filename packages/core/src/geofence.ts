@@ -59,7 +59,7 @@ export const GEOFENCE_MODE_HINTS: Record<GeofenceMode, string> = {
 
 /** Said with either choice that's on: what a web app can and can't do, and what that does to the times. */
 export const GEOFENCE_NOTE =
-  "This goes by when the phone notices, and it only notices while Crewtavo is open on it: phones pause it in the background. Someone who pulls in at 8:00 and opens Crewtavo at 8:40 is at the property from 8:40, and leaving is noticed when they next open it. For exact times, have the crew tap the clock.";
+  "This goes by when the phone notices, and it only notices while the app is open on it: phones pause it in the background. Someone who pulls in at 8:00 and opens the app at 8:40 is at the property from 8:40, and leaving is noticed when they next open it. For exact times, have the crew tap the clock.";
 
 export const GEOFENCE_RADIUS = { min: 100, max: 500, default: 200 } as const;
 

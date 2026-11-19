@@ -271,7 +271,7 @@ const SENDING_WARNING = {
   sms: {
     title: "Texts aren't going out",
     lead: "The last few texts didn't go.",
-    fix: "Reminders and other texts won't reach anyone until it's fixed. Check the Twilio account, and the Twilio keys this Crewtavo was set up with.",
+    fix: "Reminders and other texts won't reach anyone until it's fixed. Check the Twilio account, and the Twilio keys this app was set up with.",
   },
 };
 /** The same for a company on its own Twilio account, which it fixes itself on the Apps page. */
@@ -411,7 +411,7 @@ export function resendProblem(status: number, message: string): string {
 
 /** Development transport: Mailpit's HTTP send API. */
 async function mailpit(env: Env, message: EmailMessage & { from?: string }): Promise<SendResult> {
-  const fromMatch = (message.from || `${message.fromName ?? "Crewtavo"} <noreply@crewtavo.local>`).match(/^(.*)<(.+)>$/);
+  const fromMatch = (message.from || `${message.fromName ?? "Outdoor Expert"} <noreply@crewtavo.local>`).match(/^(.*)<(.+)>$/);
   const response = await fetch(`${env.MAILPIT_URL!.replace(/\/$/, "")}/api/v1/send`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

@@ -102,7 +102,7 @@ export function SubAccessCard({ sub }: { sub: Sub }) {
       {access.error && !a ? (
         <ErrorState compact title="Couldn't load their sign-in" error={access.error} onRetry={() => access.refetch()} />
       ) : !sub.active ? null : a?.shared ? (
-        <span className="muted small">They already have their own Crewtavo sign-in, so there's no link to send. They sign in as they usually do, and {session.company.name} is there.</span>
+        <span className="muted small">They already have their own sign-in, so there's no link to send. They sign in as they usually do, and {session.company.name} is there.</span>
       ) : (
         <span className="muted small">
           {has

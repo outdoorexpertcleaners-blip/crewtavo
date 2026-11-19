@@ -519,7 +519,7 @@ describe("storage limits at the gateway", () => {
     ] as const) {
       const res = await copy(path, bearer);
       expect(res.status, `${path} as ${bearer === ana ? "a person" : bearer ? "anon" : "nobody"}`).toBe(403);
-      expect((await res.json()).message).toBe("Crewtavo copies and moves stored files itself. Upload the file where you want it instead.");
+      expect((await res.json()).message).toBe("The app copies and moves stored files itself. Upload the file where you want it instead.");
     }
     expect(reached).toEqual([]);
     expect((await copy("/storage/v1/object/copy", service)).status).toBe(200);

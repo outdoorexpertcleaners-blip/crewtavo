@@ -18,7 +18,7 @@ const ADA = "44444444-4444-4444-8444-444444444444";
 const NEW = "55555555-5555-4555-8555-555555555555";
 const GM = "66666666-6666-4666-8666-666666666666";
 const BOOKS = "77777777-7777-4777-8777-777777777777";
-const env: Env = { SUPABASE_URL: "https://abcd1234.supabase.co", SUPABASE_PUBLISHABLE_KEY: "sb_publishable_test", SUPABASE_SECRET_KEY: "sb_secret_test", APP_URL: "https://ops.example.com", RESEND_API_KEY: "re_test", EMAIL_FROM: "Crewtavo <hello@crewtavo.example>" };
+const env: Env = { SUPABASE_URL: "https://abcd1234.supabase.co", SUPABASE_PUBLISHABLE_KEY: "sb_publishable_test", SUPABASE_SECRET_KEY: "sb_secret_test", APP_URL: "https://ops.example.com", RESEND_API_KEY: "re_test", EMAIL_FROM: "The app <hello@crewtavo.example>" };
 const part = (value: object) => Buffer.from(JSON.stringify(value)).toString("base64url");
 const token = `${part({ alg: "HS256", typ: "JWT" })}.${part({ sub: PAT, role: "authenticated", session_id: "s-1", exp: Math.floor(Date.now() / 1000) + 3600 })}.sig`;
 const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}`, "X-Company-Id": CO };

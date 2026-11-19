@@ -64,7 +64,7 @@ function FramingBlocked({ site }: { site: WebsiteSite }) {
       <Icon name="info" size={20} />
       <div className="grow stack-sm" style={{ gap: 8 }}>
         <span>{siteName(site)} doesn't let other sites show it, so Website opens your editor in its own tab.</span>
-        <span style={{ fontWeight: 400 }}>To see it inside Crewtavo, whoever looks after your website adds this header to the editor's page, then press <strong>Check again</strong>:</span>
+        <span style={{ fontWeight: 400 }}>To see it inside the app, whoever looks after your website adds this header to the editor's page, then press <strong>Check again</strong>:</span>
         <div className="row" style={{ gap: 8 }}>
           <code className="code-pill grow">{frameHeader()}</code>
           <Button icon="copy" onClick={() => copyText(frameHeader(), "Header copied")}>Copy</Button>
@@ -89,7 +89,7 @@ function AddressCard({ onSaved }: { onSaved: () => void }) {
     <section id="app-setup" className="card card-pad stack-sm" aria-labelledby="website-setup" style={{ gap: 10 }}>
       <h2 id="website-setup" className="section-title" style={{ fontSize: 16 }}>Your website's address</h2>
       <span className="muted small">
-        Where you sign in to Sveltia: usually your website with <strong>/admin</strong> at the end. Crewtavo checks the editor is there, then puts <strong>Website</strong> in the menu.
+        Where you sign in to Sveltia: usually your website with <strong>/admin</strong> at the end. The app checks the editor is there, then puts <strong>Website</strong> in the menu.
       </span>
       <AddressForm onSaved={onSaved} />
     </section>

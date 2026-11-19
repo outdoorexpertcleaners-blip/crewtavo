@@ -330,7 +330,7 @@ function tellServiceWorker(userId: string, waiting: number) {
       if (waiting) await cache.put(entry, new Response(String(waiting)));
       else await cache.delete(entry);
       // The worker's own notification, in the app's language: it can't read the app's (public/sw.js).
-      const words = (n: number) => t.plural(n, { one: "{count} update is waiting to be sent. Open Crewtavo to send them.", other: "{count} updates are waiting to be sent. Open Crewtavo to send them." }, { count: n === 1 ? 1 : "{count}" });
+      const words = (n: number) => t.plural(n, { one: "{count} update is waiting to be sent. Open the app to send them.", other: "{count} updates are waiting to be sent. Open the app to send them." }, { count: n === 1 ? 1 : "{count}" });
       await (await caches.open(WORDS_CACHE)).put("/waiting", new Response(JSON.stringify({ one: words(1), other: words(2) })));
       const registration = (await navigator.serviceWorker.getRegistration()) as SyncRegistration | undefined;
       if (!registration) return;

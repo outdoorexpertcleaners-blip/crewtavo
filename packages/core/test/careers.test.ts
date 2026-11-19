@@ -111,7 +111,7 @@ describe("the email for each application", () => {
     expect(email.subject).toBe("New application from Jane Smith for Crew lead");
     expect(email.text).toContain("Position: Crew lead");
     expect(email.text).toContain("Message:\nLine one\nLine two");
-    expect(email.text).toContain("Résumé: resume.pdf (244 KB)\nOpen it in Crewtavo.");
+    expect(email.text).toContain("Résumé: resume.pdf (244 KB)\nOpen it in the app.");
     expect(email.text).toContain("Reply to this email to answer Jane.");
   });
 });

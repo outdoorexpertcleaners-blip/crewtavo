@@ -40,7 +40,7 @@ export function ErrorState({ error, onRetry, title, compact }: { error: unknown;
     return (
       <div className={compact ? "empty-state empty-state-sm" : "empty-state"} role="status">
         <span className="empty-icon"><Icon name="refresh" size={compact ? 20 : 24} /></span>
-        <h3>{title ?? t("Crewtavo is restarting")}</h3>
+        <h3>{title ?? t("The app is restarting")}</h3>
         <p>{t("This loads again on its own in a moment.")}</p>
         {onRetry && <div className="actions"><Button icon="refresh" onClick={onRetry}>{t("Try again")}</Button></div>}
       </div>

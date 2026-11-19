@@ -41,7 +41,7 @@ const COOKIE_PATH = "/api/railway";
 const callbackUrl = (base: string) => `${base}${COOKIE_PATH}/callback`;
 
 const onRailway = createMiddleware<AppEnv>(async (c, next) => {
-  if (c.env.CREWTAVO_SINGLE_COMPANY !== "1" || platformOf(c.env) !== "railway") throw new HttpError(404, "This Crewtavo doesn't run on Railway.");
+  if (c.env.CREWTAVO_SINGLE_COMPANY !== "1" || platformOf(c.env) !== "railway") throw new HttpError(404, "This app doesn't run on Railway.");
   await next();
 });
 const admins = [onRailway, requireUser, requireCompany(ADMINS, "settings")] as const;
@@ -55,7 +55,7 @@ railway.post("/railway/connect", ...admins, async (c) => {
   const { return_to } = await readJson(c, z.object({ return_to: z.enum(["setup", "settings", "hosting"]).default("settings") }));
   const admin = adminClient(c.env);
   const { data: company } = await admin.from("companies").select("name").eq("id", c.var.companyId).maybeSingle();
-  const client = await railwayClient(c.env, admin, c.var.companyId, callbackUrl(appUrl(c)), `Crewtavo for ${company?.name ?? "your business"}`).catch(plain);
+  const client = await railwayClient(c.env, admin, c.var.companyId, callbackUrl(appUrl(c)), `Outdoor Expert app for ${company?.name ?? "your business"}`).catch(plain);
   const { verifier, challenge } = await pkce();
   const nonce = randomId();
   const state = await signToken(c.env, { company: c.var.companyId, user: c.var.userId, purpose: "railway", return_to, nonce, exp: Math.floor(Date.now() / 1000) + 600 });
@@ -81,7 +81,7 @@ railway.get("/railway/callback", onRailway, async (c) => {
 
   const admin = adminClient(c.env);
   try {
-    const client = await railwayClient(c.env, admin, state.company, callbackUrl(appUrl(c)), "Crewtavo");
+    const client = await railwayClient(c.env, admin, state.company, callbackUrl(appUrl(c)), "Outdoor Expert app");
     const access = await exchangeCode(client, query.code, verifier);
     await saveRailwayAccess(c.env, admin, state.company, state.user, access);
     forgetHosting();

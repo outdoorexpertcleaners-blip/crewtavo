@@ -99,7 +99,7 @@ export async function emailAuthLink(env: Env, base: string, tokenHash: string, t
 export const WRONG_PASSWORD = "That password isn't right.";
 /** Someone who only signs in with Google may never have chosen a password. */
 export const NO_PASSWORD =
-  "You sign in with Google, so your account may not have a Crewtavo password yet. Set one under Settings → Profile → Change password, then try again.";
+  "You sign in with Google, so your account may not have a password yet. Set one under Settings → Profile → Change password, then try again.";
 
 /** Auth itself counted too many sign-ins for this account (not the tries counted here). */
 export const TOO_MANY_SIGN_INS = "Too many sign-in attempts for this account. Try again in 15 minutes.";

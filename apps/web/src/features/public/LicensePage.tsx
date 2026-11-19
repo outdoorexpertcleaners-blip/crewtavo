@@ -9,14 +9,14 @@ import { LicenseNotice, TermsSummary, TermsText } from "@/features/legal/License
 
 export function LicensePage() {
   useEffect(() => {
-    document.title = "Crewtavo Terms and License";
+    document.title = "Terms and License";
   }, []);
   return (
     <AuthLayout>
       <div className={`card card-pad ${authStyles.card} ${authStyles.wide}`} style={{ padding: 28, gap: 18 }}>
         <div style={{ display: "grid", gap: 6 }}>
           <h1 className={authStyles.title}>The Crewtavo Terms</h1>
-          <p className="muted" style={{ margin: 0 }}>The terms the business that runs this server agreed to when it set up Crewtavo.</p>
+          <p className="muted" style={{ margin: 0 }}>The terms the business that runs this server agreed to when it set up the app.</p>
         </div>
         <TermsSummary />
         <TermsText open />

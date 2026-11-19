@@ -52,7 +52,7 @@ export const MAX_POSTCARDS = 5000;
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const LOB_NOT_CONNECTED = "Lob isn't connected, so postcards can't be mailed. An owner or admin can connect it in Apps → Lob.";
-export const PRIVATE_ADDRESS_POSTCARDS = "Crewtavo's address isn't public, so Lob can't fetch the picture for the front. Postcards need Crewtavo on a public https address.";
+export const PRIVATE_ADDRESS_POSTCARDS = "The app's address isn't public, so Lob can't fetch the picture for the front. Postcards need the app on a public https address.";
 const MARKETING_OFF = "Marketing is off, so postcards can't be mailed. An owner or admin can install it again in Apps.";
 
 export interface CompanyLob {

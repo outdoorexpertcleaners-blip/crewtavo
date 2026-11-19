@@ -336,8 +336,8 @@ describe("notifications to the team, in Spanish", () => {
   });
 
   it("reads a sub's offers and pay, and their paperwork", () => {
-    expect(es("jobs", "Smith roof, Tue Nov 3 to Thu Nov 5, 24 squares, $2,040. Answer by Mon Nov 2, 5:00 PM. Open Crewtavo to accept or decline.", "New job offer.")).toEqual({
-      title: "Smith roof, mar 3 de nov a jue 5 de nov, 24 cuadros, $2,040. Responde antes del lun, 2 de nov, 5:00 p.m. Abre Crewtavo para aceptar o rechazar.",
+    expect(es("jobs", "Smith roof, Tue Nov 3 to Thu Nov 5, 24 squares, $2,040. Answer by Mon Nov 2, 5:00 PM. Open the app to accept or decline.", "New job offer.")).toEqual({
+      title: "Smith roof, mar 3 de nov a jue 5 de nov, 24 cuadros, $2,040. Responde antes del lun, 2 de nov, 5:00 p.m. Abre la aplicación para aceptar o rechazar.",
       body: "Nueva oferta de trabajo.",
     });
     expect(es("jobs", "Paid $1,200 on Nov 10", "Smith roof, by check.")).toEqual({ title: "Pagado $1,200 el 10 de nov", body: "Smith roof, con cheque." });
@@ -370,7 +370,7 @@ describe("notifications to the team, in Spanish", () => {
     // Sending from the field to someone whose texts are off.
     expect(translateError("es", "Texts off")).toBe("Mensajes de texto desactivados");
     expect(translateError("es", "Pat Lee asked not to be texted, so texts to them are off. Send it by email instead.")).toBe("Pat Lee pidió no recibir mensajes de texto, así que están desactivados. Envíalo por correo.");
-    expect(translateError("es", "540-555-0133 asked not to be texted, so Crewtavo can't text it.")).toBe("540-555-0133 pidió no recibir mensajes de texto, así que Crewtavo no puede enviarle.");
+    expect(translateError("es", "540-555-0133 asked not to be texted, so the app can't text it.")).toBe("540-555-0133 pidió no recibir mensajes de texto, así que la aplicación no puede enviarle.");
   });
 });
 

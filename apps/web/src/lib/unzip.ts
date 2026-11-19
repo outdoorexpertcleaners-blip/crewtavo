@@ -77,7 +77,7 @@ export async function unzip(zip: Uint8Array, wanted: (name: string) => boolean, 
     } else if (method === 8) {
       files.push({ name, bytes: await inflate(data, limit) });
     } else {
-      throw new ZipError("That .zip file is packed in a way Crewtavo can't open. Unzip it and choose the .ics file inside.");
+      throw new ZipError("That .zip file is packed in a way the app can't open. Unzip it and choose the .ics file inside.");
     }
   }
   return files;

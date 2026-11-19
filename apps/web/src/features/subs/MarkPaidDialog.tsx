@@ -40,8 +40,8 @@ export function MarkPaidDialog({ pays, onClose, onPaid }: { pays: readonly ToPay
     },
   });
   const description = one
-    ? `${pays[0]!.label}, ${formatMoneyCents(total)}. Record this after you've paid them: Crewtavo doesn't send money.`
-    : `${pays.length} jobs, ${formatMoneyCents(total)}. Record this after you've paid them: Crewtavo doesn't send money.`;
+    ? `${pays[0]!.label}, ${formatMoneyCents(total)}. Record this after you've paid them: the app doesn't send money.`
+    : `${pays.length} jobs, ${formatMoneyCents(total)}. Record this after you've paid them: the app doesn't send money.`;
   return (
     <Dialog open onClose={onClose} title="Mark paid" description={description}>
       <form onSubmit={(e: FormEvent) => { e.preventDefault(); save.mutate(); }}>

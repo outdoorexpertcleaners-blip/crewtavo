@@ -115,8 +115,8 @@ describe("the office's buttons for a sub's pay", () => {
   });
 
   it("promise only what their settings allow about how an offer reaches them", () => {
-    expect(reachWords(false)).toBe("They get it in Crewtavo, and by email as their notification settings allow. They accept or decline it in one tap.");
-    expect(reachWords(true)).toBe("They get it in Crewtavo, and by email or text as their notification settings allow. They accept or decline it in one tap.");
+    expect(reachWords(false)).toBe("They get it in the app, and by email as their notification settings allow. They accept or decline it in one tap.");
+    expect(reachWords(true)).toBe("They get it in the app, and by email or text as their notification settings allow. They accept or decline it in one tap.");
   });
 });
 

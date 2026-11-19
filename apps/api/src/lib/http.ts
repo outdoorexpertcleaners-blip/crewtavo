@@ -102,7 +102,7 @@ export function requireEnv<K extends keyof Env>(env: Env, key: K, feature: strin
   const value = env[key];
   if (!value) {
     console.warn(`${feature} needs ${String(key)}`);
-    throw new HttpError(501, `${feature} isn't turned on yet. Ask whoever set up Crewtavo to add it.`);
+    throw new HttpError(501, `${feature} isn't turned on yet. Ask whoever set up the app to add it.`);
   }
   return value as NonNullable<Env[K]>;
 }

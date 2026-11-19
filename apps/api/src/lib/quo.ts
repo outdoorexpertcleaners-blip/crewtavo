@@ -123,7 +123,7 @@ export async function postQuoMessage(apiKey: string, line: QuoLine, message: { t
  * webhook and the key it signs with.
  */
 export async function createQuoWebhook(apiKey: string, url: string, lineIds: string[], fetcher: FetchLike = fetch): Promise<{ id: string; key: string }> {
-  const res = await call(apiKey, "/webhooks", { method: "POST", body: JSON.stringify({ url, events: ["message.received"], resourceIds: lineIds.length ? lineIds : ["*"], label: "Crewtavo (test)" }) }, fetcher);
+  const res = await call(apiKey, "/webhooks", { method: "POST", body: JSON.stringify({ url, events: ["message.received"], resourceIds: lineIds.length ? lineIds : ["*"], label: "Outdoor Expert app (test)" }) }, fetcher);
   if (!res) throw new QuoProblem("Couldn't reach Quo to set that up. Try again in a minute.");
   if (!res.ok) {
     const words = await refusal(res);

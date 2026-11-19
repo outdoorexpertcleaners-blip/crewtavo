@@ -26,7 +26,7 @@ const env: Env = {
   ENCRYPTION_KEY: btoa(String.fromCharCode(...new Uint8Array(32).map((_, i) => i * 7))),
   APP_URL: "https://ops.example.com",
   RESEND_API_KEY: "re_test",
-  EMAIL_FROM: "Crewtavo <noreply@example.com>",
+  EMAIL_FROM: "The app <noreply@example.com>",
 };
 
 interface Call {
@@ -425,7 +425,7 @@ describe("sign-in links", () => {
     return { emails, calls };
   }
   const company = '"Acme Lawn Care" <office@acme.example>';
-  const server = "Crewtavo <noreply@example.com>";
+  const server = "The app <noreply@example.com>";
   const noServerEmail = { ...env, RESEND_API_KEY: undefined, EMAIL_FROM: undefined };
 
   it("go out from the company's mailbox while it works", async () => {

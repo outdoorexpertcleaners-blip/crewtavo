@@ -71,7 +71,7 @@ export function HostingSettings() {
 
   if (address.isPending) return <CardSkeleton lines={4} />;
   if (!address.data) return <div className="card"><ErrorState error={address.error} onRetry={() => address.refetch()} /></div>;
-  if (!railway) return <div className="card card-pad muted">This Crewtavo doesn't run on Railway, so there's nothing to show here.</div>;
+  if (!railway) return <div className="card card-pad muted">This app doesn't run on Railway, so there's nothing to show here.</div>;
   if (!connected) {
     return (
       <section className={`card card-pad stack ${styles.page}`} aria-labelledby="hosting-connect">
@@ -95,7 +95,7 @@ export function HostingSettings() {
       <Plan o={o} />
       <div className={`row wrap muted small ${styles.footer}`}>
         <span className="grow">
-          From Railway, {new Date(o.checkedAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}. Crewtavo works out the cost at Railway's prices, so these are close estimates;
+          From Railway, {new Date(o.checkedAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}. The app works out the cost at Railway's prices, so these are close estimates;
           Railway's bill is the final word.
         </span>
         <Button size="sm" variant="ghost" icon="refresh" loading={check.isPending} onClick={() => check.mutate()}>Check again</Button>
@@ -170,13 +170,13 @@ function Summary({ o }: { o: HostingOverview }) {
       {o.trial && (
         <div className="stack-sm" style={{ gap: 6 }}>
           <span className="small">
-            Railway's trial: about <strong>{days(o.trial.daysLeft)}</strong> or <strong>{usd(o.trial.creditLeft)}</strong> of its {usd(RAILWAY_TRIAL.credit)} credit left, whichever runs out first. Crewtavo
+            Railway's trial: about <strong>{days(o.trial.daysLeft)}</strong> or <strong>{usd(o.trial.creditLeft)}</strong> of its {usd(RAILWAY_TRIAL.credit)} credit left, whichever runs out first. The app
             stops then, unless you choose a plan.
           </span>
           <div className="progress" role="img" aria-label={`${usd(o.trial.creditLeft)} of ${usd(RAILWAY_TRIAL.credit)} left`}>
             <span style={{ width: `${(o.trial.creditLeft / RAILWAY_TRIAL.credit) * 100}%` }} />
           </div>
-          <span className="muted small">Counted from when this Crewtavo was set up. Railway's dashboard has the exact figures.</span>
+          <span className="muted small">Counted from when this app was set up. Railway's dashboard has the exact figures.</span>
         </div>
       )}
     </section>
@@ -201,7 +201,7 @@ function Services({ services }: { services: NonNullable<HostingOverview["project
   return (
     <section className="card card-pad stack-sm" aria-labelledby="hosting-services">
       <h2 id="hosting-services" className={styles.title}>What it's used for</h2>
-      <span className="muted small">This Crewtavo's parts on Railway, so far this month.</span>
+      <span className="muted small">This app's parts on Railway, so far this month.</span>
       <ul className={styles.services}>
         {services.map((s) => (
           <li key={s.id}>
@@ -407,7 +407,7 @@ function MoveState({ move, storage, carrying, onCarryOn }: { move: StorageMove; 
               {toBucket ? "Storage restarts with the bucket's settings, which takes about a minute. Anyone uploading then is asked to try again in a minute." : "Storage restarts on the volume, which takes about a minute."}
             </span>
           )}
-          <span className="muted small">You can leave this page: Crewtavo carries on by itself.</span>
+          <span className="muted small">You can leave this page: the app carries on by itself.</span>
         </div>
       )}
       {move.byHand && <ByHand byHand={move.byHand} carrying={carrying} onCarryOn={move.step === "by_hand" ? onCarryOn : undefined} />}
@@ -470,7 +470,7 @@ function ByHand({ byHand, carrying, onCarryOn }: { byHand: StorageByHand; carryi
       <Icon name="info" size={18} />
       <div className="grow stack-sm">
         <div>{byHand.title}</div>
-        <span style={{ fontWeight: 400 }}>Railway didn't let Crewtavo do this step itself, so it's yours to do in Railway:</span>
+        <span style={{ fontWeight: 400 }}>Railway didn't let the app do this step itself, so it's yours to do in Railway:</span>
         <ol className={styles.steps}>{byHand.steps.map((step) => <li key={step}>{step}</li>)}</ol>
         {lines && (
           <div className="stack-sm">
@@ -482,7 +482,7 @@ function ByHand({ byHand, carrying, onCarryOn }: { byHand: StorageByHand; carryi
           {byHand.link && <ExternalButton href={byHand.link} primary={!onCarryOn}>Open Railway</ExternalButton>}
           {onCarryOn && <Button size="sm" variant="primary" loading={carrying} onClick={onCarryOn}>Carry on</Button>}
         </div>
-        {byHand.watching && <span className="small" style={{ fontWeight: 400 }}>Crewtavo checks for the change every few seconds and carries on by itself.</span>}
+        {byHand.watching && <span className="small" style={{ fontWeight: 400 }}>The app checks for the change every few seconds and carries on by itself.</span>}
       </div>
     </div>
   );
@@ -494,7 +494,7 @@ function MoveToBucket({ storage, plan, busy, error, onMove, onClose }: { storage
     <Dialog open onClose={onClose} title="Move files to a Railway bucket" size="sm">
       <div className="dialog-body stack">
         <p style={{ margin: 0 }}>
-          Crewtavo makes a bucket called <strong>files</strong> in your Railway project and copies every photo and file into it{used !== null ? ` (${gb(used)})` : ""}. Once they're all there and
+          The app makes a bucket called <strong>files</strong> in your Railway project and copies every photo and file into it{used !== null ? ` (${gb(used)})` : ""}. Once they're all there and
           checked, it switches storage over and restarts it, which takes about a minute; uploads pause for that minute, and files still open. Copying takes a while for a lot of files, and you can leave the page.
         </p>
         <div className="stack-sm" style={{ gap: 4 }}>
@@ -511,7 +511,7 @@ function MoveToBucket({ storage, plan, busy, error, onMove, onClose }: { storage
           <div className="grow">
             <div>Railway doesn't back up buckets</div>
             <div style={{ fontWeight: 400 }}>
-              A volume can have backups on Railway's Pro plan; a bucket has none, and a file deleted from it is gone for good. Crewtavo's <Link to="/drive/trash" onClick={onClose}>Trash</Link> keeps deleted
+              A volume can have backups on Railway's Pro plan; a bucket has none, and a file deleted from it is gone for good. The app's <Link to="/drive/trash" onClick={onClose}>Trash</Link> keeps deleted
               files for 30 days, so mistakes can be undone; for anything you can't lose, keep a copy of your own too.
             </div>
           </div>
@@ -540,7 +540,7 @@ function MoveBack({ storage, busy, error, onMove, onClose }: { storage: StorageO
     <Dialog open onClose={onClose} title="Move files back to the volume" size="sm">
       <div className="dialog-body stack">
         <p style={{ margin: 0 }}>
-          Crewtavo switches storage back to the volume, which still has every file from before the move, and restarts it (about a minute). Then it copies back the files added since the move;
+          The app switches storage back to the volume, which still has every file from before the move, and restarts it (about a minute). Then it copies back the files added since the move;
           until each is back, it doesn't open.
         </p>
         {volume && (
@@ -561,8 +561,8 @@ function MoveBack({ storage, busy, error, onMove, onClose }: { storage: StorageO
 }
 
 const PLAN_WORDS: Record<string, string> = {
-  trial: "Railway's free trial: 30 days or $5 of credit, whichever runs out first. Crewtavo stops when it ends, unless you choose a plan.",
-  free: "$1 of usage a month, which is less than Crewtavo needs, so Railway stops it partway through the month.",
+  trial: "Railway's free trial: 30 days or $5 of credit, whichever runs out first. The app stops when it ends, unless you choose a plan.",
+  free: "$1 of usage a month, which is less than the app needs, so Railway stops it partway through the month.",
   hobby: "$5 a month, including $5 of usage. You only pay for usage above that.",
   pro: "$20 a month, including $20 of usage. You only pay for usage above that.",
 };
@@ -583,7 +583,7 @@ function Plan({ o }: { o: HostingOverview }) {
       <div className={`stack-sm ${styles.divided}`}>
         <strong className="small">Usage limit</strong>
         <span className="muted small">
-          Railway can stop your projects when usage reaches an amount you choose, so a busy month never surprises you. Set it well above what Crewtavo normally uses: when it's reached, Crewtavo
+          Railway can stop your projects when usage reaches an amount you choose, so a busy month never surprises you. Set it well above what the app normally uses: when it's reached, the app
           stops too.
         </span>
         <ExternalButton href={o.links.usage}>Set a limit on Railway</ExternalButton>

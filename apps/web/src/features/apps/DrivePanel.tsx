@@ -23,7 +23,7 @@ export function DrivePanel() {
       <h2 id="drive-setup" className="section-title" style={{ fontSize: 17 }}>Drive is on</h2>
       <span className="muted">
         Owners, admins, office staff and estimators have <strong>Drive</strong> in the menu, with your company folders and every file on your clients' properties,
-        requests, quotes and jobs. Files deleted in Crewtavo, from plans to visit photos and receipts, stay in the <strong>Trash</strong> for 30 days.
+        requests, quotes and jobs. Files deleted in the app, from plans to visit photos and receipts, stay in the <strong>Trash</strong> for 30 days.
       </span>
       <div className={google ? "callout callout-good" : "callout"}>
         <Icon name={google ? "check" : "cloud"} size={18} />
@@ -31,10 +31,10 @@ export function DrivePanel() {
           {google ? "Importing from Google Drive is ready" : "Importing from Google Drive isn't set up yet"}
           <span style={{ display: "block", fontWeight: 400 }}>
             {google ? (
-              "In Drive, Import from Google Drive lets each person pick files from their own Google Drive. Crewtavo copies them in and keeps nothing of their Google account."
+              "In Drive, Import from Google Drive lets each person pick files from their own Google Drive. The app copies them in and keeps nothing of their Google account."
             ) : (
               <>
-                Whoever runs this Crewtavo adds a Google sign-in and a browser key to it, once.{" "}
+                Whoever runs this app adds a Google sign-in and a browser key to it, once.{" "}
                 <a href={GOOGLE_IMPORT_DOCS} target="_blank" rel="noreferrer">How to set it up <Icon name="external" size={12} /></a>
               </>
             )}

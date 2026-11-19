@@ -73,8 +73,8 @@ export function OfflineNote() {
           <div className="grow small" style={{ fontWeight: 400 }}>
             <div>{t("This phone is out of room")}</div>
             {t.plural(unsavedUpdates, {
-              one: "Your last update isn't saved on it. Keep Crewtavo open until you have signal and it has sent, or it will be lost.",
-              other: "Your last {count} updates aren't saved on it. Keep Crewtavo open until you have signal and they have sent, or they will be lost.",
+              one: "Your last update isn't saved on it. Keep the app open until you have signal and it has sent, or it will be lost.",
+              other: "Your last {count} updates aren't saved on it. Keep the app open until you have signal and they have sent, or they will be lost.",
             })}
           </div>
         </div>
@@ -84,7 +84,7 @@ export function OfflineNote() {
           <Icon name="alert" size={20} />
           <div className="grow small" style={{ fontWeight: 400 }}>
             <div>{t.plural(unsaved.length, { one: "This phone couldn't save {count} photo", other: "This phone couldn't save {count} photos" })}</div>
-            {unsaved.length === 1 ? t("Keep Crewtavo open until you have signal, or it will be lost.") : t("Keep Crewtavo open until you have signal, or they will be lost.")}
+            {unsaved.length === 1 ? t("Keep the app open until you have signal, or it will be lost.") : t("Keep the app open until you have signal, or they will be lost.")}
           </div>
         </div>
       )}

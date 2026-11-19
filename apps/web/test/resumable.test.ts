@@ -182,7 +182,7 @@ describe("sending a file in pieces", () => {
     const error = await upload.promise.catch((e: unknown) => e);
     expect(error).toBeInstanceOf(lib.TooLargeError);
     expect((error as InstanceType<typeof lib.TooLargeError>).fromServer).toBe(true);
-    expect((error as Error).message).toBe("Set A.pdf (120 MB) is bigger than this Crewtavo accepts.");
+    expect((error as Error).message).toBe("Set A.pdf (120 MB) is bigger than this app accepts.");
   });
 
   it("says plainly when Storage won't take it from this person, or the connection gave out", async () => {
@@ -216,7 +216,7 @@ describe("sending a file in pieces", () => {
   });
 
   it("turns Storage's 507 into storage full, in the server's own words, without trying again", async () => {
-    const sentence = "Crewtavo's storage is full: 45 GB of the 50 GB limit. An owner or admin can raise it in Settings → Storage, or empty the Trash.";
+    const sentence = "The app's storage is full: 45 GB of the 50 GB limit. An owner or admin can raise it in Settings → Storage, or empty the Trash.";
     const upload = lib.resumableUpload({ path: "co-1/plans/f1.pdf", file: pdf(), contentType: "application/pdf", onProgress: () => undefined });
     const tus = await started();
     tus.options.onError(failed("POST", 507, JSON.stringify({ statusCode: "507", error: "Storage full", message: sentence })));
@@ -231,7 +231,7 @@ describe("sending a file in pieces", () => {
     const mine = lib.storageError(507, '{"statusCode":"507","error":"Storage full","message":"You\'ve used your 10 GB of storage. Ask an owner to raise it, or move old files to the Trash."}', "Set A.pdf", 1);
     expect(mine).toBeInstanceOf(lib.StorageFullError);
     expect(mine.message).toBe("You've used your 10 GB of storage. Ask an owner to raise it, or move old files to the Trash.");
-    expect(lib.storageError(507, "<html>Insufficient Storage</html>", "Set A.pdf", 1).message).toBe("Crewtavo's storage is full. An owner or admin can raise the limit in Settings → Storage, or empty the Trash.");
+    expect(lib.storageError(507, "<html>Insufficient Storage</html>", "Set A.pdf", 1).message).toBe("The app's storage is full. An owner or admin can raise the limit in Settings → Storage, or empty the Trash.");
   });
 
   it("carries on with an unfinished upload of the same file to the same folder, and says where that one goes", async () => {
@@ -375,7 +375,7 @@ describe("sending a file in pieces", () => {
     (await started()).options.onError(failed("POST", 404, "Not found"));
     await vi.waitFor(() => expect(state.xhrs[0]?.body).toBeTruthy());
     state.xhrs[0].status = 507;
-    state.xhrs[0].responseText = '{"statusCode":"507","error":"Storage full","message":"Crewtavo\'s storage is full: 50 GB of the 50 GB limit. An owner or admin can raise it in Settings → Storage, or empty the Trash."}';
+    state.xhrs[0].responseText = '{"statusCode":"507","error":"Storage full","message":"The app\'s storage is full: 50 GB of the 50 GB limit. An owner or admin can raise it in Settings → Storage, or empty the Trash."}';
     state.xhrs[0].onload();
     const error = await upload.promise.catch((e: unknown) => e);
     expect(error).toBeInstanceOf(lib.StorageFullError);

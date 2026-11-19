@@ -84,7 +84,7 @@ export function loadConfig(): Promise<AppConfig> {
     .then(async (res) => {
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new ApiError(body.error ?? msg("Couldn't connect to Crewtavo. Try again in a moment."), res.status);
+        throw new ApiError(body.error ?? msg("Couldn't connect to the app. Try again in a moment."), res.status);
       }
       const config = (await res.json()) as AppConfig;
       if (config.brand?.name) brandName = config.brand.name;
@@ -259,7 +259,7 @@ type DbResult = { data: unknown; error: { message: string; code?: string; detail
  */
 function dbFailure(result: DbResult): ApiError {
   // The server restarting isn't a database fault to report (a field action retries through it).
-  if (isRestarting(result.status)) return new ApiError(msg("Crewtavo is restarting. Try again in a moment."), result.status!, "restarting");
+  if (isRestarting(result.status)) return new ApiError(msg("The app is restarting. Try again in a moment."), result.status!, "restarting");
   return friendlyDbError(result.error!);
 }
 

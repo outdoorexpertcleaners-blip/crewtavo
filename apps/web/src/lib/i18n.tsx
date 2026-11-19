@@ -170,7 +170,7 @@ export function tellIfSpanishDidntLoad() {
     // Told again after a reload, then.
   }
   toast.warning("No se pudo cargar el español", {
-    description: "Crewtavo está en inglés por ahora. Spanish couldn't be loaded, so Crewtavo is in English for now.",
+    description: "La aplicación está en inglés por ahora. Spanish couldn't be loaded, so the app is in English for now.",
     duration: 15_000,
     action: { label: "Reintentar · Try again", onClick: () => window.location.reload() },
   });

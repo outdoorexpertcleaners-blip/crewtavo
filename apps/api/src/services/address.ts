@@ -92,21 +92,21 @@ function expectedRecords(env: Env, domain: string): StoredRecord[] {
 export async function checkAddress(env: Env, input: string): Promise<AddressCheck> {
   const domain = normalizeDomain(input);
   if (!domain) return { domain: input.trim(), zone: null, provider: null, root: false, warnings: [], problem: "That doesn't look like a web address. Type it like crm.yourbusiness.com." };
-  let problem = addressProblem(domain) ?? (isLive(env, domain) ? "Crewtavo already uses this address." : null);
+  let problem = addressProblem(domain) ?? (isLive(env, domain) ? "The app already uses this address." : null);
   const found = await findZone(lookup, domain);
   const provider = found ? providerForNameservers(found.nameservers) : null;
   const root = found?.zone === domain;
   const warnings: string[] = [];
-  if (!found) warnings.push(`Crewtavo couldn't find the DNS for ${domain} yet. Check the spelling. A domain bought today can take a little while to show up.`);
+  if (!found) warnings.push(`The app couldn't find the DNS for ${domain} yet. Check the spelling. A domain bought today can take a little while to show up.`);
   if (root) {
     if (platformOf(env) === "railway" && provider && !provider.rootCname) {
       if (provider.id !== "other") problem ??= `${provider.label} can't point ${domain} itself at Railway. Use a name under it instead, like crm.${domain}.`;
       else warnings.push(`Pointing ${domain} itself at Railway only works with some DNS providers. A name under it, like crm.${domain}, works with all of them.`);
     }
-    warnings.push(`If your website is at ${domain}, using it for Crewtavo would replace it. A name like crm.${domain} keeps both.`);
+    warnings.push(`If your website is at ${domain}, using it for the app would replace it. A name like crm.${domain} keeps both.`);
   } else {
     const target = await currentTarget(lookup, domain);
-    if (target && !/\.railway\.app$/.test(target)) warnings.push(`${domain} already points somewhere else (${target}). Using it for Crewtavo replaces that.`);
+    if (target && !/\.railway\.app$/.test(target)) warnings.push(`${domain} already points somewhere else (${target}). Using it for the app replaces that.`);
   }
   return { domain, zone: found?.zone ?? null, provider: provider?.id ?? null, root, warnings, problem };
 }
@@ -188,7 +188,7 @@ export async function startChange(env: Env, admin: Db, companyId: string, userId
   const check = await checkAddress(env, input);
   if (check.problem) throw new HttpError(400, check.problem);
   const existing = await loadRow(admin, companyId);
-  if (existing?.status === "switching") throw new HttpError(409, `Crewtavo is switching to ${existing.domain} right now. Wait a few minutes, then try again.`);
+  if (existing?.status === "switching") throw new HttpError(409, `The app is switching to ${existing.domain} right now. Wait a few minutes, then try again.`);
   const access = await railwayAccess(env, admin, companyId).catch(() => null);
   // An address set up earlier but never finished: take it back out of Railway.
   if (existing && existing.status !== "done" && existing.railway_domain_id && existing.railway_domain_added && existing.domain !== check.domain && access) {
@@ -231,7 +231,7 @@ export async function finishChange(env: Env, admin: Db, companyId: string): Prom
 
 export async function cancelChange(env: Env, admin: Db, companyId: string): Promise<AddressOverview> {
   const row = await loadRow(admin, companyId);
-  if (row?.status === "switching") throw new HttpError(409, `Crewtavo is switching to ${row.domain} right now. Wait a few minutes.`);
+  if (row?.status === "switching") throw new HttpError(409, `The app is switching to ${row.domain} right now. Wait a few minutes.`);
   if (row && row.status !== "done") {
     if (row.railway_domain_id && row.railway_domain_added) {
       const access = await railwayAccess(env, admin, companyId).catch(() => null);
@@ -275,19 +275,19 @@ async function announce(env: Env, admin: Db, row: Row) {
   const { data: admins } = await admin.from("memberships").select("user_id").eq("company_id", row.company_id).eq("active", true).in("role", [...ADMINS]);
   if (admins?.length) {
     await admin.from("notifications").insert(
-      admins.map((m) => ({ company_id: row.company_id, user_id: m.user_id, kind: "info", title: `Crewtavo is now at ${row.domain}`, body: `Links in emails, quotes and invoices use ${url} from now on.`, link: "/settings?tab=address" })),
+      admins.map((m) => ({ company_id: row.company_id, user_id: m.user_id, kind: "info", title: `The app is now at ${row.domain}`, body: `Links in emails, quotes and invoices use ${url} from now on.`, link: "/settings?tab=address" })),
     );
   }
   if (!row.started_by) return;
   const { data: person } = await admin.from("profiles").select("email, full_name").eq("user_id", row.started_by).maybeSingle();
   if (!person?.email) return;
-  const name = company?.name ?? "Crewtavo";
+  const name = company?.name ?? "Outdoor Expert";
   const text = [
-    `${person.full_name ? `Hi ${person.full_name.split(/\s+/)[0]},\n\n` : ""}Crewtavo is now at ${url}. Invites, quotes, invoices and the client hub use it from now on.`,
+    `${person.full_name ? `Hi ${person.full_name.split(/\s+/)[0]},\n\n` : ""}The app is now at ${url}. Invites, quotes, invoices and the client hub use it from now on.`,
     `Everyone signs in once on the new address. On phones, open ${url} and add it to the home screen again, then turn notifications back on.`,
     "Links sent before today keep working, and the old address forwards to the new one.",
   ].join("\n\n");
-  await sendEmail(env, { to: person.email, subject: `Crewtavo is now at ${row.domain}`, ...renderEmail({ companyName: name, text }), fromName: name }, row.company_id);
+  await sendEmail(env, { to: person.email, subject: `The app is now at ${row.domain}`, ...renderEmail({ companyName: name, text }), fromName: name }, row.company_id);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -330,7 +330,7 @@ async function refreshChange(env: Env, admin: Db, row: Row): Promise<"waiting" |
   try {
     const access = await railwayAccess(env, admin, row.company_id);
     if (!access) {
-      await update(admin, row.company_id, { automatic: false, error: "Crewtavo no longer has access to Railway. Log in with Railway again, or finish the steps by hand." });
+      await update(admin, row.company_id, { automatic: false, error: "The app no longer has access to Railway. Log in with Railway again, or finish the steps by hand." });
       return "waiting";
     }
     if (!row.railway_domain_id) {
@@ -380,7 +380,7 @@ export async function runAddressTask(env: Env, admin: Db): Promise<{ checked: nu
     } else if (row.status === "switching" && Date.now() - Date.parse(row.switching_at ?? row.updated_at) > SWITCH_TIMEOUT_MS) {
       await update(admin, row.company_id, {
         status: "failed",
-        error: "Railway didn't finish restarting Crewtavo with the new address. Open the crewtavo service's Deployments in Railway to see why, then press Try again.",
+        error: "Railway didn't finish restarting the app with the new address. Open the crewtavo service's Deployments in Railway to see why, then press Try again.",
       });
     } else if (row.status === "waiting" && row.automatic) {
       if ((await refreshChange(env, admin, row)) === "switching") switching++;
@@ -402,9 +402,9 @@ export async function recordsToAdd(admin: Db, companyId: string): Promise<{ doma
   const row = await loadRow(admin, companyId);
   if (!row || row.status === "done") throw new HttpError(404, "There's no address being set up.");
   const stored = row.records as unknown as StoredRecord[];
-  if (!row.automatic || !stored.length || stored.some((r) => !r.value)) throw new HttpError(400, "Crewtavo doesn't know the records yet. Log in with Railway first.");
+  if (!row.automatic || !stored.length || stored.some((r) => !r.value)) throw new HttpError(400, "The app doesn't know the records yet. Log in with Railway first.");
   const zone = (await findZone(lookup, row.domain))?.zone;
-  if (!zone) throw new HttpError(400, `Crewtavo couldn't find the DNS for ${row.domain}. Check the address is right.`);
+  if (!zone) throw new HttpError(400, `The app couldn't find the DNS for ${row.domain}. Check the address is right.`);
   return { domain: row.domain, zone, records: stored.map((r) => ({ type: r.type, name: r.name, value: r.value! })) };
 }
 

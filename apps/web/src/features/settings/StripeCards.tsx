@@ -176,7 +176,7 @@ export function StripeCards({ enabled, termsVersion }: { enabled: boolean; terms
       </div>
       <div className="card-pad stack-sm" style={{ paddingBottom: 8 }}>
         <span className="muted small">
-          They aren't charged from Crewtavo until they agree. Ask them with a Confirm autopay link: they see their card and your terms, and tap once. Stop charging each one by hand in Stripe from the day they move over; their client page says when.
+          They aren't charged from the app until they agree. Ask them with a Confirm autopay link: they see their card and your terms, and tap once. Stop charging each one by hand in Stripe from the day they move over; their client page says when.
         </span>
         {!enabled && <span className="small" style={{ fontWeight: 600 }}>Turn on autopay above and save first.</span>}
       </div>

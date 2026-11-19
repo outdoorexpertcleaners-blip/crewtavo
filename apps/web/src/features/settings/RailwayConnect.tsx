@@ -11,7 +11,7 @@ import styles from "./WebAddressSettings.module.css";
 
 type Railway = NonNullable<AddressOverview["railway"]>;
 
-const TOKEN_INTRO = "With a project token, Crewtavo shows what it costs, warns you before the trial runs out, and sets up your web address, the same as logging in.";
+const TOKEN_INTRO = "With a project token, the app shows what it costs, warns you before the trial runs out, and sets up your web address, the same as logging in.";
 
 export function RailwayConnect({ railway, returnTo }: { railway: Railway; returnTo: RailwayReturn }) {
   return (
@@ -29,7 +29,7 @@ export function RailwayConnect({ railway, returnTo }: { railway: Railway; return
         <div className={styles.split}>
           <div className="stack-sm">
             <span>
-              Railway runs Crewtavo and bills you for it. Once you log in, Crewtavo shows what it costs and warns you before your trial runs out or the bill goes over your plan, so it
+              Railway runs the app and bills you for it. Once you log in, the app shows what it costs and warns you before your trial runs out or the bill goes over your plan, so it
               never stops by surprise. It can set up your own web address too.
             </span>
             <ConnectRailway returnTo={returnTo} projectName={railway.projectName} />
@@ -42,7 +42,7 @@ export function RailwayConnect({ railway, returnTo }: { railway: Railway; return
       <span className="row muted small" style={{ gap: 6, flexWrap: "nowrap", alignItems: "flex-start" }}>
         <span style={{ flex: "none", marginTop: 1 }}><Icon name="lock" size={14} /></span>
         <span>
-          Crewtavo only uses {railway.projectName ? <strong>{railway.projectName}</strong> : "its own project"}, and never sees your card or billing. You can take the access back any time in
+          The app only uses {railway.projectName ? <strong>{railway.projectName}</strong> : "its own project"}, and never sees your card or billing. You can take the access back any time in
           Settings → Hosting.
         </span>
       </span>

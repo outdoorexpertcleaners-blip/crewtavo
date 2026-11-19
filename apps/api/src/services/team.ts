@@ -23,7 +23,7 @@ export interface TeamScope {
 }
 
 /** What an assistant, or anything without the giver's password, is told about admin access. */
-export const ADMIN_FROM_TEAM_PAGE = "Give admin access from Settings → People in Crewtavo, which asks for your password.";
+export const ADMIN_FROM_TEAM_PAGE = "Give admin access from Settings → People in the app, which asks for your password.";
 
 /**
  * Whether a level, or a custom role (which sets its own level), is admin-level access (adminLevel).
@@ -87,11 +87,11 @@ export async function sendInvite(s: TeamScope, to: { email: string; name?: strin
   const first = to.name?.trim().split(/\s+/)[0];
   const greeting = first ? `Hi ${first},\n\n` : "";
   const text = link
-    ? `${greeting}${inviter} invited you to ${company.name} on Crewtavo, where you'll see your schedule, visits and time.\n\nSet up your account here (the link works once; if it has expired, ask for a new invite):\n\n${link}\n\nOn your phone, open it in your browser and use "Add to Home Screen" to keep Crewtavo one tap away.`
-    : `${greeting}${inviter} gave you access to ${company.name} on Crewtavo. Sign in with your email and password as usual:\n\n${s.baseUrl}/`;
+    ? `${greeting}${inviter} invited you to ${company.name}, where you'll see your schedule, visits and time.\n\nSet up your account here (the link works once; if it has expired, ask for a new invite):\n\n${link}\n\nOn your phone, open it in your browser and use "Add to Home Screen" to keep the app one tap away.`
+    : `${greeting}${inviter} gave you access to ${company.name}. Sign in with your email and password as usual:\n\n${s.baseUrl}/`;
   return sendEmail(
     s.env,
-    { to: to.email, subject: link ? `Join ${company.name} on Crewtavo` : `You now have access to ${company.name}`, ...renderEmail({ companyName: company.name, text }), replyTo: company.email ?? undefined, fromName: company.name },
+    { to: to.email, subject: link ? `Join ${company.name}` : `You now have access to ${company.name}`, ...renderEmail({ companyName: company.name, text }), replyTo: company.email ?? undefined, fromName: company.name },
     s.companyId,
   );
 }

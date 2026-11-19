@@ -169,8 +169,8 @@ export async function deliverNotifications(env: Env, options: { minAgeSeconds?: 
             forEmail.length === 1 ? "" : t("{count} updates from {company}:", { count: forEmail.length, company: company.name }),
             ...forEmail.map(shown).map((i) => [oneLine(i.title), i.body && i.body !== i.title ? oneLine(i.body) : null, url(i.link)].filter(Boolean).join("\n")),
             base
-              ? t("You get these because of your notification settings. Change them in Crewtavo under Settings → Profile: {link}", { link: `${base}/settings?tab=profile` })
-              : t("You get these because of your notification settings. Change them in Crewtavo under Settings → Profile."),
+              ? t("You get these because of your notification settings. Change them in the app under Settings → Profile: {link}", { link: `${base}/settings?tab=profile` })
+              : t("You get these because of your notification settings. Change them in the app under Settings → Profile."),
           ].filter(Boolean).join("\n\n");
           const result = await sendEmail(
             env,

@@ -58,7 +58,7 @@ describe("a sub's sign-in", () => {
     const m = signInLinkMessages({ companyName: "Oscar Roofing", subName: "Apex Roofing LLC", contactName: "Al Apex", link: "https://ops.test/?token_hash=t&type=magiclink" });
     expect(m.subject).toBe("Your sign-in for Oscar Roofing");
     expect(m.sms).toBe("Oscar Roofing: here's your link to sign in and see your jobs with us. It works once, within a day: https://ops.test/?token_hash=t&type=magiclink");
-    expect(m.text).toMatch(/^Hi Al,\n\nHere's your link to sign in to Oscar Roofing on Crewtavo/);
+    expect(m.text).toMatch(/^Hi Al,\n\nHere's your link to sign in to Oscar Roofing/);
     expect(m.text).toContain("\n\nhttps://ops.test/?token_hash=t&type=magiclink\n\nIt works once, within a day.");
     // An iPhone's Home Screen app keeps its own sign-in, which the link can't reach.
     expect(m.text).not.toMatch(/Home Screen/);

@@ -69,8 +69,8 @@ export function useWebsiteFormsSwitch(kind: FormKind = "contact") {
     const ok = await confirm({
       title: careers ? "Uninstall Careers?" : "Uninstall Website Forms?",
       body: careers
-        ? "Your website's Apply form stops sending to Crewtavo right away, and people who fill it in are told it wasn't sent. Applicants leaves the sidebar, but every applicant and résumé is kept and every form keeps its address, so installing it again picks up where you left off."
-        : "Forms on your website stop sending to Crewtavo right away, and people who fill one in are told it wasn't sent. Every form keeps its address and its messages stay in Requests, so installing it again picks up where you left off.",
+        ? "Your website's Apply form stops sending to the app right away, and people who fill it in are told it wasn't sent. Applicants leaves the sidebar, but every applicant and résumé is kept and every form keeps its address, so installing it again picks up where you left off."
+        : "Forms on your website stop sending to the app right away, and people who fill one in are told it wasn't sent. Every form keeps its address and its messages stay in Requests, so installing it again picks up where you left off.",
       confirmLabel: "Uninstall",
       danger: true,
     });
@@ -122,7 +122,7 @@ export function WebsiteFormsPanel({ kind = "contact" }: { kind?: FormKind }) {
         <div className="callout callout-warning" role="status">
           <Icon name="mail" size={20} />
           <div className="grow">
-            Email isn't set up in Crewtavo yet, so {careers ? "applications only show in Applicants" : "messages only show in Requests"}. <Link to="/settings?tab=email" className="strong">Connect your email</Link> to get each one in your inbox too.
+            Email isn't set up in the app yet, so {careers ? "applications only show in Applicants" : "messages only show in Requests"}. <Link to="/settings?tab=email" className="strong">Connect your email</Link> to get each one in your inbox too.
           </div>
         </div>
       )}
@@ -256,7 +256,7 @@ function FormCard({ form, first, kind, promoBox }: { form: WebsiteForm; first: b
         <Field
           label={careers ? "Email each application to" : "Email each message to"}
           hint={careers
-            ? "Up to 5 addresses, separated by commas. Reply to the email to answer the applicant; their résumé stays in Crewtavo. Leave it empty to only see applications in Applicants."
+            ? "Up to 5 addresses, separated by commas. Reply to the email to answer the applicant; their résumé stays in the app. Leave it empty to only see applications in Applicants."
             : "Up to 5 addresses, separated by commas. Reply to the email to answer whoever sent it. Leave it empty to only see messages in Requests."}
         >
           <input className="input" type="text" inputMode="email" autoComplete="off" spellCheck={false} placeholder="office@greenlawn.com" value={emails} onChange={(e) => setEmails(e.target.value)} />
@@ -271,7 +271,7 @@ function FormCard({ form, first, kind, promoBox }: { form: WebsiteForm; first: b
             <Field label="After someone sends it">
               <div className="stack-sm">
                 <div className="segmented" role="group" aria-label="After someone sends it" style={{ justifySelf: "start" }}>
-                  <button type="button" aria-pressed={!ownPage} onClick={() => setOwnPage(false)}>A thank-you page from Crewtavo</button>
+                  <button type="button" aria-pressed={!ownPage} onClick={() => setOwnPage(false)}>A thank-you page from the app</button>
                   <button type="button" aria-pressed={ownPage} onClick={() => setOwnPage(true)}>My own page</button>
                 </div>
                 {ownPage && (
@@ -279,7 +279,7 @@ function FormCard({ form, first, kind, promoBox }: { form: WebsiteForm; first: b
                 )}
               </div>
             </Field>
-            <Field label="Only take messages from" optional hint="Your website, like greenlawn.com, so a copy of your form somewhere else can't send to Crewtavo. Leave it empty to take messages from any website.">
+            <Field label="Only take messages from" optional hint="Your website, like greenlawn.com, so a copy of your form somewhere else can't send to the app. Leave it empty to take messages from any website.">
               <input className="input" type="text" inputMode="url" autoComplete="off" spellCheck={false} placeholder="greenlawn.com" value={sites} onChange={(e) => setSites(e.target.value)} />
             </Field>
             <div className="row wrap" style={{ gap: 8 }}>

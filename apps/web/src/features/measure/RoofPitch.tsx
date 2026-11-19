@@ -253,7 +253,7 @@ function PhoneGauge({ onUse, onClose }: { onUse: (pitch: string) => void; onClos
         )}
         {status === "none" && <Unavailable onClose={onClose}>This device doesn't have a tilt sensor, or the browser isn't sharing it. Open this page on your phone, or measure from a photo instead.</Unavailable>}
         {status === "denied" && <Unavailable onClose={onClose}>Motion access is off for this site. On an iPhone, close Safari's tab and open the page again to be asked, or measure from a photo instead.</Unavailable>}
-        {status === "insecure" && <Unavailable onClose={onClose}>Phones only share their tilt sensor with secure (https://) addresses. Open Crewtavo at its https address, or measure from a photo instead.</Unavailable>}
+        {status === "insecure" && <Unavailable onClose={onClose}>Phones only share their tilt sensor with secure (https://) addresses. Open the app at its https address, or measure from a photo instead.</Unavailable>}
       </div>
     </Dialog>
   );

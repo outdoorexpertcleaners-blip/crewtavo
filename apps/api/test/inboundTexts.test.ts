@@ -147,7 +147,7 @@ describe("a text from a contact's phone", () => {
     ];
     await receiveText(fakeDb(state), text("STOP"), null);
     expect([...state.stops]).toEqual(["co-1:5405550163"]);
-    expect(state.notices.map((n) => [n.title, n.body])).toEqual([["Mo Manager turned off texts", "They texted STOP from +15405550163. Crewtavo won't text that number until they text START."]]);
+    expect(state.notices.map((n) => [n.title, n.body])).toEqual([["Mo Manager turned off texts", "They texted STOP from +15405550163. The app won't text that number until they text START."]]);
     // Both clients' timelines show it.
     expect(state.messages.map((m) => m.client_id)).toEqual(["client-1", "client-2"]);
     state.notices.length = 0;
@@ -168,7 +168,7 @@ describe("a text that asks to stop without the keyword", () => {
     expect(state.messages.map((m) => [m.client_id, m.body, m.from_name])).toEqual([["client-1", "Please stop texting me", "Mo Manager"]]);
     expect(state.notices.map((n) => [n.title, n.body])).toEqual([[
       "Mo Manager asked to stop texts",
-      "They texted “Please stop texting me” from +15405550163, so Crewtavo won't text that number. If that isn't what they meant, you can turn its texts back on from the client's page, only if they ask.",
+      "They texted “Please stop texting me” from +15405550163, so the app won't text that number. If that isn't what they meant, you can turn its texts back on from the client's page, only if they ask.",
     ]]);
   });
 
@@ -190,7 +190,7 @@ describe("a text that asks to stop without the keyword", () => {
     expect(await receiveText(fakeDb(state), asking("stop texting me, wrong person"), null)).toEqual([]);
     expect([...state.kept]).toEqual([["co-1:5405550163", { source: "phrase", note: "stop texting me, wrong person" }]]);
     expect(state.unknown.map((u) => u.body)).toEqual(["stop texting me, wrong person"]);
-    expect(state.notices.map((n) => [n.title, n.body, n.link])).toEqual([["An unknown number asked to stop texts", "+15405550163 texted “stop texting me, wrong person”, so Crewtavo won't text it.", "/messages?unknown=5405550163"]]);
+    expect(state.notices.map((n) => [n.title, n.body, n.link])).toEqual([["An unknown number asked to stop texts", "+15405550163 texted “stop texting me, wrong person”, so the app won't text it.", "/messages?unknown=5405550163"]]);
   });
 });
 

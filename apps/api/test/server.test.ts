@@ -23,7 +23,7 @@ let port = 0;
 // A built web app: its page and one fingerprinted asset.
 const web = mkdtempSync(join(tmpdir(), "crewtavo-web-"));
 mkdirSync(join(web, "assets"));
-writeFileSync(join(web, "index.html"), "<!doctype html><title>Crewtavo</title>");
+writeFileSync(join(web, "index.html"), "<!doctype html><title>The app</title>");
 writeFileSync(join(web, "assets/app-1a2b.js"), "export {};");
 
 beforeAll(async () => {

@@ -189,7 +189,7 @@ function AppListing({ app, all, ai }: { app: AppRow; all: AppRow[]; ai: AiState 
       if (hasAccount(app)) {
         const res = await api.post<{ revoked?: boolean }>(`/apps/${app.id}/disconnect`, options);
         // The other Google app signs in the same way, and Google would sign it out too.
-        if (res?.revoked === false) toast.info(`Your Google sign-in stays, since ${app.id === "google_business" ? "Google Calendar" : "Google Business Profile"} uses it too. Remove Crewtavo in your Google account's security settings to end both.`);
+        if (res?.revoked === false) toast.info(`Your Google sign-in stays, since ${app.id === "google_business" ? "Google Calendar" : "Google Business Profile"} uses it too. Remove the app in your Google account's security settings to end both.`);
       }
       if (app.id === "chatgpt") {
         if (app.team_plans || plan.data?.team_plans) await api.put("/ai/team-plans", { on: false });
@@ -402,7 +402,7 @@ function AppListing({ app, all, ai }: { app: AppRow; all: AppRow[]; ai: AiState 
       {needsMarketing && !unavailable && (
         <div className="callout" role="note">
           <Icon name="info" size={20} />
-          <div className="grow">{app.id === "meta" ? "Install Marketing - Crewtavo first: your posts are made in Marketing → Social." : "Install Marketing - Crewtavo first: your Google reviews show in Marketing → Reviews."} <Link to="/apps/marketing">Marketing - Crewtavo</Link></div>
+          <div className="grow">{app.id === "meta" ? "Install Marketing first: your posts are made in Marketing → Social." : "Install Marketing first: your Google reviews show in Marketing → Reviews."} <Link to="/apps/marketing">Marketing</Link></div>
         </div>
       )}
       {!installed && (setup || keysSaved) && !unavailable && (
@@ -485,7 +485,7 @@ function AppListing({ app, all, ai }: { app: AppRow; all: AppRow[]; ai: AiState 
         <div className="callout" role="note">
           <Icon name="info" size={20} />
           <div className="grow" style={{ fontWeight: 400 }}>
-            To use Crewtavo from inside {app.name}, add the connector in <Link to="/settings?tab=assistants" style={{ textDecoration: "underline" }}>Settings → AI assistants</Link>.
+            To use the app from inside {app.name}, add the connector in <Link to="/settings?tab=assistants" style={{ textDecoration: "underline" }}>Settings → AI assistants</Link>.
           </div>
         </div>
       )}
@@ -530,7 +530,7 @@ function AppListing({ app, all, ai }: { app: AppRow; all: AppRow[]; ai: AiState 
           {connectsWith && <div><dt>Connects with</dt><dd>{connectsWith}</dd></div>}
           {access.length > 0 && (
             <div>
-              <dt>Crewtavo can</dt>
+              <dt>The app can</dt>
               <dd><ul className="app-access">{access.map((a) => <li key={a}>{a}</li>)}</ul></dd>
             </div>
           )}
@@ -593,7 +593,7 @@ function signedInWaiting(pending: string | null): string {
   if (pending === "pick") return "Signed in, but that Google account doesn't manage a Business Profile. Sign in with the one that does below.";
   // The location's problem itself is said in the panel below.
   if (pending === "location") return "Signed in, but something about the location needs looking at first.";
-  return "Signed in. Google didn't answer, so Crewtavo tries again soon.";
+  return "Signed in. Google didn't answer, so the app tries again soon.";
 }
 
 /** Uninstalling Google Business Profile: its reviews stay (for as long as a copy that isn't syncing is kept), unless this is ticked. */
@@ -601,7 +601,7 @@ function UninstallReviews({ count, onChange }: { count: number; onChange: (remov
   const [remove, setRemove] = useState(false);
   return (
     <div className="stack-sm">
-      <p style={{ margin: 0 }}>Reviews stop coming in, and replies can't be posted from Crewtavo. Your reviews on Google aren't changed. You can install it again any time.</p>
+      <p style={{ margin: 0 }}>Reviews stop coming in, and replies can't be posted from the app. Your reviews on Google aren't changed. You can install it again any time.</p>
       {count > 0 && (
         <label className="checkbox">
           <input type="checkbox" checked={remove} onChange={(e) => { setRemove(e.target.checked); onChange(e.target.checked); }} />
@@ -617,11 +617,11 @@ function UninstallReviews({ count, onChange }: { count: number; onChange: (remov
 function uninstallBody(app: AppRow, counts: { calendars: number; teamPlans?: boolean }): string {
   const again = "You can install it again any time.";
   if (app.id === "google_calendar") {
-    const visits = app.status !== "disconnected" ? " The visits calendar Crewtavo made is removed from your Google account." : "";
+    const visits = app.status !== "disconnected" ? " The visits calendar the app made is removed from your Google account." : "";
     return `Its calendars come off the schedule.${visits} Your own Google calendars aren't changed. ${again}`;
   }
   if (app.auth === "link") return `${counts.calendars === 1 ? "Its calendar comes" : `Its ${counts.calendars} calendars come`} off the schedule. The calendars themselves aren't changed. ${again}`;
-  if (app.id === "stripe") return `Crewtavo's webhook comes out of your Stripe account, and new invoices and payments stop showing up here. Nothing already recorded is deleted. ${again}`;
+  if (app.id === "stripe") return `The app's webhook comes out of your Stripe account, and new invoices and payments stop showing up here. Nothing already recorded is deleted. ${again}`;
   if (app.category === "Accounting") {
     const keys = app.app_keys ? ` Your ${app.id === "quickbooks" ? "Intuit" : "Zoho"} app's keys stay, so installing it again is one sign-in.` : "";
     return `Syncing stops right away. Nothing already synced is deleted.${keys} ${again}`;
@@ -629,14 +629,14 @@ function uninstallBody(app: AppRow, counts: { calendars: number; teamPlans?: boo
   if (app.id === "meta") {
     const n = app.meta?.scheduled_posts ?? 0;
     const waiting = n ? ` ${n === 1 ? "1 scheduled post won't" : `${n} scheduled posts won't`} go to Facebook or Instagram. Use Post again once you've connected again.` : "";
-    return `Posts stop going to your Page and Instagram, and Crewtavo's access to them is removed at Meta.${waiting} Posts already made stay, and your app's keys stay, so installing it again is one sign-in.`;
+    return `Posts stop going to your Page and Instagram, and the app's access to them is removed at Meta.${waiting} Posts already made stay, and your app's keys stay, so installing it again is one sign-in.`;
   }
-  if (app.id === "abc_supply") return `Estimates stop getting prices from ABC, and your ABC app's keys are removed from Crewtavo. The materials in your price list and the prices already on estimates stay. ${again}`;
-  if (app.id === "lob") return `Postcard campaigns stop, including any being mailed now, and your Lob key is removed from Crewtavo. Cards Lob already made are still mailed. ${again}`;
-  if (app.id === "fal") return `Find paving stops working, and your fal.ai key is removed from Crewtavo. Shapes it already found stay on your drawings. ${again}`;
+  if (app.id === "abc_supply") return `Estimates stop getting prices from ABC, and your ABC app's keys are removed from the app. The materials in your price list and the prices already on estimates stay. ${again}`;
+  if (app.id === "lob") return `Postcard campaigns stop, including any being mailed now, and your Lob key is removed from the app. Cards Lob already made are still mailed. ${again}`;
+  if (app.id === "fal") return `Find paving stops working, and your fal.ai key is removed from the app. Shapes it already found stay on your drawings. ${again}`;
   if (app.category === "AI") {
     const parts = [];
-    if (hasAccount(app)) parts.push(`Your ${app.id === "chatgpt" ? "OpenAI" : "Anthropic"} key is removed, so Crewtavo's AI stops using it.`);
+    if (hasAccount(app)) parts.push(`Your ${app.id === "chatgpt" ? "OpenAI" : "Anthropic"} key is removed, so the app's AI stops using it.`);
     if (app.my_plan) parts.push("Your own ChatGPT plan is signed out.");
     if (counts.teamPlans) parts.push("Everyone else's ChatGPT plan is disconnected too.");
     // The connector is a different thing, and stays.
@@ -644,10 +644,10 @@ function uninstallBody(app: AppRow, counts: { calendars: number; teamPlans?: boo
     return `${parts.join(" ")} ${again}`;
   }
   if (app.id === "square") return `Clients can't pay invoices through Square from here anymore, the webhook is removed from your Square app, and the token is removed. Payments already made stay, here and in Square. ${again}`;
-  if (app.id === "quo") return `Texts stop going out through Quo, Crewtavo's webhook is removed from your Quo workspace, and the key is removed from Crewtavo. Nothing in Quo is deleted. ${again}`;
-  if (app.id === "twilio") return `Texts stop going out from your number, and your Twilio account's keys are removed from Crewtavo. Nothing already sent is deleted, and your Twilio account isn't changed. ${again}`;
+  if (app.id === "quo") return `Texts stop going out through Quo, the app's webhook is removed from your Quo workspace, and the key is removed from the app. Nothing in Quo is deleted. ${again}`;
+  if (app.id === "twilio") return `Texts stop going out from your number, and your Twilio account's keys are removed from the app. Nothing already sent is deleted, and your Twilio account isn't changed. ${again}`;
   if (app.auth === "site") return `Website comes out of the menu. Your website, its editor and everything on it stay as they are. ${again}`;
-  return `Crewtavo stops using it right away. Nothing already here is deleted. ${again}`;
+  return `The app stops using it right away. Nothing already here is deleted. ${again}`;
 }
 
 /** Uninstall's question for Stripe, with the person's password; it's cleared once sent, and a wrong one says so here. */
@@ -664,7 +664,7 @@ function UninstallWithPassword({ app, busy, error, onUninstall, onClose }: { app
         }}
       >
         <div className="muted" style={{ marginTop: -6 }}>{uninstallBody(app, { calendars: 0 })}</div>
-        <Field label="Your Crewtavo password" hint={PASSWORD_HINT}>
+        <Field label="Your password" hint={PASSWORD_HINT}>
           <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" maxLength={200} required autoFocus />
         </Field>
         <FormError error={error} />
@@ -708,7 +708,7 @@ function GoogleBySecretAddress({ app, sources }: { app: AppRow; sources: Calenda
         <summary>Instant updates with Google sign-in</summary>
         <div className="stack-sm small" style={{ marginTop: 10 }}>
           <span>
-            Whoever runs your Crewtavo server can turn on Google sign-in. Then you pick calendars from your account instead of pasting addresses, and visits reach Google within
+            Whoever runs your app server can turn on Google sign-in. Then you pick calendars from your account instead of pasting addresses, and visits reach Google within
             minutes instead of whenever Google next checks. It takes a Google Cloud project, so most businesses don't need it.
           </span>
           <a href={GOOGLE_SIGNIN_GUIDE} target="_blank" rel="noreferrer">Setup guide <Icon name="external" size={12} /></a>
@@ -754,7 +754,7 @@ function NotAvailable({ app }: { app: AppRow }) {
       <Icon name="info" size={20} />
       <div className="grow stack-sm" style={{ gap: 6 }}>
         <span>Not available yet</span>
-        <span style={{ fontWeight: 400 }}>Ask whoever set up Crewtavo to turn on {app.name}.</span>
+        <span style={{ fontWeight: 400 }}>Ask whoever set up the app to turn on {app.name}.</span>
         <details>
           <summary style={{ cursor: "pointer", fontWeight: 400 }}>Setup details</summary>
           <div className="stack-sm small" style={{ gap: 4, marginTop: 6, fontWeight: 400 }}>
@@ -803,7 +803,7 @@ export function KeyCard({ app, onSaved }: { app: AppRow; onSaved: () => void }) 
       {stripeSteps && (
         <>
           <ol className="app-steps">
-            <li>Click <strong>Get a test key</strong> to try it with Stripe's test cards first (no real money), or <strong>Get a key from Stripe</strong> for real payments. Sign in if Stripe asks. A new key named Crewtavo opens with what it needs already set, so leave the list as it is (most of it stays at None).</li>
+            <li>Click <strong>Get a test key</strong> to try it with Stripe's test cards first (no real money), or <strong>Get a key from Stripe</strong> for real payments. Sign in if Stripe asks. A new key named Outdoor Expert app opens with what it needs already set, so leave the list as it is (most of it stays at None).</li>
             <li>Scroll to the bottom of Stripe's page, click <strong>Create key</strong> and enter the code Stripe sends you.</li>
             <li>Copy the key Stripe shows you, then paste it below.</li>
           </ol>
@@ -824,9 +824,9 @@ export function KeyCard({ app, onSaved }: { app: AppRow; onSaved: () => void }) 
           <span className="muted small">About two minutes. fal.ai bills you directly: Find paving costs about half a cent for each thing it looks for, so $5 of credit covers hundreds of lots.</span>
           <ol className="app-steps">
             <li>Click <strong>Get a key from fal.ai</strong> and sign in with Google or GitHub (or make an account).</li>
-            <li>Click <strong>Create Key</strong>, name it Crewtavo, keep the <strong>API</strong> scope, and copy the key. fal.ai only shows it once.</li>
+            <li>Click <strong>Create Key</strong>, name it Outdoor Expert app, keep the <strong>API</strong> scope, and copy the key. fal.ai only shows it once.</li>
             <li>Add a few dollars of credit under <a href={FAL_BILLING} target="_blank" rel="noreferrer">Billing</a>.</li>
-            <li>Paste the key below. Crewtavo checks it with fal.ai before saving, at no cost.</li>
+            <li>Paste the key below. The app checks it with fal.ai before saving, at no cost.</li>
           </ol>
           <a className="btn btn-primary" style={{ justifySelf: "start" }} href={FAL_KEYS} target="_blank" rel="noreferrer">
             <Icon name="external" size={16} />
@@ -836,12 +836,12 @@ export function KeyCard({ app, onSaved }: { app: AppRow; onSaved: () => void }) 
       )}
       {openaiSteps && (
         <>
-          <span className="muted small">For the whole company: everyone's drafts, answers from your guides and receipts use this key, and so does anything Crewtavo drafts by itself. OpenAI bills you directly for what's used.</span>
+          <span className="muted small">For the whole company: everyone's drafts, answers from your guides and receipts use this key, and so does anything the app drafts by itself. OpenAI bills you directly for what's used.</span>
           <ol className="app-steps">
             <li>Click <strong>Get a key from OpenAI</strong> and sign in to OpenAI's API platform (it's separate from a ChatGPT plan).</li>
-            <li>Click <strong>Create new secret key</strong>, name it Crewtavo, and copy the key. OpenAI only shows it once.</li>
+            <li>Click <strong>Create new secret key</strong>, name it Outdoor Expert app, and copy the key. OpenAI only shows it once.</li>
             <li>Add credit under <a href={OPENAI_BILLING} target="_blank" rel="noreferrer">Billing</a> if the account has none.</li>
-            <li>Paste the key below. Crewtavo checks it with OpenAI before saving, at no cost.</li>
+            <li>Paste the key below. The app checks it with OpenAI before saving, at no cost.</li>
           </ol>
           <a className="btn btn-primary" style={{ justifySelf: "start" }} href={OPENAI_KEYS} target="_blank" rel="noreferrer">
             <Icon name="external" size={16} />
@@ -850,10 +850,10 @@ export function KeyCard({ app, onSaved }: { app: AppRow; onSaved: () => void }) 
         </>
       )}
       <span className="muted small">
-        {app.id === "anthropic" ? "Crewtavo's writing help, answers from your guides and receipt reading use this key when you add one. " : null}
-        {openai && !openaiSteps ? <>Crewtavo's writing help, answers from your guides and receipt reading use this key. <a href={OPENAI_BILLING} target="_blank" rel="noreferrer">Check your OpenAI credit</a>. </> : null}
+        {app.id === "anthropic" ? "The app's writing help, answers from your guides and receipt reading use this key when you add one. " : null}
+        {openai && !openaiSteps ? <>The app's writing help, answers from your guides and receipt reading use this key. <a href={OPENAI_BILLING} target="_blank" rel="noreferrer">Check your OpenAI credit</a>. </> : null}
         {fal && !falSteps ? <>Find paving is on the measuring map, next to the takeoff items. <a href={FAL_BILLING} target="_blank" rel="noreferrer">Check your fal.ai credit</a>. </> : null}
-        {stripe ? "Crewtavo adds the webhook it needs to your Stripe account. " : null}
+        {stripe ? "The app adds the webhook it needs to your Stripe account. " : null}
         {app.status === "connected" && app.account_label && (!stripe || app.stripe?.own) ? `Saved: ${app.account_label}.` : "It's stored encrypted and never shown again."}
         {stripe && app.stripe?.own ? <> To switch keys, <a href={STRIPE_NEW_KEY} target="_blank" rel="noreferrer">get a new one from Stripe</a>.</> : null}
       </span>
@@ -870,7 +870,7 @@ export function KeyCard({ app, onSaved }: { app: AppRow; onSaved: () => void }) 
         )}
         {stripe && (
           <>
-            <Field label="Your Crewtavo password" hint={PASSWORD_HINT}>
+            <Field label="Your password" hint={PASSWORD_HINT}>
               <input className="input" type="password" value={password} onChange={(e) => { setPassword(e.target.value); save.reset(); }} autoComplete="current-password" maxLength={200} />
             </Field>
             {/* Owners hear about Stripe changes by email too, once the company's email or the server's is set up. */}

@@ -75,7 +75,7 @@ export async function setComparison(env: Env, admin: Db, companyId: string, user
   }
   const { data: company, error: failed } = await admin.from("companies").select("settings").eq("id", companyId).maybeSingle();
   if (failed || !company) throw new HttpError(404, "Company not found.");
-  if (!marketingOn(company.settings as Record<string, unknown> | null)) throw new HttpError(409, "Install Marketing - Crewtavo first.");
+  if (!marketingOn(company.settings as Record<string, unknown> | null)) throw new HttpError(409, "Install Marketing first.");
   if (!hasBrowserKey(env, company.settings)) throw new HttpError(400, NO_KEY);
   const { error } = await admin.from("review_comparisons").upsert({ company_id: companyId, enabled: true, enabled_by: userId });
   if (error) throw dbError(error);

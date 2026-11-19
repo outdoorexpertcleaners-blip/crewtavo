@@ -1287,7 +1287,7 @@ describe("automation runs", () => {
       memberships,
       { "role-clerk": ["automations"] },
     );
-    const mailing = { ...env, RESEND_API_KEY: "re_test", EMAIL_FROM: "Crewtavo <hi@crewtavo.test>" };
+    const mailing = { ...env, RESEND_API_KEY: "re_test", EMAIL_FROM: "The app <hi@crewtavo.test>" };
     expect(await processAutomations(mailing, { limit: 50, baseUrl: "https://app.test" })).toMatchObject({ done: 1 });
     expect(rpcs.find((r) => r.fn === "finish_automation_run")!.args.p_result.map((r: { ok: boolean }) => r.ok)).toEqual([true, true, true]);
 
@@ -1403,7 +1403,7 @@ describe("automation runs", () => {
       return Response.json({ id: "email-1" });
     });
     sentRun("invoice", [{ type: "send_email", subject: "Invoice #{{number}}", body: "Pay it here: {{link}}" }]);
-    const mailing = { ...env, RESEND_API_KEY: "re_test", EMAIL_FROM: "Crewtavo <hi@crewtavo.test>" };
+    const mailing = { ...env, RESEND_API_KEY: "re_test", EMAIL_FROM: "The app <hi@crewtavo.test>" };
     expect(await processAutomations(mailing, { limit: 50, baseUrl: "https://app.test" })).toMatchObject({ done: 1 });
     expect(sent).toHaveLength(1);
     const own = await readClientLink(env, tokenOf(sent[0]!.text));
@@ -1422,7 +1422,7 @@ describe("automation runs", () => {
       { id: "contact-2", name: "Sam Spouse", email: "sam@example.com", phone: null, notify_email: false, notify_sms: false },
     ];
     const { queries, rpcs } = sentRun("invoice", [{ type: "send_email", subject: "Invoice #{{number}}", body: "Pay it here: {{link}}" }], { client_contacts });
-    const mailing = { ...env, RESEND_API_KEY: "re_test", EMAIL_FROM: "Crewtavo <hi@crewtavo.test>" };
+    const mailing = { ...env, RESEND_API_KEY: "re_test", EMAIL_FROM: "The app <hi@crewtavo.test>" };
     expect(await processAutomations(mailing, { limit: 50, baseUrl: "https://app.test" })).toMatchObject({ done: 1 });
     expect(sent.map((m) => m.to)).toEqual([["pat@example.com"], ["mo@example.com"]]);
     // Only the client's own address carries the link that can agree to autopay or tip on their card.

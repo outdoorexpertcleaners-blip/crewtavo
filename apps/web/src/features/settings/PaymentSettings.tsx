@@ -161,7 +161,7 @@ export function PaymentSettings() {
           </Check>
           <Check ok={s.can_autopay} title="A key that can save cards">
             {s.can_autopay ? `It can save cards and charge them${s.can_refund ? ", and make refunds" : ""}.` : s.own ? <Link to="/apps/stripe">Update your Stripe key to turn on autopay</Link> : "Comes with your own Stripe account."}
-            {s.own && !s.webhook_current && <span style={{ display: "block", color: "var(--danger)" }}>Stripe isn't sending Crewtavo every update it needs. Connect the key again on the Apps page.</span>}
+            {s.own && !s.webhook_current && <span style={{ display: "block", color: "var(--danger)" }}>Stripe isn't sending the app every update it needs. Connect the key again on the Apps page.</span>}
           </Check>
           <Check ok={null} title="Stripe's own emails off">In Stripe, turn off emails about failed payments and receipts, so clients don't get two.</Check>
         </div>

@@ -20,7 +20,7 @@ vi.mock("@hono/node-server", async (importOriginal) => {
 
 let port = 0;
 const web = mkdtempSync(join(tmpdir(), "crewtavo-web-"));
-writeFileSync(join(web, "index.html"), "<!doctype html><title>Crewtavo</title>");
+writeFileSync(join(web, "index.html"), "<!doctype html><title>The app</title>");
 
 beforeAll(async () => {
   port = await new Promise<number>((resolve) => {

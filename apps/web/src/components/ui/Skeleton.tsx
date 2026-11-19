@@ -122,7 +122,7 @@ export function DetailSkeleton() {
 export function ShellSkeleton() {
   return (
     <div className="shell skeleton-wrap" role="status" aria-busy="true">
-      <span className="sr-only">{t("Loading Crewtavo…")}</span>
+      <span className="sr-only">{t("Loading the app…")}</span>
       <aside className="sidebar" aria-hidden="true">
         <div className="row" style={{ margin: "0 0 14px 6px" }}><Skeleton width={34} height={34} radius={8} /><Skeleton width={100} height={14} /></div>
         {Array.from({ length: 11 }, (_, i) => (

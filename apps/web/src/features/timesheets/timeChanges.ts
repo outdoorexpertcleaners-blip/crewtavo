@@ -63,7 +63,7 @@ export function changedBy(change: Pick<TimeChange, "changed_by" | "source">, me:
   const who = change.changed_by ? name(change.changed_by) : null;
   switch (change.source) {
     case "person":
-      return mine ? t("You") : (who ?? "Crewtavo");
+      return mine ? t("You") : (who ?? t("The app"));
     case "assistant":
       return mine ? t("Your AI assistant") : who ? t("{name}'s AI assistant", { name: who }) : t("An AI assistant");
     case "geofence":
@@ -73,11 +73,11 @@ export function changedBy(change: Pick<TimeChange, "changed_by" | "source">, me:
     case "next_clock":
       return t("Another clock started");
     case "auto_stop":
-      return t("Crewtavo, because the clock was left running");
+      return t("The app, because the clock was left running");
     case "sub_off_clock":
-      return t("Crewtavo, on being taken off the clock");
+      return t("The app, on being taken off the clock");
     default:
-      return "Crewtavo";
+      return t("The app");
   }
 }
 
@@ -85,7 +85,7 @@ export function changedBy(change: Pick<TimeChange, "changed_by" | "source">, me:
 export function editNote(change: Pick<TimeChange, "action" | "changed_by" | "source">, me: string, name: (id: string) => string): string {
   const person = change.source === "person" || change.source === "assistant";
   if (person && change.source === "person" && change.changed_by === me) return change.action === "added" ? t("You added this") : change.action === "deleted" ? t("You deleted this") : t("You changed this");
-  const who = person ? changedBy(change, me, name) : "Crewtavo";
+  const who = person ? changedBy(change, me, name) : t("the app");
   return change.action === "added" ? t("Added by {who}", { who }) : change.action === "deleted" ? t("Deleted by {who}", { who }) : t("Changed by {who}", { who });
 }
 

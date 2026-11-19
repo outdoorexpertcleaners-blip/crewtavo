@@ -57,7 +57,7 @@ function railway(call: Call, project: Project): Response {
   if (query.includes("project(id")) {
     return data({
       project: {
-        name: "Crewtavo",
+        name: "The app",
         subscriptionType: project.plan === undefined ? "hobby" : project.plan,
         createdAt: "2026-09-01T00:00:00Z",
         services: { edges: [{ node: { id: "svc-crewtavo", name: "crewtavo" } }, { node: { id: "svc-storage", name: "storage" } }] },
@@ -235,8 +235,8 @@ describe("warnings as storage fills", () => {
     expect(await checkStorage(offRailway, adminClient(offRailway), NOW)).toEqual({ companies: 1, sent: 1, cleared: 0 });
     // Under the "hosting" topic everywhere (emailed unless turned off; "Storage" in Settings → Profile off Railway).
     expect(co.sent()).toEqual([
-      { company_id: CO, user_id: OWNER, kind: "hosting", title: "Crewtavo's storage is 85% full", body: expect.stringContaining("38.3 GB of the 45 GB limit is used"), link: "/settings?tab=storage" },
-      expect.objectContaining({ user_id: ADMIN, title: "Crewtavo's storage is 85% full" }),
+      { company_id: CO, user_id: OWNER, kind: "hosting", title: "The app's storage is 85% full", body: expect.stringContaining("38.3 GB of the 45 GB limit is used"), link: "/settings?tab=storage" },
+      expect.objectContaining({ user_id: ADMIN, title: "The app's storage is 85% full" }),
     ]);
     // Asked about the company alone: its numbers don't depend on a person.
     expect(co.calls.find((c) => c.path === "rpc/storage_snapshot")?.body).toEqual({ p_company: CO, p_user: "00000000-0000-0000-0000-000000000000" });
@@ -250,7 +250,7 @@ describe("warnings as storage fills", () => {
   it("tells them again at 95%", async () => {
     const co = company({ used: 43 * GB, limit: 45 * GB }, { "80": "2026-10-20T00:00:00.000Z" });
     await checkStorage(offRailway, adminClient(offRailway), NOW);
-    expect(co.sent().map((n: { title: string }) => n.title)).toEqual(["Crewtavo's storage is almost full (95%)", "Crewtavo's storage is almost full (95%)"]);
+    expect(co.sent().map((n: { title: string }) => n.title)).toEqual(["The app's storage is almost full (95%)", "The app's storage is almost full (95%)"]);
     expect((co.settings().storage as { warned: unknown }).warned).toEqual({ "80": "2026-10-20T00:00:00.000Z", "95": NOW.toISOString() });
   });
 
@@ -258,7 +258,7 @@ describe("warnings as storage fills", () => {
     const co = company({ used: 44 * GB, limit: 45 * GB });
     expect(await checkStorage(offRailway, adminClient(offRailway), NOW)).toMatchObject({ sent: 1 });
     expect(co.sent()).toHaveLength(2);
-    expect(co.sent()[0].title).toBe("Crewtavo's storage is almost full (97%)");
+    expect(co.sent()[0].title).toBe("The app's storage is almost full (97%)");
     expect((co.settings().storage as { warned: unknown }).warned).toEqual({ "80": NOW.toISOString(), "95": NOW.toISOString() });
   });
 
@@ -284,9 +284,9 @@ describe("warnings as storage fills", () => {
   it("says it's full, not almost, once it's at the limit or over it", async () => {
     const co = company({ used: 42 * GB, limit: 40 * GB });
     await checkStorage(offRailway, adminClient(offRailway), NOW);
-    expect(co.sent()[0]).toMatchObject({ title: "Crewtavo's storage is full", body: expect.stringContaining("42 GB of the 40 GB limit is used, counting the Trash. New files in Drive, plans, guides and chat are being turned away until there's room.") });
-    expect(storageWarning(0.95, 40 * GB, 40 * GB).title).toBe("Crewtavo's storage is full");
-    expect(storageWarning(0.95, 39 * GB, 40 * GB)).toMatchObject({ title: "Crewtavo's storage is almost full (97%)", body: expect.stringContaining("When it's full, nobody can add files") });
+    expect(co.sent()[0]).toMatchObject({ title: "The app's storage is full", body: expect.stringContaining("42 GB of the 40 GB limit is used, counting the Trash. New files in Drive, plans, guides and chat are being turned away until there's room.") });
+    expect(storageWarning(0.95, 40 * GB, 40 * GB).title).toBe("The app's storage is full");
+    expect(storageWarning(0.95, 39 * GB, 40 * GB)).toMatchObject({ title: "The app's storage is almost full (97%)", body: expect.stringContaining("When it's full, nobody can add files") });
   });
 
   it("says what to do, and that crews can keep working", () => {

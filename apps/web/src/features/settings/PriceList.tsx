@@ -223,7 +223,7 @@ function PictureCell({ service, canEdit }: { service: { id: string; name: string
   const set = useMutation({
     mutationFn: async (file: File) => {
       const jpeg = await packagePicture(file);
-      if (!jpeg) throw new Error("Crewtavo can't open that picture here. Try a JPEG or PNG.");
+      if (!jpeg) throw new Error("The app can't open that picture here. Try a JPEG or PNG.");
       return api.put<{ path: string; width: number; height: number }>(`/services/${service.id}/picture`, { picture: await base64Of(jpeg) });
     },
     onSuccess: saved,

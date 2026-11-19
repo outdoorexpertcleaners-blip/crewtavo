@@ -351,7 +351,7 @@ export function SessionProvider({ children, requireCompany = true }: { children:
     return (
       <SetupGate>
         <Centered>
-          <ErrorState title={t("Can't reach Crewtavo")} error={config.error} onRetry={() => config.refetch()} />
+          <ErrorState title={t("Can't reach the app")} error={config.error} onRetry={() => config.refetch()} />
         </Centered>
       </SetupGate>
     );

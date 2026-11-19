@@ -48,7 +48,7 @@ export function RouteError({ fullPage }: { fullPage?: boolean }) {
     return <Wrap fullPage={fullPage} icon="search" title={t("Page not found")} body={t("That page doesn't exist or was moved.")} />;
   }
   if (staleBuild) {
-    return <Wrap fullPage={fullPage} icon="alert" title={t("Crewtavo was updated")} body={t("Reload to get the latest version.")} />;
+    return <Wrap fullPage={fullPage} icon="alert" title={t("The app was updated")} body={t("Reload to get the latest version.")} />;
   }
   // Something the app threw for people to read ("Still loading. Try again in a moment.") can just say so.
   const readable = error instanceof Error && Boolean(message) && !looksTechnical(message);

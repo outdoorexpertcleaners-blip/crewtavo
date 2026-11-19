@@ -61,7 +61,7 @@ export function buildCalendar(name: string, events: IcsEvent[]): string {
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Crewtavo//Schedule//EN",
+    "PRODID:-//Outdoor Expert//Schedule//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     `X-WR-CALNAME:${escape(name)}`,

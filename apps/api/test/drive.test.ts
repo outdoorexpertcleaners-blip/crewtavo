@@ -218,7 +218,7 @@ describe("importing from Google Drive", () => {
     const requests = google({});
     const res = await post("/drive/import", { accessToken: TOKEN, files: [{ id: "f1" }], target: { folder_id: FORMS } }, { ...env, GOOGLE_PICKER_API_KEY: undefined });
     expect(res.status).toBe(501);
-    expect((await res.json()).error).toBe("Importing from Google Drive isn't turned on yet. Ask whoever set up Crewtavo to add it.");
+    expect((await res.json()).error).toBe("Importing from Google Drive isn't turned on yet. Ask whoever set up the app to add it.");
     expect(requests).toEqual([]);
     expect(db.uploads).toEqual([]);
   });
@@ -306,10 +306,10 @@ describe("importing from Google Drive", () => {
       { name: "folder.name", reason: "Jobs 2026 is a folder. Open it and choose the files in it." },
       { name: "form.name", reason: "Survey is a kind of Google file that can't be downloaded." },
       { name: "locked.name", reason: "The owner of Contract.pdf doesn't allow downloading it." },
-      { name: "huge.name", reason: "Survey scan.pdf is larger than 200 MB, the most Crewtavo takes." },
+      { name: "huge.name", reason: "Survey scan.pdf is larger than 200 MB, the most the app takes." },
       { name: "bigdoc.name", reason: "Manual is too large for Google to convert (over 10 MB). Download it from Google Drive, then upload it here." },
       { name: "empty.name", reason: "Blank.pdf is empty." },
-      { name: "gone.name", reason: "Google Drive didn't let Crewtavo open gone.name. Choose it again." },
+      { name: "gone.name", reason: "Google Drive didn't let the app open gone.name. Choose it again." },
     ]);
     expect(db.uploads).toEqual([]);
     expect(db.find("user", "plan_files", "insert")).toEqual([]);
@@ -340,7 +340,7 @@ describe("importing from Google Drive", () => {
     const db = office({ storage: { upload: () => ({ message: "The object exceeded the maximum allowed size", statusCode: "413" }) } });
     google({ "pdf-1": pdf("pdf-1", "Bid set.pdf") });
     const body = await (await post("/drive/import", { accessToken: TOKEN, files: [{ id: "pdf-1" }], target: { folder_id: FORMS } })).json();
-    expect(body.skipped).toEqual([{ name: "That file", reason: "Bid set.pdf is larger than this Crewtavo's storage takes." }]);
+    expect(body.skipped).toEqual([{ name: "That file", reason: "Bid set.pdf is larger than this app's storage takes." }]);
     expect(db.find("user", "plan_files", "insert")).toEqual([]);
   });
 
@@ -390,7 +390,7 @@ describe("importing from Google Drive", () => {
     try {
       google({ "pdf-1": pdf("pdf-1", "One.pdf"), "pdf-2": pdf("pdf-2", "Two.pdf") });
       const body = await (await post("/drive/import", { accessToken: TOKEN, files: [{ id: "pdf-1", name: "One.pdf" }, { id: "pdf-2", name: "Two.pdf" }], target: { folder_id: FORMS } })).json();
-      expect(body.skipped).toEqual([{ name: "One.pdf", reason: "Crewtavo couldn't store One.pdf. Try again in a minute." }]);
+      expect(body.skipped).toEqual([{ name: "One.pdf", reason: "The app couldn't store One.pdf. Try again in a minute." }]);
       expect(body.files).toHaveLength(1);
       expect(db.uploads).toHaveLength(1);
     } finally {

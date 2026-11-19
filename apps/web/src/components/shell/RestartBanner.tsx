@@ -128,13 +128,13 @@ export function RestartBanner() {
       {back ? (
         <>
           <Icon name="check" size={16} strokeWidth={2} />
-          {t("Crewtavo is back")}
+          {t("The app is back")}
         </>
       ) : (
         <>
           <Spinner size={14} />
           <span>
-            {t("Crewtavo is restarting.")} <span aria-hidden="true">{trying ? t("Trying again…") : t("Trying again in {seconds}s", { seconds })}</span>
+            {t("The app is restarting.")} <span aria-hidden="true">{trying ? t("Trying again…") : t("Trying again in {seconds}s", { seconds })}</span>
             <span className="sr-only">{t("It tries again by itself.")}</span>
           </span>
           {/* While it tries it ignores presses but keeps focus (aria-disabled, not disabled). */}

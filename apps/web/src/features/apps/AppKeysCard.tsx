@@ -145,7 +145,7 @@ function IntuitSteps({ app }: { app: AppRow }) {
   return (
     <ol className="app-steps" style={{ gap: 14 }}>
       <li><div className="stack-sm" style={{ gap: 8 }}>
-        <span>Sign in to Intuit Developer with your Intuit account, then create an app for <strong>QuickBooks Online</strong>. Name it Crewtavo and give it the <strong>Accounting</strong> permission.</span>
+        <span>Sign in to Intuit Developer with your Intuit account, then create an app for <strong>QuickBooks Online</strong>. Name it Outdoor Expert app and give it the <strong>Accounting</strong> permission.</span>
         <a className="btn btn-sm" style={{ justifySelf: "start" }} href={INTUIT_DEVELOPER} target="_blank" rel="noreferrer">Open Intuit Developer <Icon name="external" size={12} /></a>
       </div></li>
       <li><div className="stack-sm" style={{ gap: 8 }}>
@@ -172,7 +172,7 @@ export function GoogleSteps({ app }: { app: AppRow }) {
   return (
     <ol className="app-steps" style={{ gap: 14 }}>
       <li><div className="stack-sm" style={{ gap: 8 }}>
-        <span>In Google Cloud, create a project for Crewtavo, signed in with a Google account that manages your Business Profile.</span>
+        <span>In Google Cloud, create a project for the app, signed in with a Google account that manages your Business Profile.</span>
         <a className="btn btn-sm" style={{ justifySelf: "start" }} href={GOOGLE_CLOUD} target="_blank" rel="noreferrer">Open Google Cloud <Icon name="external" size={12} /></a>
       </div></li>
       <li><div className="stack-sm" style={{ gap: 8 }}>
@@ -256,7 +256,7 @@ export function MetaSteps({ app }: { app: AppRow }) {
       </div></li>
       <li>Under <strong>App settings → Basic</strong>, copy the <strong>App ID</strong> and the <strong>App secret</strong> (click <strong>Show</strong>), and paste them below. Fill in the <strong>Privacy policy URL</strong> and the <strong>User data deletion</strong> instructions URL there too, with the same privacy page.</li>
       <li>Save the keys, then sign in with Facebook and pick your Page and its Instagram account.</li>
-      <li>Switch the app to <strong>Live</strong> with the <strong>App mode</strong> switch at the top of the dashboard. Until it's Live, only you can see the posts. Meta's API can't tell Crewtavo when it's Live, so tick the box once you've switched it.</li>
+      <li>Switch the app to <strong>Live</strong> with the <strong>App mode</strong> switch at the top of the dashboard. Until it's Live, only you can see the posts. Meta's API can't tell the app when it's Live, so tick the box once you've switched it.</li>
     </ol>
   );
 }
@@ -306,7 +306,7 @@ function KeysForm({ app, initial, onSaved, onCancel }: { app: AppRow; initial: N
           </div></li>
           <li><div className="stack-sm" style={{ gap: 8 }}>
             <span>Fill it in with these, then click <strong>Create</strong>:</span>
-            <CopyRow label="Client Name" value="Crewtavo" />
+            <CopyRow label="Client Name" value="Outdoor Expert app" />
             <CopyRow label="Homepage URL" value={origin} />
             {app.redirect_uri && <CopyRow label="Authorized Redirect URIs" value={app.redirect_uri} />}
           </div></li>
@@ -335,7 +335,7 @@ function KeysForm({ app, initial, onSaved, onCancel }: { app: AppRow; initial: N
         <details className="app-details" open={Boolean(initial?.config_id) || undefined}>
           <summary className="small">More options</summary>
           <div style={{ marginTop: 10 }}>
-            <Field label="Configuration ID" optional hint="Only if you made a Facebook Login for Business configuration. Leave it empty and Crewtavo asks for the permissions itself.">
+            <Field label="Configuration ID" optional hint="Only if you made a Facebook Login for Business configuration. Leave it empty and the app asks for the permissions itself.">
               <input className="input" autoComplete="off" spellCheck={false} inputMode="numeric" value={configId} onChange={(e) => { setConfigId(e.target.value); save.reset(); }} />
             </Field>
           </div>

@@ -78,7 +78,7 @@ function ConnectForm({ app, changing, optional, onSaved, onCancel }: { app: AppR
         </li>
         <li>On the console's first page, under <strong>Account Info</strong>, copy the <strong>Account SID</strong> and the <strong>Auth Token</strong> (click the eye to show it).</li>
         <li>Copy your number from <a href={TWILIO_NUMBERS} target="_blank" rel="noreferrer">Phone Numbers → Active numbers</a>.</li>
-        <li>Paste all three here. Crewtavo checks them with Twilio before saving, at no cost.</li>
+        <li>Paste all three here. The app checks them with Twilio before saving, at no cost.</li>
       </ol>
       <form className="stack-sm" onSubmit={(e: FormEvent) => { e.preventDefault(); save.mutate(); }}>
         <div className="form-grid">
@@ -108,7 +108,7 @@ function ConnectForm({ app, changing, optional, onSaved, onCancel }: { app: AppR
 
 function Connected({ app, state, onChanged, onChange }: { app: AppRow; state: TwilioState; onChanged: () => void; onChange: () => void }) {
   const point = useMutation({
-    meta: { inline: true, success: "Incoming texts now come to Crewtavo" },
+    meta: { inline: true, success: "Incoming texts now come to the app" },
     mutationFn: () => api.post(`/apps/${app.id}/webhook`),
     onSuccess: onChanged,
   });
@@ -140,7 +140,7 @@ function Connected({ app, state, onChanged, onChange }: { app: AppRow; state: Tw
                 <Button variant="primary" loading={point.isPending} onClick={() => point.mutate()}>Set it up for me</Button>
               </div>
             ) : (
-              <span className="small" style={{ color: "var(--warning)", fontWeight: 600 }}>Twilio can only reach a public https address, and this Crewtavo doesn't have one yet. Texts still go out.</span>
+              <span className="small" style={{ color: "var(--warning)", fontWeight: 600 }}>Twilio can only reach a public https address, and this app doesn't have one yet. Texts still go out.</span>
             )}
             <FormError error={point.error} />
           </>

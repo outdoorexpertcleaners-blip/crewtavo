@@ -9,7 +9,7 @@ import { describe, expect, it, vi } from "vitest";
 import { previewOf, previewTags, showcasePage, withPreview, type ShowcasePreview } from "../src/lib/showcaseTags";
 
 const TOKEN = "0123456789abcdef0123456789abcdef";
-const INDEX = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Crewtavo</title></head><body><div id="root"></div><script type="module" src="/assets/index-abc.js"></script></body></html>';
+const INDEX = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>The app</title></head><body><div id="root"></div><script type="module" src="/assets/index-abc.js"></script></body></html>';
 /** What GET /api/public/showcases/<token> answers. */
 const page = {
   company: { name: "Sketchy Gutters", phone: "(540) 555-0100", website: null, logo: null, color: "#225588" },

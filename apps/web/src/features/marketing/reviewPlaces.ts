@@ -59,7 +59,7 @@ type GoogleError = { error?: { message?: string; status?: string; details?: Arra
 /** Google's refusal as a sentence saying what to fix, or null when it isn't one of the refusals known here. */
 export function placesProblem(status: number, error?: GoogleError["error"]): string | null {
   const text = `${error?.status ?? ""} ${error?.message ?? ""} ${(error?.details ?? []).map((d) => d.reason ?? "").join(" ")}`;
-  const here = typeof location === "undefined" ? "this Crewtavo's address" : location.origin;
+  const here = typeof location === "undefined" ? "this app's address" : location.origin;
   if (/API_KEY_INVALID|API key not valid|API key expired/i.test(text)) return "Google didn't accept the key. Check the Google key in Settings → Maps.";
   if (/REFERRER_BLOCKED|referer|referrer/i.test(text)) return `The Google key is limited to other websites. In Google Cloud, add ${here} to the key's website restrictions.`;
   if (/IP_ADDRESS_BLOCKED|IP address|ANDROID_APP_BLOCKED|IOS_APP_BLOCKED/i.test(text)) return "The Google key is limited to a server or a phone app, so a web page can't use it. In Google Cloud, limit it to websites instead, or use a key that is.";

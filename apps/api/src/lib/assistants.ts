@@ -23,8 +23,8 @@ import { bearerToken } from "./auth";
 import { dbError } from "./http";
 import { userClient, type Db } from "./supabase";
 
-export const ASSISTANT_READ_ONLY = "This assistant can only read. To let it make changes, choose what it can change in Crewtavo, under Settings → AI assistants.";
-export const ASSISTANT_NO_API = "An AI assistant can't make changes through Crewtavo's API. It changes things with its Crewtavo tools, as far as it's been allowed in Settings → AI assistants.";
+export const ASSISTANT_READ_ONLY = "This assistant can only read. To let it make changes, choose what it can change in the app, under Settings → AI assistants.";
+export const ASSISTANT_NO_API = "An AI assistant can't make changes through the app's API. It changes things with its own tools in the app, as far as it's been allowed in Settings → AI assistants.";
 /** Assistants work for a business's own team: never with a sub's sign-in (mcp.ts, guardConsent). */
 export const NO_ASSISTANTS_FOR_SUBS = "AI assistants are for a business's own team. A subcontractor's sign-in can't use one.";
 
@@ -71,10 +71,10 @@ export interface CompanySwitch {
 
 /** What an assistant is told while its business has assistants turned off. */
 export const assistantsOff = (company: string | null) =>
-  `AI assistants are turned off for ${company || "this business"}. An owner or admin can turn them on in Crewtavo, under Settings → AI assistants.`;
+  `AI assistants are turned off for ${company || "this business"}. An owner or admin can turn them on in the app, under Settings → AI assistants.`;
 /** And while the business only lets them look things up. */
 export const assistantsLookOnly = (company: string | null) =>
-  `Assistants can only look things up for ${company || "this business"}, not make changes. An owner or admin can change this in Crewtavo, under Settings → AI assistants.`;
+  `Assistants can only look things up for ${company || "this business"}, not make changes. An owner or admin can change this in the app, under Settings → AI assistants.`;
 
 /**
  * The switch for the person whose token `db` carries. On when it can't be asked (the token isn't
@@ -150,7 +150,7 @@ export async function guardAssistant(env: Env, request: Request, prefix: string,
   if (prefix === "/auth/v1") {
     if (isRead(request.method) || OAUTH_CLIENT_PATHS.includes(path)) return send(request);
     return Response.json(
-      { code: 403, error_code: "assistant_not_allowed", msg: "An AI assistant can't change your sign-in. Do that in Crewtavo itself." },
+      { code: 403, error_code: "assistant_not_allowed", msg: "An AI assistant can't change your sign-in. Do that in the app itself." },
       { status: 403 },
     );
   }

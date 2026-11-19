@@ -12,13 +12,13 @@ export const KEY_FILE_NAME = "crewtavo-key-file.txt";
 
 export function keyFileText({ email, address, made, keys }: { email: string; address: string; made: Date; keys: string[] }): string {
   return [
-    "Crewtavo key file",
+    "Key file",
     "",
     `Account: ${email}`,
-    `Crewtavo: ${address}`,
+    `Address: ${address}`,
     `Made: ${made.toLocaleDateString()}`,
     "",
-    "Forgot your password? On the Crewtavo sign-in page, choose Forgot password, then",
+    "Forgot your password? On the sign-in page, choose Forgot password, then",
     '"I\'m the owner: use my key file", and upload this file. Each key in it works once.',
     "",
     "Keep this file safe. Anyone who has it can get into your account.",

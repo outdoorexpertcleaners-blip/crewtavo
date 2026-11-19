@@ -77,7 +77,7 @@ export function ImportClientsDialog({ onClose }: { onClose: () => void }) {
       if (r.stopped) toast.info(`Import stopped after ${r.created} new ${r.created === 1 ? "client" : "clients"}`, { description: "Import the file again to add the rest. Clients already in aren't added twice." });
       else {
         toast.success(`Imported ${r.created} new ${r.created === 1 ? "client" : "clients"} and ${r.properties} ${r.properties === 1 ? "property" : "properties"}`, {
-          description: r.matched ? `${r.matched} ${r.matched === 1 ? "was" : "were"} already in Crewtavo; new properties were added to them${r.statuses ? `, and ${r.statuses} got the file's status` : ""}.` : undefined,
+          description: r.matched ? `${r.matched} ${r.matched === 1 ? "was" : "were"} already in the app; new properties were added to them${r.statuses ? `, and ${r.statuses} got the file's status` : ""}.` : undefined,
         });
       }
       onClose();
@@ -157,7 +157,7 @@ export function ImportClientsDialog({ onClose }: { onClose: () => void }) {
               </table>
             </div>
             <p className="muted small" style={{ margin: 0 }}>
-              {clients.length} {clients.length === 1 ? "client" : "clients"} with {propertyCount} {propertyCount === 1 ? "property" : "properties"}. Rows without a name are skipped; clients already in Crewtavo get any new properties, and the file's status, instead of a duplicate. A status column says who's active: Inactive or Former clients come in archived.
+              {clients.length} {clients.length === 1 ? "client" : "clients"} with {propertyCount} {propertyCount === 1 ? "property" : "properties"}. Rows without a name are skipped; clients already in the app get any new properties, and the file's status, instead of a duplicate. A status column says who's active: Inactive or Former clients come in archived.
             </p>
             {run.isPending && (
               <>

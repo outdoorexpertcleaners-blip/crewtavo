@@ -22,9 +22,12 @@ export { LICENSE_TEXT, NOTICE_TEXT, TERMS_TEXT, TERMS_VERSION };
 
 /**
  * Where this version's source code is. The AGPL asks anyone running a modified Crewtavo for others to
- * offer them its source (section 13): a modified version points this at its own.
+ * offer them its source (section 13): this is Outdoor Expert's modified version, so it points at its own.
  */
-export const SOURCE_URL = "https://github.com/jviars/crewtavo";
+export const SOURCE_URL = "https://github.com/outdoorexpertcleaners-blip/crewtavo";
+
+/** The original Crewtavo this version is based on. */
+export const ORIGINAL_SOURCE_URL = "https://github.com/jviars/crewtavo";
 
 /**
  * TERMS and NOTICE are wrapped at 100 characters for reading as files. Joins each paragraph's
@@ -41,10 +44,10 @@ function flow(text: string) {
 }
 
 const POINTS: Array<{ icon: IconName; text: string }> = [
-  { icon: "info", text: "Crewtavo is free and open source, provided as is, with no warranty of any kind." },
+  { icon: "info", text: "This app is based on Crewtavo, which is free and open source, provided as is, with no warranty of any kind." },
   { icon: "lock", text: "You run it on accounts you own, so you're responsible for your data, your backups and keeping it secure." },
   { icon: "users", text: "Your customers deal with your business. You handle their questions, complaints, refunds and claims." },
-  { icon: "alert", text: "The people who make Crewtavo aren't liable for lost or exposed data, for mistakes, or for anything done with it, and you cover them if a claim about your Crewtavo is made against them." },
+  { icon: "alert", text: "The people who make Crewtavo aren't liable for lost or exposed data, for mistakes, or for anything done with it, and you cover them if a claim about your copy of the app is made against them." },
   { icon: "check", text: "Check quotes, invoices, payments, pay and taxes before you rely on them. AI answers and map measurements can be wrong." },
   { icon: "book", text: "You follow the laws that apply to your business, such as privacy, texting, tax and labor laws." },
 ];
@@ -76,11 +79,11 @@ export function LicenseNotice() {
   return (
     <div className="stack-sm" style={{ gap: 10 }}>
       <span className="muted small">
-        Copyright (C) 2026 Joshua Viars. Crewtavo is free software under the GNU Affero General Public License, version 3, with the additional terms in its notice, and comes with no warranty. <a href={SOURCE_URL} target="_blank" rel="noopener noreferrer">Source code</a>
+        This app is a modified version based on Crewtavo by Joshua Viars. Copyright (C) 2026 Joshua Viars. Crewtavo is free software under the GNU Affero General Public License, version 3, with the additional terms in its notice, and comes with no warranty. <a href={SOURCE_URL} target="_blank" rel="noopener noreferrer">Source code</a> of this version · <a href={ORIGINAL_SOURCE_URL} target="_blank" rel="noopener noreferrer">the original Crewtavo</a>
       </span>
       <details className="more-options">
         <summary>Read the notice and additional terms</summary>
-        <pre className={styles.text} tabIndex={0} aria-label="Crewtavo notice">{flow(NOTICE_TEXT)}</pre>
+        <pre className={styles.text} tabIndex={0} aria-label="Notice and additional terms">{flow(NOTICE_TEXT)}</pre>
       </details>
       <details className="more-options">
         <summary>Read the full license</summary>

@@ -271,7 +271,7 @@ async function railway(body: { query: string; variables: Record<string, any> }, 
   const data = (value: unknown) => Response.json({ data: value });
   if (query.includes("buckets(first")) return data({ project: { buckets: { edges: state.buckets.map(({ id, name }) => ({ node: { id, name } })) } } });
   if (query.includes("services(first")) {
-    return data({ project: { name: "Crewtavo", subscriptionType: "hobby", createdAt: "2026-09-01T00:00:00Z", services: { edges: [{ node: { id: "svc-crewtavo", name: "crewtavo" } }, { node: { id: "svc-storage", name: "storage" } }] } } });
+    return data({ project: { name: "The app", subscriptionType: "hobby", createdAt: "2026-09-01T00:00:00Z", services: { edges: [{ node: { id: "svc-crewtavo", name: "crewtavo" } }, { node: { id: "svc-storage", name: "storage" } }] } } });
   }
   if (field === "variables") return data({ variables: resolve(state.vars, options.emptyReferences) });
   if (field === "variableCollectionUpsert") {
@@ -519,7 +519,7 @@ describe("moving files to a Railway bucket", () => {
     const [plan] = onTheVolume();
     const sent = await moveToBucket({ failPut: [keyOf(plan!)] });
     expect(saved()).toMatchObject({ step: "failed", switchedAt: null });
-    expect(saved().error).toContain("1 file didn't copy to the bucket, so Crewtavo didn't switch over");
+    expect(saved().error).toContain("1 file didn't copy to the bucket, so the app didn't switch over");
     expect(saved().problems).toEqual(["plans/0b1c.pdf: the bucket answered 500"]);
     expect(upserts(sent)).toEqual([]);
     expect(state.deployed.STORAGE_BACKEND).toBe("file");
@@ -536,7 +536,7 @@ describe("moving files to a Railway bucket", () => {
     onTheVolume();
     const sent = await moveToBucket({ stuck: true });
     expect(saved().step).toBe("failed");
-    expect(saved().error).toContain("Storage didn't start reading from the bucket within 15 minutes, so Crewtavo put its settings back");
+    expect(saved().error).toContain("Storage didn't start reading from the bucket within 15 minutes, so the app put its settings back");
     expect(upserts(sent).at(-1)).toEqual({ STORAGE_BACKEND: "file", STORAGE_S3_BUCKET: "crewtavo" });
     expect(sent.railway.filter((b) => b.query.includes("serviceInstanceRedeploy"))).toHaveLength(2);
     expect(storageWritesPaused()).toBe(false);
@@ -684,7 +684,7 @@ describe("carrying on after the server stopped partway through the switch", () =
    */
   function stoppedMidSwitch() {
     const files = onTheVolume();
-    upload("crewtavo-storage-check/volume.txt", "Crewtavo tells where files are kept by this file (on the volume). Leave it here.\n", "text/plain", "no-cache");
+    upload("crewtavo-storage-check/volume.txt", "The app tells where files are kept by this file (on the volume). Leave it here.\n", "text/plain", "no-cache");
     for (const f of files) world.s3.set(keyOf(f), { ...world.volume.get(`crewtavo/${keyOf(f)}`)! });
     const since = new Date(world.now).toISOString();
     world.now += 60_000;
@@ -726,7 +726,7 @@ describe("carrying on after the server stopped partway through the switch", () =
     await storageMoveSettled("co-1");
 
     expect(saved()).toMatchObject({ step: "failed", switchedAt: null, undo: null, byHand: null });
-    expect(saved().error).toContain("1 file didn't copy to the bucket, so Crewtavo didn't switch over");
+    expect(saved().error).toContain("1 file didn't copy to the bucket, so the app didn't switch over");
     // Storage was pointed back at the volume and restarted there, so its next restart doesn't switch without the photo.
     expect(upserts(sent)).toEqual([{ STORAGE_BACKEND: "file", STORAGE_S3_BUCKET: "crewtavo" }]);
     expect(state.deployed).toMatchObject({ STORAGE_BACKEND: "file", STORAGE_S3_BUCKET: "crewtavo" });
@@ -754,7 +754,7 @@ describe("carrying on after the server stopped partway through the switch", () =
     await storageMoveSettled("co-1");
 
     expect(saved()).toMatchObject({ step: "failed", switchedAt: null, undo: null, byHand: null });
-    expect(saved().error).toContain("Storage didn't answer for 15 minutes, so Crewtavo didn't switch over");
+    expect(saved().error).toContain("Storage didn't answer for 15 minutes, so the app didn't switch over");
     expect(upserts(sent)).toEqual([{ STORAGE_BACKEND: "file", STORAGE_S3_BUCKET: "crewtavo" }]);
     expect(state.deployed).toMatchObject({ STORAGE_BACKEND: "file", STORAGE_S3_BUCKET: "crewtavo" });
     expect(world.s3.has(keyOf(late))).toBe(false);
@@ -913,7 +913,7 @@ describe("a file deleted while it copies back", () => {
     await serve({ duringWrite: deletedMidCopy(added), failDeletes: 3 });
     await startStorageMove(env, adminClient(env), "co-1", "to_volume");
     await storageMoveSettled("co-1");
-    expect(saved()).toMatchObject({ direction: "to_volume", step: "failed", problems: ["applicants/7c/2.pdf: it was deleted while it copied back, and Storage didn't let Crewtavo take the copy out yet"] });
+    expect(saved()).toMatchObject({ direction: "to_volume", step: "failed", problems: ["applicants/7c/2.pdf: it was deleted while it copied back, and Storage didn't let the app take the copy out yet"] });
     expect(saved().strays).toHaveLength(1);
     expect(world.rows.filter((r) => r.name === added.name)).toHaveLength(1);
 

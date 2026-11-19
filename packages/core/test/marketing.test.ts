@@ -321,9 +321,9 @@ describe("Recent requests", () => {
   });
 
   it("says a reminder failed and why, not that it was sent", () => {
-    const failed = ask({ channel: "sms", reminders_sent: 1, reminders_failed: 1, reminder_error: "Texting isn't set up on this Crewtavo yet.", next_reminder_at: "2026-11-01T18:30:00Z" });
-    expect(reminderLines(failed, 2, when)).toEqual(["Reminder failed: Texting isn't set up on this Crewtavo yet.", "Next reminder at 2026-11-01"]);
-    expect(reminderLines({ ...failed, reminders_sent: 2, next_reminder_at: null }, 2, when)).toEqual(["1 reminder sent", "Reminder failed: Texting isn't set up on this Crewtavo yet."]);
+    const failed = ask({ channel: "sms", reminders_sent: 1, reminders_failed: 1, reminder_error: "Texting isn't set up on this app yet.", next_reminder_at: "2026-11-01T18:30:00Z" });
+    expect(reminderLines(failed, 2, when)).toEqual(["Reminder failed: Texting isn't set up on this app yet.", "Next reminder at 2026-11-01"]);
+    expect(reminderLines({ ...failed, reminders_sent: 2, next_reminder_at: null }, 2, when)).toEqual(["1 reminder sent", "Reminder failed: Texting isn't set up on this app yet."]);
   });
 
   it("says reminders stopped, apart from the ask itself", () => {
@@ -511,7 +511,7 @@ describe("agreeing to texts", () => {
     expect(textConsentLine(null, null)).toBe("No record of where this number came from. Text them only if they agreed to it.");
     // A contact's is their tick.
     expect(textConsentLine("office", "Nov 14, 2026", true)).toBe("Ticked for texts by the office, Nov 14, 2026.");
-    expect(textConsentLine(null, null, true)).toBe("Ticked for texts before Crewtavo kept who agreed.");
+    expect(textConsentLine(null, null, true)).toBe("Ticked for texts before the app kept who agreed.");
   });
 });
 
@@ -669,13 +669,13 @@ describe("referrals", () => {
     expect(text({}, [inv(1042, 30)])).toBe("$30 of $50 on invoice #1042, $20 to go");
     expect(text({ reward_status: "applied" }, [inv(1042, 50)])).toBe("$50 credit on invoice #1042");
     expect(text({ reward_status: "applied", reward_amount: 45.06 }, [inv(1042, 20), inv(1050, 25.06)])).toBe("$45.06 credit on invoices #1042 and #1050");
-    expect(text({ reward_status: "issued", given_amount: 50 })).toBe("$50 credit, given outside Crewtavo");
-    expect(text({ reward_status: "issued", reward_amount: 80, given_amount: 50 }, [inv(7, 30)])).toBe("$30 on invoice #7, $50 given outside Crewtavo");
+    expect(text({ reward_status: "issued", given_amount: 50 })).toBe("$50 credit, given outside the app");
+    expect(text({ reward_status: "issued", reward_amount: 80, given_amount: 50 }, [inv(7, 30)])).toBe("$30 on invoice #7, $50 given outside the app");
     // Marked given, then the part on an invoice came off: that part is owed again, the given part isn't.
-    expect(text({ reward_amount: 80, given_amount: 50 })).toBe("$50 of $80 given outside Crewtavo, $30 to go");
-    expect(text({ reward_amount: 80, given_amount: 50, auto_apply: false })).toBe("$50 of $80 given outside Crewtavo, $30 kept off invoices");
-    expect(text({ reward_amount: 80, given_amount: 50 }, [inv(9, 10)])).toBe("$10 of $80 on invoice #9, $50 given outside Crewtavo, $20 to go");
-    expect(text({ reward_status: "applied", reward_amount: 80, given_amount: 50 }, [inv(9, 30)])).toBe("$30 on invoice #9, $50 given outside Crewtavo");
+    expect(text({ reward_amount: 80, given_amount: 50 })).toBe("$50 of $80 given outside the app, $30 to go");
+    expect(text({ reward_amount: 80, given_amount: 50, auto_apply: false })).toBe("$50 of $80 given outside the app, $30 kept off invoices");
+    expect(text({ reward_amount: 80, given_amount: 50 }, [inv(9, 10)])).toBe("$10 of $80 on invoice #9, $50 given outside the app, $20 to go");
+    expect(text({ reward_status: "applied", reward_amount: 80, given_amount: 50 }, [inv(9, 30)])).toBe("$30 on invoice #9, $50 given outside the app");
     // Without the Invoices area, the invoice isn't named.
     expect(text({ reward_status: "applied" }, [{ amount: 50, invoice: null }])).toBe("$50 credit on an invoice");
     expect(text({ reward_status: "none", no_reward_reason: "self" })).toBe("No credit: they referred themselves");

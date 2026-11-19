@@ -224,7 +224,7 @@ describe("an automatic first ask", () => {
     asking();
     expect(await ask({ channel: "both" }, noTexting)).toMatchObject({ sent: true, detail: "Asked for a review by email" });
     asking();
-    await expect(ask({ channel: "sms" }, noTexting)).rejects.toThrow("Texting isn't set up on this Crewtavo, so review asks can't go by text.");
+    await expect(ask({ channel: "sms" }, noTexting)).rejects.toThrow("Texting isn't set up on this app, so review asks can't go by text.");
     expect(sendSms).not.toHaveBeenCalled();
   });
 
@@ -282,7 +282,7 @@ describe("an ask by hand", () => {
 
   it("refuses a text when texting isn't set up, before anything is recorded", async () => {
     const calls = asking();
-    await expect(ask({ automatic: false, skipIfRecentDays: undefined, channel: "sms" }, noTexting)).rejects.toThrow("Texting isn't set up on this Crewtavo, so review asks can't go by text.");
+    await expect(ask({ automatic: false, skipIfRecentDays: undefined, channel: "sms" }, noTexting)).rejects.toThrow("Texting isn't set up on this app, so review asks can't go by text.");
     expect(rpcCalls(calls, "begin_review_request")).toEqual([]);
   });
 });
@@ -819,7 +819,7 @@ describe("Marketing's routes", () => {
       headers: { Authorization: `Bearer ${token}`, "X-Company-Id": CO, "Content-Type": "application/json" },
       body: JSON.stringify({ client_id: ANA_ID, channel: "sms" }),
     }, noTexting);
-    expect([res.status, await res.json()]).toEqual([400, { error: "Texting isn't set up on this Crewtavo, so review asks can't go by text." }]);
+    expect([res.status, await res.json()]).toEqual([400, { error: "Texting isn't set up on this app, so review asks can't go by text." }]);
     expect(sendSms).not.toHaveBeenCalled();
   });
 
@@ -834,7 +834,7 @@ describe("Marketing's routes", () => {
   it("lists Marketing in Apps as installed while it's on", async () => {
     office([]);
     const apps = (await (await call("/apps")).json()) as { apps: Array<{ id: string; status: string; name: string; auth: string; category: string }> };
-    expect(apps.apps.find((a) => a.id === "marketing")).toMatchObject({ name: "Marketing - Crewtavo", auth: "builtin", category: "Team", status: "connected" });
+    expect(apps.apps.find((a) => a.id === "marketing")).toMatchObject({ name: "Marketing", auth: "builtin", category: "Team", status: "connected" });
     serve({ tables: { memberships: [{ role: "owner", role_id: null, subcontractor_id: null }], companies: [companyRow({ marketing: { enabled: false } })] } });
     const off = (await (await call("/apps")).json()) as { apps: Array<{ id: string; status: string }> };
     expect(off.apps.find((a) => a.id === "marketing")?.status).toBe("disconnected");

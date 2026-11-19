@@ -53,13 +53,13 @@ export function AssistantAccess() {
     <div className="stack-sm" style={{ borderTop: "1px solid var(--divider)", paddingTop: 12 }}>
       <label className="switch-row">
         <input type="checkbox" className="switch" checked={enabled} disabled={save.isPending} onChange={(e) => save.mutate({ enabled: e.target.checked })} />
-        Let my team use AI assistants with Crewtavo
+        Let my team use AI assistants with the app
       </label>
       <label className="switch-row" style={{ opacity: enabled ? 1 : 0.5 }}>
         <input type="checkbox" className="switch" checked={readOnly} disabled={!enabled || save.isPending} onChange={(e) => save.mutate({ read_only: e.target.checked })} />
         Look things up only, whatever each person allows
       </label>
-      <span className="muted small">Each person signs in with their own Crewtavo account, and an assistant can only see and do what that person's role allows.</span>
+      <span className="muted small">Each person signs in with their own account, and an assistant can only see and do what that person's role allows.</span>
       {session.role === "owner" && <TeamAssistants />}
       <details className="more-options">
         <summary>Recent assistant activity</summary>
@@ -107,7 +107,7 @@ export function TeamAssistants() {
   const askEnd = async (c: TeamConnection) => {
     const mine = c.userId === session.userId;
     const title = `Disconnect ${c.name} from ${mine ? "your" : `${c.person}'s`} sign-in?`;
-    const body = `It stops working with Crewtavo for ${mine ? "you" : c.person}. ${mine ? "You" : "They"} can connect it again, and it starts out only reading.`;
+    const body = `It stops working with the app for ${mine ? "you" : c.person}. ${mine ? "You" : "They"} can connect it again, and it starts out only reading.`;
     if (await confirm({ title, body, confirmLabel: "Disconnect", danger: true })) end.mutate(c);
   };
 
@@ -170,7 +170,7 @@ export function ConnectedAssistants({ card = false }: { card?: boolean }) {
     onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
   });
   const askDisconnect = async (c: AssistantConnection) => {
-    const body = "It stops working with Crewtavo. You can connect it again any time, and it starts out only reading.";
+    const body = "It stops working with the app. You can connect it again any time, and it starts out only reading.";
     if (await confirm({ title: `Disconnect ${c.name}?`, body, confirmLabel: "Disconnect", danger: true })) remove.mutate(c.clientId);
   };
 
@@ -226,12 +226,12 @@ const LEVELS: Array<{ level: Access["level"]; label: string; hint: string }> = [
 const FULL_WARNING: Record<"full" | "full_no_money", (name: string) => { title: string; body: string; confirmLabel: string }> = {
   full: (name) => ({
     title: `Give ${name} full access?`,
-    body: `${name} will be able to add, change and delete anything you can in Crewtavo: clients, jobs and the schedule, quotes, invoices and payments, people and roles, time and pay, marketing and promo codes, and the business's setup. It still can't change anyone's sign-in or password, connected apps and keys, or its own access, and it can't refund or delete payments. Everything it does shows in Recent assistant activity, and you can switch it back to Read only any time.`,
+    body: `${name} will be able to add, change and delete anything you can in the app: clients, jobs and the schedule, quotes, invoices and payments, people and roles, time and pay, marketing and promo codes, and the business's setup. It still can't change anyone's sign-in or password, connected apps and keys, or its own access, and it can't refund or delete payments. Everything it does shows in Recent assistant activity, and you can switch it back to Read only any time.`,
     confirmLabel: "Give full access",
   }),
   full_no_money: (name) => ({
     title: `Give ${name} full access, without money?`,
-    body: `${name} will be able to add, change and delete anything you can in Crewtavo except money: clients, jobs and the schedule, people and roles, time, marketing, and the business's setup. It can't change quotes, invoices, payments, pay or promo codes, anyone's sign-in or password, connected apps and keys, or its own access. Everything it does shows in Recent assistant activity, and you can switch it back to Read only any time.`,
+    body: `${name} will be able to add, change and delete anything you can in the app except money: clients, jobs and the schedule, people and roles, time, marketing, and the business's setup. It can't change quotes, invoices, payments, pay or promo codes, anyone's sign-in or password, connected apps and keys, or its own access. Everything it does shows in Recent assistant activity, and you can switch it back to Read only any time.`,
     confirmLabel: "Give full access",
   }),
 };

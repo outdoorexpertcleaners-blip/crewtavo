@@ -41,7 +41,7 @@ const render = (element: ReactElement, entries?: Array<string | { pathname: stri
   client.setQueryData(["team-invites", COMPANY], []);
   return renderToStaticMarkup(createElement(QueryClientProvider, { client }, createElement(MemoryRouter, { initialEntries: entries }, element)));
 };
-const asksPassword = (html: string) => /<input[^>]*type="password"[^>]*autoComplete="current-password"[^>]*required=""/.test(html) && html.includes("Your Crewtavo password");
+const asksPassword = (html: string) => /<input[^>]*type="password"[^>]*autoComplete="current-password"[^>]*required=""/.test(html) && html.includes("Your password");
 
 describe("which access is admin-level", () => {
   it("is the owner and admin levels, and a custom role on the admin level with apps, settings or the team", () => {

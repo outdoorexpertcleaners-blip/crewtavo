@@ -101,7 +101,7 @@ function OpensInTab({ site, canInstall }: { site: WebsiteSite; canInstall: boole
           title={`${name} opens in its own tab`}
           action={<a className="btn btn-primary" href={site.admin_url} target="_blank" rel="noreferrer">Open {site.cms ? CMS_NAMES[site.cms] : "the editor"} <Icon name="external" size={14} /></a>}
         >
-          Your website doesn't let other sites show it, so its editor can't open inside Crewtavo.
+          Your website doesn't let other sites show it, so its editor can't open inside the app.
           {canInstall && <> <Link to="/apps/sveltia">See how to change that</Link>.</>}
         </EmptyState>
       </div>

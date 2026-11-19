@@ -86,55 +86,55 @@ const Code = ({ children }: { children: ReactNode }) => <code style={{ fontSize:
 
 function steps(s: SetupStatus): { title: string; summary: string; steps: ReactNode[] } {
   const railway = s.platform === "railway";
-  const restart = railway ? <>In your Railway project, open the <strong>crewtavo</strong> service and choose <strong>Redeploy</strong>.</> : <>Restart Crewtavo (<Code>docker compose restart app</Code>).</>;
+  const restart = railway ? <>In your Railway project, open the <strong>crewtavo</strong> service and choose <strong>Redeploy</strong>.</> : <>Restart the app (<Code>docker compose restart app</Code>).</>;
   const services = railway
     ? <>Open your Railway project and check that every service (Postgres, auth, rest, storage) says <strong>Active</strong>. If one has crashed, open it and choose <strong>Redeploy</strong>.</>
-    : <>Run <Code>docker compose ps</Code> in the Crewtavo folder and check every service is running. Start any that stopped with <Code>docker compose up -d</Code>.</>;
-  const fail = (summary: string, list: ReactNode[]) => ({ title: "Finish setting up Crewtavo", summary, steps: list });
+    : <>Run <Code>docker compose ps</Code> in the app folder and check every service is running. Start any that stopped with <Code>docker compose up -d</Code>.</>;
+  const fail = (summary: string, list: ReactNode[]) => ({ title: "Finish setting up the app", summary, steps: list });
 
   if (s.database === "starting")
-    return { title: "Crewtavo is starting up", summary: "It's setting up its database. The first start takes a minute or two; this page moves on by itself.", steps: [] };
+    return { title: "The app is starting up", summary: "It's setting up its database. The first start takes a minute or two; this page moves on by itself.", steps: [] };
 
   if (s.database === "migration_failed")
     switch (s.migration?.problem) {
       case "services_not_ready":
         return fail("The database or one of its helper services didn't start in time.", [services, restart]);
       case "wrong_password":
-        return fail("Crewtavo couldn't sign in to its database. This happens when the database password was changed after the first start.", [
+        return fail("The app couldn't sign in to its database. This happens when the database password was changed after the first start.", [
           railway
             ? <>In Railway, open the <strong>Postgres</strong> service's <strong>Variables</strong> and put back the original <Code>POSTGRES_PASSWORD</Code>. The other services read it from there.</>
             : <>Put the original <Code>POSTGRES_PASSWORD</Code> back in the <Code>.env</Code> file next to <Code>docker-compose.yml</Code>.</>,
           restart,
         ]);
       case "unreachable":
-        return fail("Crewtavo can't reach its database.", [services, restart]);
+        return fail("The app can't reach its database.", [services, restart]);
       case "bad_url":
-        return fail("The database address Crewtavo was given isn't valid.", [
+        return fail("The database address the app was given isn't valid.", [
           railway ? <>On the <strong>crewtavo</strong> service, check <Code>SUPABASE_DB_URL</Code> under <strong>Variables</strong>. The template sets it; if it was edited, put the template's value back.</> : <>Check <Code>SUPABASE_DB_URL</Code> in <Code>docker-compose.yml</Code>.</>,
           restart,
         ]);
       case "busy":
-        return fail("The database was too busy to update: something else was using the tables the update changes. Crewtavo keeps trying by itself.", []);
+        return fail("The database was too busy to update: something else was using the tables the update changes. The app keeps trying by itself.", []);
       case "newer_database":
-        return fail("This is an older version of Crewtavo than the one that last updated its database.", [
+        return fail("This is an older version of the app than the one that last updated its database.", [
           railway
             ? <>In your Railway project, open the <strong>crewtavo</strong> service's <strong>Settings</strong>, and under <strong>Source</strong> set the image to <Code>ghcr.io/jviars/crewtavo:latest</Code>, the newest version. Railway then redeploys it.</>
-            : <>Get the newest Crewtavo (<Code>git pull</Code> in the Crewtavo folder) and run <Code>npm run instance</Code> again.</>,
+            : <>Get the newest version of the app (<Code>git pull</Code> in the app folder) and run <Code>npm run instance</Code> again.</>,
         ]);
       default:
-        return fail("Setting up the database failed. This is a problem in Crewtavo itself, not in anything you did.", [
-          <>Send this to whoever supports your Crewtavo: <Code>{s.migration?.detail ?? "unknown error"}</Code></>,
+        return fail("Setting up the database failed. This is a problem in the app itself, not in anything you did.", [
+          <>Send this to whoever supports your app: <Code>{s.migration?.detail ?? "unknown error"}</Code></>,
           <>Once it's fixed, redeploy. Your data is safe: each step either finishes completely or not at all.</>,
         ]);
     }
 
   if (s.database === "not_connected")
-    return fail("Crewtavo is running on its own, without its database and the services that come with it.", [
-      <>Deploy Crewtavo with its Railway template, which includes everything, or run <Code>docker compose up</Code> in the Crewtavo folder.</>,
+    return fail("The app is running on its own, without its database and the services that come with it.", [
+      <>Deploy the app with its Railway template, which includes everything, or run <Code>docker compose up</Code> in the app folder.</>,
     ]);
   if (s.database === "empty") return fail("The database hasn't been set up yet.", [restart]);
-  if (s.database === "wrong_keys") return fail("Crewtavo's keys don't match its services. This happens when JWT_SECRET differs between services.", [<>Make sure every service uses the same <Code>JWT_SECRET</Code>, then redeploy them.</>]);
-  return fail("Crewtavo can't reach its sign-in and data services.", [services, restart]);
+  if (s.database === "wrong_keys") return fail("The app's keys don't match its services. This happens when JWT_SECRET differs between services.", [<>Make sure every service uses the same <Code>JWT_SECRET</Code>, then redeploy them.</>]);
+  return fail("The app can't reach its sign-in and data services.", [services, restart]);
 }
 
 export function SetupPage({ status, onCheck, checking }: { status: SetupStatus; onCheck: () => void; checking: boolean }) {
@@ -217,7 +217,7 @@ export function OwnerSetupPage({ onTaken }: { onTaken: () => void }) {
     <AuthLayout>
       <form className={`card card-pad ${styles.card}`} style={{ padding: 28 }} onSubmit={submit}>
         <div style={{ display: "grid", gap: 6 }}>
-          <h1 className={styles.title}>Welcome to Crewtavo</h1>
+          <h1 className={styles.title}>Welcome</h1>
           <p className="muted" style={{ margin: 0 }}>Create your owner account. Next you'll set up your business, then invite your team.</p>
         </div>
         <Field label="Your name"><input className="input" value={fullName} onChange={(e) => setFullName(e.target.value)} autoComplete="name" required minLength={2} maxLength={120} autoFocus /></Field>

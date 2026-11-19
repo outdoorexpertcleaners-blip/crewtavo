@@ -149,7 +149,7 @@ describe("MCP tools", () => {
       const calls = supabase();
       expect(await call(bearer, "add_note", note)).toMatchObject({ isError: true, content: [{ type: "text", text: assistantRefusal("records") }] });
       expect(await call(bearer, "add_services", service)).toMatchObject({ isError: true, content: [{ text: assistantRefusal("prices") }] });
-      expect(assistantRefusal("prices")).toBe("This assistant can't change the price list. To let it, choose what it can change in Crewtavo, under Settings → AI assistants.");
+      expect(assistantRefusal("prices")).toBe("This assistant can't change the price list. To let it, choose what it can change in the app, under Settings → AI assistants.");
       expect(wrote(calls, "/rest/v1/messages") || wrote(calls, "/rest/v1/services")).toBe(false);
       // The refusal is in the activity log the owner sees.
       expect(calls.find((c) => c.path === "/rest/v1/assistant_calls")?.body).toMatchObject({ tool: "add_note", ok: false });
@@ -412,7 +412,7 @@ describe("the instance's gateway", () => {
       for (const [method, path] of [["PUT", "/auth/v1/user"], ["POST", "/auth/v1/logout?scope=global"], ["POST", "/auth/v1/factors"], ["DELETE", "/auth/v1/user/oauth/grants?client_id=x"], ["POST", "/auth/v1/oauth/authorizations/abc/consent"]]) {
         const res = await guardAssistant(env, ask(method, path, bearer), "/auth/v1", send);
         expect(res.status).toBe(403);
-        expect((await res.json()).msg).toBe("An AI assistant can't change your sign-in. Do that in Crewtavo itself.");
+        expect((await res.json()).msg).toBe("An AI assistant can't change your sign-in. Do that in the app itself.");
       }
     }
     expect(sent).toHaveLength(0);
@@ -452,7 +452,7 @@ describe("the company's own switch, wherever an assistant's token is taken", () 
         expect(res.status, `${method} ${path}`).toBe(403);
         expect(await res.json()).toEqual({
           code: "assistants_off",
-          message: "AI assistants are turned off for Kilo Gardens. An owner or admin can turn them on in Crewtavo, under Settings → AI assistants.",
+          message: "AI assistants are turned off for Kilo Gardens. An owner or admin can turn them on in the app, under Settings → AI assistants.",
         });
       }
     }
@@ -480,7 +480,7 @@ describe("the company's own switch, wherever an assistant's token is taken", () 
       expect(res.status, `${method} ${path}`).toBe(403);
       expect(await res.json()).toEqual({
         code: "assistants_read_only",
-        message: "Assistants can only look things up for Kilo Gardens, not make changes. An owner or admin can change this in Crewtavo, under Settings → AI assistants.",
+        message: "Assistants can only look things up for Kilo Gardens, not make changes. An owner or admin can change this in the app, under Settings → AI assistants.",
       });
     }
     expect(sent).toHaveLength(0);
@@ -505,7 +505,7 @@ describe("the company's own switch, wherever an assistant's token is taken", () 
     supabase({ held: OFF });
     const res = await me(full);
     expect(res.status).toBe(403);
-    expect(await res.json()).toEqual({ error: "AI assistants are turned off for Kilo Gardens. An owner or admin can turn them on in Crewtavo, under Settings → AI assistants." });
+    expect(await res.json()).toEqual({ error: "AI assistants are turned off for Kilo Gardens. An owner or admin can turn them on in the app, under Settings → AI assistants." });
     // Past the door (this pretend database has no profile to give, so the route itself says 404).
     const calls = supabase({ held: OFF });
     expect((await me(signedIn)).status).toBe(404);
@@ -519,7 +519,7 @@ describe("the company's own switch, wherever an assistant's token is taken", () 
     // The person's other business has them off, though this one's own setting is on.
     const calls = supabase({ held: { state: "off", company: "Lima Lawns", company_id: "company-2" } });
     const res = await call(full, "list_clients", {});
-    expect(res).toMatchObject({ isError: true, content: [{ type: "text", text: "AI assistants are turned off for Lima Lawns. An owner or admin can turn them on in Crewtavo, under Settings → AI assistants." }] });
+    expect(res).toMatchObject({ isError: true, content: [{ type: "text", text: "AI assistants are turned off for Lima Lawns. An owner or admin can turn them on in the app, under Settings → AI assistants." }] });
     expect(calls.some((c) => c.path === "/rest/v1/clients" || c.path === "/rest/v1/memberships")).toBe(false);
     expect(calls.find((c) => c.path === "/rest/v1/assistant_calls")?.body).toMatchObject({ company_id: "company-2", tool: "list_clients", ok: false, oauth_client: "client-full" });
   });
@@ -528,7 +528,7 @@ describe("the company's own switch, wherever an assistant's token is taken", () 
     const calls = supabase({ held: { state: "read_only", company: "Lima Lawns", company_id: "company-2" } });
     expect((await call(full, "get_company_settings", {})).isError).toBeUndefined();
     expect((await call(full, "add_note", note)).content[0].text).toBe(
-      "Assistants can only look things up for Lima Lawns, not make changes. An owner or admin can change this in Crewtavo, under Settings → AI assistants.",
+      "Assistants can only look things up for Lima Lawns, not make changes. An owner or admin can change this in the app, under Settings → AI assistants.",
     );
     expect(calls.some((c) => c.method !== "GET" && c.path === "/rest/v1/messages")).toBe(false);
   });

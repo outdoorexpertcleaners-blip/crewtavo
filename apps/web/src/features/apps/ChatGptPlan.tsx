@@ -116,7 +116,7 @@ export function ChatGptPlanCard({ where }: { where: "app" | "settings" }) {
     mutationFn: () => api.post<{ plan: PlanStatus; revoked: boolean }>("/ai/chatgpt/disconnect", {}),
     onSuccess: (res) => {
       if (res.revoked) toast.success("Your ChatGPT plan is disconnected");
-      else toast.info("Disconnected here, but ChatGPT didn't confirm it. To be sure, remove Crewtavo under Apps in your ChatGPT settings.");
+      else toast.info("Disconnected here, but ChatGPT didn't confirm it. To be sure, remove the app under Apps in your ChatGPT settings.");
       setSignIn(null);
       changed(res.plan);
     },
@@ -149,7 +149,7 @@ export function ChatGptPlanCard({ where }: { where: "app" | "settings" }) {
   if (where === "settings" && !allowed && !connected && plan.problem !== "sign_in") return null;
 
   const askDisconnect = async () => {
-    const body = `Crewtavo signs out of your ChatGPT account, and what you ask the AI ${fallback ? `uses ${session.company.name}'s own key again` : "stops working until you connect again or an admin adds a key"}. You can connect again any time.`;
+    const body = `The app signs out of your ChatGPT account, and what you ask the AI ${fallback ? `uses ${session.company.name}'s own key again` : "stops working until you connect again or an admin adds a key"}. You can connect again any time.`;
     if (await confirm({ title: "Disconnect your ChatGPT plan?", body, confirmLabel: "Disconnect", danger: true })) disconnect.mutate();
   };
   const paste = (e: FormEvent) => {
@@ -175,8 +175,8 @@ export function ChatGptPlanCard({ where }: { where: "app" | "settings" }) {
             <ManageUsage href={usage} />
           </div>
           <span className="muted small">
-            Yours alone: what you ask Crewtavo's AI yourself (a rewrite, a caption, a reply, an answer from your guides, a receipt you add) is answered on your ChatGPT account.
-            Other people's asks, and anything Crewtavo drafts by itself, {fallback ? "use the company's own key" : "need a key of the company's"}.
+            Yours alone: what you ask the app's AI yourself (a rewrite, a caption, a reply, an answer from your guides, a receipt you add) is answered on your ChatGPT account.
+            Other people's asks, and anything the app drafts by itself, {fallback ? "use the company's own key" : "need a key of the company's"}.
           </span>
         </>
       )}
@@ -218,7 +218,7 @@ export function ChatGptPlanCard({ where }: { where: "app" | "settings" }) {
 
       {connected && plan.problem !== "sign_in" && (
         plan.model_locked ? (
-          <span className="muted small">Whoever runs this Crewtavo server set the model to <strong>{plan.model}</strong> (OPENAI_MODEL), so it isn't picked here.</span>
+          <span className="muted small">Whoever runs this app server set the model to <strong>{plan.model}</strong> (OPENAI_MODEL), so it isn't picked here.</span>
         ) : (
           <div className="row wrap" style={{ gap: 8 }}>
             <select className="select grow" style={{ maxWidth: 320 }} value={picked ?? ""} disabled={model.isPending} onChange={(e) => model.mutate(e.target.value)} aria-label="Model your ChatGPT plan uses">
@@ -234,7 +234,7 @@ export function ChatGptPlanCard({ where }: { where: "app" | "settings" }) {
         <>
           {plan.problem !== "sign_in" && (
             <span className="muted small">
-              For you alone: what you ask Crewtavo's AI yourself is answered on your own ChatGPT account, and your plan pays for it. Other people's asks, and anything Crewtavo drafts by itself,
+              For you alone: what you ask the app's AI yourself is answered on your own ChatGPT account, and your plan pays for it. Other people's asks, and anything the app drafts by itself,
               use the company's key. {ELIGIBLE}
             </span>
           )}
@@ -252,7 +252,7 @@ export function ChatGptPlanCard({ where }: { where: "app" | "settings" }) {
             <form className="stack-sm" onSubmit={paste}>
               <ol className="app-steps">
                 <li>
-                  ChatGPT's sign-in opened in a new tab. Sign in there and allow Crewtavo.{" "}
+                  ChatGPT's sign-in opened in a new tab. Sign in there and allow the app.{" "}
                   <a href={signIn.url} target="_blank" rel="noreferrer">Open it again <Icon name="external" size={12} /></a>
                 </li>
                 <li>
@@ -328,7 +328,7 @@ export function TeamPlansSwitch() {
         Let everyone on my team use their own ChatGPT plan
       </label>
       <span className="muted small">
-        Each person connects theirs under <Link to="/settings?tab=assistants" style={{ textDecoration: "underline" }}>Settings → AI assistants</Link>. What they ask Crewtavo's AI themselves then goes to OpenAI on their own ChatGPT account, and their plan pays for it.
+        Each person connects theirs under <Link to="/settings?tab=assistants" style={{ textDecoration: "underline" }}>Settings → AI assistants</Link>. What they ask the app's AI themselves then goes to OpenAI on their own ChatGPT account, and their plan pays for it.
         Off, only owners and admins can connect one. Subcontractors never can.
       </span>
     </section>

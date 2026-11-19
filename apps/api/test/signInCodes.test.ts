@@ -39,7 +39,7 @@ const base: Env = {
 };
 const env: Env = { ...base, TWILIO_ACCOUNT_SID: "AC123", TWILIO_AUTH_TOKEN: "twilio-token", TWILIO_FROM_NUMBER: "+15405550000" };
 /** An instance that can't text, and sends email through its own Resend account. */
-const mailing: Env = { ...base, RESEND_API_KEY: "re_instance", EMAIL_FROM: "Crewtavo <codes@crewtavo.example>" };
+const mailing: Env = { ...base, RESEND_API_KEY: "re_instance", EMAIL_FROM: "The app <codes@crewtavo.example>" };
 
 const CO = "00000000-0000-4000-8000-0000000000a1";
 const OTHER_CO = "00000000-0000-4000-8000-0000000000a2";
@@ -364,7 +364,7 @@ describe("asking for a code by text", () => {
       {
         To: "+15405550101",
         From: "+15405550000",
-        Body: `${code} is your sign-in code for Oscar Roofing on Crewtavo. It runs out in 10 minutes. If you didn't ask for it, ignore this text.`,
+        Body: `${code} is your sign-in code for Oscar Roofing. It runs out in 10 minutes. If you didn't ask for it, ignore this text.`,
       },
     ]);
     expect(code).toMatch(/^\d{6}$/);
@@ -403,7 +403,7 @@ describe("asking for a code by text", () => {
     const sent = serve(world);
     expect(await (await ask("540-555-0177")).json()).toEqual({ sent: true });
     await vi.waitFor(() => expect(sent.texts()).toHaveLength(2));
-    const [oscars, papas] = ["Oscar Roofing", "Papa Paving"].map((name) => sent.texts().find((t) => t.Body!.includes(`for ${name} on Crewtavo`))!.Body!.slice(0, 6));
+    const [oscars, papas] = ["Oscar Roofing", "Papa Paving"].map((name) => sent.texts().find((t) => t.Body!.includes(`for ${name}`))!.Body!.slice(0, 6));
     expect(oscars).toMatch(/^\d{6}$/);
     expect(papas).not.toBe(oscars);
     // One ask: a code for each sign-in, each tied to its own account.
@@ -730,11 +730,11 @@ describe("asking for a code by email", () => {
     expect(sent.emails()).toEqual([
       expect.objectContaining({
         key: "re_instance",
-        from: "Crewtavo <codes@crewtavo.example>",
+        from: "The app <codes@crewtavo.example>",
         to: ["al@apex.test"],
         reply_to: "office@oscar.test",
         subject: "Your sign-in code for Oscar Roofing",
-        text: `Hi Al,\n\nHere's your code to sign in to Oscar Roofing on Crewtavo:\n\n${code}\n\nIt runs out in 10 minutes. If you didn't ask for it, ignore this email.\n\nThanks,\nOscar Roofing`,
+        text: `Hi Al,\n\nHere's your code to sign in to Oscar Roofing:\n\n${code}\n\nIt runs out in 10 minutes. If you didn't ask for it, ignore this email.\n\nThanks,\nOscar Roofing`,
       }),
     ]);
     // The code is shown large, on its own.
@@ -959,7 +959,7 @@ describe("asking for a code by email", () => {
   });
 
   it("stops a code by text when one is asked for by email, and the other way round, saying only that it isn't right", async () => {
-    const both: Env = { ...env, RESEND_API_KEY: "re_instance", EMAIL_FROM: "Crewtavo <codes@crewtavo.example>" };
+    const both: Env = { ...env, RESEND_API_KEY: "re_instance", EMAIL_FROM: "The app <codes@crewtavo.example>" };
     const sent = serve(oscar());
     const texted = await codeFor(sent);
     const emailed = await emailCodeFor(sent, "al@apex.test", both);
@@ -971,7 +971,7 @@ describe("asking for a code by email", () => {
   });
 
   it("answers a number's tries the same whether or not the address asked for after it is the same sub's", async () => {
-    const both: Env = { ...env, RESEND_API_KEY: "re_instance", EMAIL_FROM: "Crewtavo <codes@crewtavo.example>" };
+    const both: Env = { ...env, RESEND_API_KEY: "re_instance", EMAIL_FROM: "The app <codes@crewtavo.example>" };
     const world = oscar();
     world.subcontractors.find((s) => s.id === UNION)!.email = "uma@union.test";
     const sent = serve(world);
@@ -1035,7 +1035,7 @@ describe("signing in with the code from the email", () => {
   });
 
   it("doesn't take the code from a text, or a text's code from the email", async () => {
-    const both: Env = { ...env, RESEND_API_KEY: "re_instance", EMAIL_FROM: "Crewtavo <codes@crewtavo.example>" };
+    const both: Env = { ...env, RESEND_API_KEY: "re_instance", EMAIL_FROM: "The app <codes@crewtavo.example>" };
     const world = oscar();
     world.subcontractors.find((s) => s.id === UNION)!.email = "uma@union.test";
     world.companies[0]!.settings = { subs: { sign_in_countries: ["44"] } };
@@ -1207,7 +1207,7 @@ describe("what the sign-in page offers", () => {
     // The instance's own sender: every company can, without asking the database.
     const asked = sent.calls.length;
     expect(await features(mailing)).toMatchObject({ sms: false, emailCodes: true });
-    expect(await features({ ...env, RESEND_API_KEY: "re_instance", EMAIL_FROM: "Crewtavo <codes@crewtavo.example>" })).toMatchObject({ sms: true, emailCodes: true });
+    expect(await features({ ...env, RESEND_API_KEY: "re_instance", EMAIL_FROM: "The app <codes@crewtavo.example>" })).toMatchObject({ sms: true, emailCodes: true });
     expect(sent.calls.length).toBe(asked);
     // Nothing about any company is in it.
     expect(JSON.stringify(await (await app.request("/api/config", {}, base)).json())).not.toMatch(/0000000000a[12]|oscar|papa/i);

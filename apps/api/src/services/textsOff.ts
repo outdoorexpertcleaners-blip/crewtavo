@@ -137,7 +137,7 @@ export async function noteRefusedText(admin: Db, client: { id: string; phone?: s
 export const textsOffRefusal = (name: string) => `${textsOffReason(name)} Send it by email instead.`;
 
 /** Why a text to any other stopped number isn't sent, when someone sends it by hand. */
-export const numberStoppedRefusal = (to: string) => `${to} asked not to be texted, so Crewtavo can't text it.`;
+export const numberStoppedRefusal = (to: string) => `${to} asked not to be texted, so the app can't text it.`;
 
 /**
  * A number someone typed on a public form: kept on the client as where it came from, when it's

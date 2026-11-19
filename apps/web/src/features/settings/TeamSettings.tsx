@@ -133,7 +133,7 @@ export function TeamSettings() {
                         <span>
                           <strong>{name}</strong>{me && <span className="chip" style={{ marginLeft: 6 }}>You</span>}
                           {/* Their own choice of language (Settings → Profile → Language): their screens and notices are in it. */}
-                          {m.profile?.locale === "es" && <span className="chip" style={{ marginLeft: 6 }} title="Uses Crewtavo in Spanish">Español</span>}
+                          {m.profile?.locale === "es" && <span className="chip" style={{ marginLeft: 6 }} title="Uses the app in Spanish">Español</span>}
                           <div className="muted small">{m.profile?.email}</div>
                           {sentAt && (
                             <div className="row" style={{ gap: 6, marginTop: 2 }}>
@@ -240,7 +240,7 @@ function storageLink(usage: StoragePerson | undefined): string {
 /** The changer's own password, for anything that gives admin access (the API checks it with confirmPassword). */
 export function YourPassword({ value, onChange, autoFocus }: { value: string; onChange: (password: string) => void; autoFocus?: boolean }) {
   return (
-    <Field label="Your Crewtavo password" hint={PASSWORD_HINT} requiredMessage="Enter your password to give someone admin access.">
+    <Field label="Your password" hint={PASSWORD_HINT} requiredMessage="Enter your password to give someone admin access.">
       <input className="input" type="password" value={value} onChange={(e) => onChange(e.target.value)} autoComplete="current-password" maxLength={200} required autoFocus={autoFocus} />
     </Field>
   );

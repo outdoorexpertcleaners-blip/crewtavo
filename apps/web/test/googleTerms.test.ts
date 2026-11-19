@@ -28,7 +28,7 @@ describe("the Google Maps notice", () => {
 
   it("is under the Google key in Settings → Maps, key or no key", () => {
     const settings = read("../src/features/settings/MapsSettings.tsx");
-    expect(settings).toContain("Google Maps features and content in Crewtavo are subject to the");
+    expect(settings).toContain("Google Maps features and content in the app are subject to the");
     expect(settings).toContain('<a href={GOOGLE_MAPS_TERMS_URL} target="_blank" rel="noreferrer">Google Maps/Google Earth Additional Terms of Service</a>');
     expect(settings).toContain('<a href={GOOGLE_PRIVACY_URL} target="_blank" rel="noreferrer">Google Privacy Policy</a>');
     // Shown whether or not the company has saved a key of its own (the server's may be in use).

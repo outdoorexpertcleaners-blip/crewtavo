@@ -29,7 +29,7 @@ async function storageOf(env: Env, admin: Db, companyId: string) {
   const access = await railwayAccess(env, admin, companyId);
   if (!access) return null;
   const serviceId = await serviceIdByName(env, access, "storage");
-  if (!serviceId) throw new RailwayError("Crewtavo can't find the storage service in this Railway project, so the limit has to be changed by hand.");
+  if (!serviceId) throw new RailwayError("The app can't find the storage service in this Railway project, so the limit has to be changed by hand.");
   const vars = await serviceVariables(env, access, serviceId);
   const limit = Number(vars.UPLOAD_FILE_SIZE_LIMIT ?? vars.FILE_SIZE_LIMIT);
   return { access, serviceId, limit: Number.isFinite(limit) && limit > 0 ? limit : null };
@@ -43,7 +43,7 @@ export async function uploadLimit(env: Env, admin: Db, companyId: string): Promi
 /** Sets the storage service's limit to 200 MB and restarts it. Never lowers one set higher. */
 export async function raiseUploadLimit(env: Env, admin: Db, companyId: string): Promise<UploadLimit> {
   const storage = await storageOf(env, admin, companyId);
-  if (!storage) throw new HttpError(400, "Connect Crewtavo to Railway first, in Settings → Web address. Then try again.");
+  if (!storage) throw new HttpError(400, "Connect the app to Railway first, in Settings → Web address. Then try again.");
   if (storage.limit !== null && storage.limit >= UPLOAD_LIMIT) return { connected: true, limit: storage.limit, target: UPLOAD_LIMIT, raised: false };
   await setServiceVariable(env, storage.access, storage.serviceId, "FILE_SIZE_LIMIT", String(UPLOAD_LIMIT));
   // The storage service reads it as it starts.

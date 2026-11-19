@@ -133,7 +133,7 @@ export function NotesThread({ quoteId, composer, title = "Notes", hint = "Only y
                 <Avatar author={author} />
                 <span className={styles.itemBody}>
                   <span className={styles.itemMeta}>
-                    <strong>{item.author_id === session.userId ? "You" : author?.name ?? (item.author_id ? "Someone on your team" : "Crewtavo")}</strong>
+                    <strong>{item.author_id === session.userId ? "You" : author?.name ?? (item.author_id ? "Someone on your team" : "The app")}</strong>
                     <span>· {capitalize(whenText(item.at, session.company.timezone))}</span>
                     {item.note && canDelete(item.note.author_id) && (
                       <button
@@ -179,7 +179,7 @@ const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 function Avatar({ author }: { author: NoteAuthor | undefined }) {
   return (
     <span className={`avatar ${styles.face}`} style={{ background: author?.color || "var(--text-3)" }} aria-hidden="true">
-      <Face name={author?.name ?? "Crewtavo"} photo={author?.photo} />
+      <Face name={author?.name ?? "The app"} photo={author?.photo} />
     </span>
   );
 }

@@ -40,7 +40,7 @@ function keyMaterial(env: Env): { raw: Uint8Array; salt: string } {
   }
   const supabaseSecret = (env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY)?.trim();
   if (supabaseSecret) return { raw: encoder.encode(supabaseSecret), salt: "crewtavo/supabase-secret" };
-  throw new HttpError(500, "Crewtavo isn't fully set up yet (missing the database secret key). Ask whoever installed it to finish setup.");
+  throw new HttpError(500, "The app isn't fully set up yet (missing the database secret key). Ask whoever installed it to finish setup.");
 }
 
 function deriveKey(env: Env, purpose: "encrypt" | "sign" | "instance"): Promise<CryptoKey> {

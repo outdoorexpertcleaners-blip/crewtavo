@@ -16,12 +16,12 @@ function printKeys(keys: string[], email: string) {
   document.body.appendChild(frame);
   const doc = frame.contentDocument!;
   doc.open();
-  doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>Crewtavo spare keys</title>
+  doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>Spare keys</title>
 <style>body{font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;color:#111;padding:40px;max-width:560px}
 h1{font-size:22px;margin:0 0 4px}p{line-height:1.5}ol{columns:2;font:600 20px/2.1 ui-monospace,Menlo,Consolas,monospace;padding-left:28px}.muted{color:#555;font-size:13px}</style></head>
-<body><h1>Crewtavo spare keys</h1><div class="muted">${escapeHtml(email)} · ${escapeHtml(window.location.origin)} · made ${escapeHtml(new Date().toLocaleDateString())}</div>
+<body><h1>Spare keys</h1><div class="muted">${escapeHtml(email)} · ${escapeHtml(window.location.origin)} · made ${escapeHtml(new Date().toLocaleDateString())}</div>
 <ol>${keys.map((k) => `<li>${escapeHtml(k)}</li>`).join("")}</ol>
-<p>Forgot your password? On the Crewtavo sign-in page, choose <b>Forgot password</b>, then <b>I'm the owner: use my key file</b>, then <b>No file? Type a key</b>, and type your email and one of these keys. Each key works once.</p>
+<p>Forgot your password? On the sign-in page, choose <b>Forgot password</b>, then <b>I'm the owner: use my key file</b>, then <b>No file? Type a key</b>, and type your email and one of these keys. Each key works once.</p>
 <p class="muted">Keep this somewhere safe. Anyone with a key and your email can get into your account.</p></body></html>`);
   doc.close();
   frame.contentWindow!.focus();
@@ -61,7 +61,7 @@ export function SpareKeysSheet({ keys, email, doneLabel, onDone, busy = false }:
         </div>
       </details>
       <p className="muted small" style={{ margin: 0 }}>
-        Each key in the file works once, so the file gets you in up to {keys.length} times. It only works while Crewtavo can't email you; once your email is connected, Forgot password sends you a link instead. Anyone who has the file can get into your account, so don't share it.
+        Each key in the file works once, so the file gets you in up to {keys.length} times. It only works while the app can't email you; once your email is connected, Forgot password sends you a link instead. Anyone who has the file can get into your account, so don't share it.
       </p>
       <label className="row" style={{ gap: 10, alignItems: "flex-start", cursor: kept ? "pointer" : "default", opacity: kept ? 1 : 0.6 }}>
         <input type="checkbox" checked={saved} disabled={!kept} onChange={(e) => setSaved(e.target.checked)} style={{ marginTop: 3 }} />

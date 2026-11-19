@@ -56,7 +56,7 @@ export const teamTools = {
   }),
   invite_person: tool({
     description:
-      "Invite someone to the team by email, with a role (a level, or a custom role_id from list_team). Crewtavo emails them a link to set up their account; someone who already has an account just gets access. Not as an owner or admin (or a custom role with the apps, settings or team area): that's done in Crewtavo, which asks for the person's password. Confirm the email and role with the person first.",
+      "Invite someone to the team by email, with a role (a level, or a custom role_id from list_team). The app emails them a link to set up their account; someone who already has an account just gets access. Not as an owner or admin (or a custom role with the apps, settings or team area): that's done in the app, which asks for the person's password. Confirm the email and role with the person first.",
     input: z.object({
       email: z.email(),
       full_name: z.string().trim().max(120).optional(),
@@ -71,11 +71,11 @@ export const teamTools = {
         { db: ctx.db, env: ctx.env, companyId: ctx.companyId, userId: ctx.userId, role: ctx.role, baseUrl: (ctx.env.APP_URL ?? ctx.origin).replace(/\/$/, "") },
         { email: a.email, full_name: a.full_name, role: a.role, role_id: a.role_id },
       );
-      return { ...result, ...(!result.emailed && { note: `The invite email didn't go out (${result.reason ?? "email isn't set up"}). The person can be sent a new link from Settings → People in Crewtavo.` }) };
+      return { ...result, ...(!result.emailed && { note: `The invite email didn't go out (${result.reason ?? "email isn't set up"}). The person can be sent a new link from Settings → People in the app.` }) };
     },
   }),
   change_role: tool({
-    description: "Change someone's role: a level (office, estimator, crew_lead, field_crew) or a custom role (role_id). Nobody can be given more access than you have; you can't change your own role. Owner and admin access (or a custom role with the apps, settings or team area) is given in Crewtavo, which asks for the person's password.",
+    description: "Change someone's role: a level (office, estimator, crew_lead, field_crew) or a custom role (role_id). Nobody can be given more access than you have; you can't change your own role. Owner and admin access (or a custom role with the apps, settings or team area) is given in the app, which asks for the person's password.",
     input: z.object({ user_id: z.uuid(), role: z.enum(LEVELS).optional(), role_id: z.uuid().nullable().optional(), ...companyArg }),
     area: "team",
     run: async (ctx, a) => {
@@ -113,7 +113,7 @@ export const teamTools = {
     },
   }),
   save_role: tool({
-    description: `Make a custom role (no role_id) or change one: a name, the level it's based on (not owner), and the areas it can use, from: ${PERMISSIONS.map((p) => `${p.key} (${p.label})`).join(", ")}. A role can only have areas its level allows, and you can't give areas you don't have. A role based on admin that gets apps, settings or team is admin access, given in Crewtavo, which asks for the person's password.`,
+    description: `Make a custom role (no role_id) or change one: a name, the level it's based on (not owner), and the areas it can use, from: ${PERMISSIONS.map((p) => `${p.key} (${p.label})`).join(", ")}. A role can only have areas its level allows, and you can't give areas you don't have. A role based on admin that gets apps, settings or team is admin access, given in the app, which asks for the person's password.`,
     input: z.object({
       role_id: z.uuid().optional(),
       name: z.string().trim().min(1).max(60),

@@ -7,7 +7,7 @@ const AUTH_OPTIONS = { persistSession: false, autoRefreshToken: false, detectSes
 
 export function publishableKey(env: Env): string {
   const key = env.SUPABASE_PUBLISHABLE_KEY ?? env.SUPABASE_ANON_KEY;
-  if (!env.SUPABASE_URL || !key) throw new HttpError(500, "Crewtavo isn't fully set up yet (missing the database settings). Ask whoever installed it to finish setup.");
+  if (!env.SUPABASE_URL || !key) throw new HttpError(500, "The app isn't fully set up yet (missing the database settings). Ask whoever installed it to finish setup.");
   return key;
 }
 
@@ -27,6 +27,6 @@ export function userClient(env: Env, accessToken: string): Db {
  */
 export function adminClient(env: Env): Db {
   const key = env.SUPABASE_SECRET_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!env.SUPABASE_URL || !key) throw new HttpError(500, "Crewtavo isn't fully set up yet (missing the database secret key). Ask whoever installed it to finish setup.");
+  if (!env.SUPABASE_URL || !key) throw new HttpError(500, "The app isn't fully set up yet (missing the database secret key). Ask whoever installed it to finish setup.");
   return createClient<Database>(env.SUPABASE_URL, key, { auth: AUTH_OPTIONS });
 }

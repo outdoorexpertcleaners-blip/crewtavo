@@ -124,14 +124,14 @@ export function NotificationSettings({ phone }: { phone: string | null }) {
     <>
     {canInstall && (
       <div className="card card-pad stack-sm">
-        <strong>{t("Crewtavo app")}</strong>
-        <span className="muted small">{t("Install Crewtavo on this device. It opens in its own window, from your home screen or app list, like any other app.")}</span>
+        <strong>{t("App")}</strong>
+        <span className="muted small">{t("Install the app on this device. It opens in its own window, from your home screen or app list, like any other app.")}</span>
         <InstallAppButton style={{ justifySelf: "start" }} />
       </div>
     )}
     <div className="card card-pad stack-sm">
       <strong>{t("Notifications")}</strong>
-      <span className="muted small">{t("The bell shows everything. Choose what also reaches you when you're not in Crewtavo.")}</span>
+      <span className="muted small">{t("The bell shows everything. Choose what also reaches you when you're not in the app.")}</span>
 
       <PushRow state={push.data} sub={pushSub} busy={pushToggle.isPending} onToggle={(on) => pushToggle.mutate(on)} onTest={() => test.mutate()} testing={test.isPending} />
       <FormError error={pushToggle.error ?? test.error} />
@@ -181,7 +181,7 @@ export function NotificationSettings({ phone }: { phone: string | null }) {
       {isSub(session)
         ? !available("email") && (
           <span className="muted small">
-            {session.config.features.email ? t("Ask {company} to add your email to get these by email.", { company: session.company.name }) : t("{company} doesn't send email from Crewtavo yet.", { company: session.company.name })}
+            {session.config.features.email ? t("Ask {company} to add your email to get these by email.", { company: session.company.name }) : t("{company} doesn't send email from the app yet.", { company: session.company.name })}
           </span>
         )
         : !session.config.features.email && <span className="muted small">{t("Email needs the company's email connected (Settings → Email).")}</span>}
@@ -209,7 +209,7 @@ function PushRow({ state, sub, busy, testing, onToggle, onTest }: {
         <Icon name="phone" size={20} />
         <div className="grow small" style={{ fontWeight: 400 }}>
           <div style={{ fontWeight: 700 }}>{t("Get notifications on this iPhone")}</div>
-          <T text="Tap the Share button, choose <b>Add to Home Screen</b>, then open Crewtavo from your Home Screen and turn notifications on here." b={(s) => <strong>{s}</strong>} />
+          <T text="Tap the Share button, choose <b>Add to Home Screen</b>, then open the app from your Home Screen and turn notifications on here." b={(s) => <strong>{s}</strong>} />
           {sub?.note && <> {sub.note}</>}
         </div>
       </div>
@@ -220,7 +220,7 @@ function PushRow({ state, sub, busy, testing, onToggle, onTest }: {
     return (
       <div className="callout callout-warning">
         <Icon name="bell" size={20} />
-        <div className="grow small" style={{ fontWeight: 400 }}>{t("Notifications are blocked for Crewtavo in this browser. Allow them in the browser's site settings, then come back here.")}</div>
+        <div className="grow small" style={{ fontWeight: 400 }}>{t("Notifications are blocked for the app in this browser. Allow them in the browser's site settings, then come back here.")}</div>
       </div>
     );
   }

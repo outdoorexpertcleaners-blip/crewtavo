@@ -182,7 +182,7 @@ export async function connectStripe(env: Env, admin: Db, input: { companyId: str
   let webhook: { id: string; secret: string } | null = null;
   const url = `${input.baseUrl}/api/webhooks/stripe/${input.companyId}`;
   if (reachable(input.baseUrl)) {
-    const endpoint = { url, enabled_events: STRIPE_EVENTS, description: "Crewtavo: invoices, payments and deposits", metadata: { crewtavo_company_id: input.companyId } };
+    const endpoint = { url, enabled_events: STRIPE_EVENTS, description: "Outdoor Expert app: invoices, payments and deposits", metadata: { crewtavo_company_id: input.companyId } };
     try {
       // Webhooks an earlier try left at this address go. The one in use stays until the new one is saved.
       for await (const found of stripeList<{ id: string; url: string }>(key, "/v1/webhook_endpoints")) {
@@ -197,7 +197,7 @@ export async function connectStripe(env: Env, admin: Db, input: { companyId: str
       });
     } catch (error) {
       if (error instanceof StripeError && (error.status === 401 || error.status === 403)) {
-        throw new HttpError(400, `That key can't add a webhook. Make a new one with Get a key from Stripe, which gives it everything Crewtavo needs.${unchanged}`);
+        throw new HttpError(400, `That key can't add a webhook. Make a new one with Get a key from Stripe, which gives it everything the app needs.${unchanged}`);
       }
       throw new HttpError(400, `Stripe wouldn't add the webhook: ${(error instanceof Error ? error.message : String(error)).replace(/\.$/, "")}.${unchanged}`);
     }
@@ -367,7 +367,7 @@ async function stillClearing(old: Ctx, row: Linked & { invoice_id: string | null
   await noteOnClient(old.admin, {
     company_id: old.companyId, client_id: invoice.client_id, invoice_id: invoice.id, key: `${row.stripe_id}:left`, subject: "Bank payment still clearing",
     body:
-      `A bank payment for invoice #${invoice.number} was still clearing in the Stripe account Crewtavo used before, so it won't show up here on its own. Check it in that Stripe account, and record the payment here once it clears. ` +
+      `A bank payment for invoice #${invoice.number} was still clearing in the Stripe account the app used before, so it won't show up here on its own. Check it in that Stripe account, and record the payment here once it clears. ` +
       `The client can't pay this invoice online for the next ${CLEARING_DAYS} days while it might still clear; after that they can again, in case it bounced.`,
   });
 }
@@ -2566,7 +2566,7 @@ export async function refundStripePayment(env: Env, admin: Db, companyId: string
     );
   } catch (problem) {
     if (!(problem instanceof StripeError)) throw problem;
-    if (problem.code === "resource_missing") throw new HttpError(409, "This payment was made in a Stripe account Crewtavo no longer uses. Refund it in that Stripe account.");
+    if (problem.code === "resource_missing") throw new HttpError(409, "This payment was made in a Stripe account the app no longer uses. Refund it in that Stripe account.");
     if (keyTurnedDown(problem)) {
       await keyRefused(ctx, "refunds", problem);
       throw new HttpError(409, KEY_CANT);

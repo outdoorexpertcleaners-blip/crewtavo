@@ -35,7 +35,7 @@ export function gateway(
     routes.get(`/auth/v1/.well-known/${doc}`, async (c) => {
       const issuer = `${(env.APP_URL ?? new URL(c.req.url).origin).replace(/\/$/, "")}/auth/v1`;
       const metadata = await authMetadata([`${stack.auth.replace(/\/$/, "")}/.well-known/${doc}`], stack.auth, issuer);
-      if (!metadata) return c.json({ message: "This part of Crewtavo is still starting. Try again in a moment." }, 503);
+      if (!metadata) return c.json({ message: "This part of the app is still starting. Try again in a moment." }, 503);
       return c.json(metadata, 200, { "Cache-Control": "public, max-age=300" });
     });
   }
@@ -74,7 +74,7 @@ export function gateway(
       return c.json({ statusCode: "403", error: "Forbidden", message: NO_S3 }, 403);
     }
     if (copiesAsPerson(c.req.raw, jwtSecret)) {
-      return c.json({ statusCode: "403", error: "Forbidden", message: "Crewtavo copies and moves stored files itself. Upload the file where you want it instead." }, 403);
+      return c.json({ statusCode: "403", error: "Forbidden", message: "The app copies and moves stored files itself. Upload the file where you want it instead." }, 403);
     }
     if (unsizedUpload(c.req.raw)) {
       return c.json({ statusCode: "411", error: "Length Required", message: "Send the file's size (Content-Length) with the upload, or send it as a form." }, 411);
@@ -164,7 +164,7 @@ export function storesFile(request: Request): boolean {
 /** Storage's S3 address (s3/...), as Storage's router reads the path. */
 const S3 = /^\/storage\/v1\/s3(?:\/|$)/;
 
-export const NO_S3 = "Crewtavo doesn't use Storage's S3 address. Open and upload files in Crewtavo.";
+export const NO_S3 = "The app doesn't use Storage's S3 address. Open and upload files in the app.";
 
 /**
  * A request to Storage's S3 address, to read or to write. Storage takes those from anyone signed in
@@ -271,6 +271,6 @@ async function forward(request: Request, upstream: string, prefix: string, visit
     return new Response(res.body, { status: res.status, statusText: res.statusText, headers: out });
   } catch (error) {
     console.error(`Gateway: ${target.host} didn't answer`, (error as Error).message);
-    return Response.json({ message: "This part of Crewtavo is still starting. Try again in a moment." }, { status: 503 });
+    return Response.json({ message: "This part of the app is still starting. Try again in a moment." }, { status: 503 });
   }
 }

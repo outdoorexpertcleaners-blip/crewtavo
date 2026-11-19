@@ -65,8 +65,8 @@ setup.post("/setup/owner", async (c) => {
   const ip = clientIp(c);
   if (!(await allow(env, `setup-owner:${ip}`, 10, 3600))) throw new HttpError(429, "Too many tries. Wait a few minutes and try again.");
   // The owner's profile is made by the migrations' triggers, so they must have run.
-  if (startup()?.state === "migrating" || (await databaseStatus(env)) !== "ok") throw new HttpError(503, "Crewtavo is still starting. Try again in a moment.");
-  if (await anyUser(env)) throw new HttpError(409, "This Crewtavo is already set up. Sign in instead.");
+  if (startup()?.state === "migrating" || (await databaseStatus(env)) !== "ok") throw new HttpError(503, "The app is still starting. Try again in a moment.");
+  if (await anyUser(env)) throw new HttpError(409, "This app is already set up. Sign in instead.");
 
   const admin = adminClient(env);
   const { data, error } = await admin.auth.admin.createUser({ email: body.email.trim().toLowerCase(), password: body.password, email_confirm: true, user_metadata: { full_name: body.full_name } });
@@ -80,7 +80,7 @@ setup.post("/setup/owner", async (c) => {
   const first = [...(list?.users ?? [])].sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id))[0];
   if (first && first.id !== data.user.id) {
     await admin.auth.admin.deleteUser(data.user.id);
-    throw new HttpError(409, "Someone else just set up this Crewtavo. Sign in instead.");
+    throw new HttpError(409, "Someone else just set up this app. Sign in instead.");
   }
   // The owner's spare keys, shown once on the next screen, for getting back in without email.
   const spareKeys = await replaceSpareKeys(env, data.user.id).catch((err) => {
@@ -92,7 +92,7 @@ setup.post("/setup/owner", async (c) => {
 
 async function anyUser(env: Env): Promise<boolean> {
   const { data, error } = await adminClient(env).auth.admin.listUsers({ page: 1, perPage: 1 });
-  if (error) throw new HttpError(503, "Crewtavo is still starting. Try again in a moment.");
+  if (error) throw new HttpError(503, "The app is still starting. Try again in a moment.");
   return data.users.length > 0;
 }
 

@@ -20,7 +20,7 @@ const env: Env = {
   ENCRYPTION_KEY: btoa(String.fromCharCode(...new Uint8Array(32).map((_, i) => i * 7))),
   APP_URL: "https://ops.example.com",
   RESEND_API_KEY: "re_test",
-  EMAIL_FROM: "Crewtavo <noreply@example.com>",
+  EMAIL_FROM: "The app <noreply@example.com>",
 };
 const texting: Env = { ...env, TWILIO_ACCOUNT_SID: "AC123", TWILIO_AUTH_TOKEN: "token", TWILIO_FROM_NUMBER: "+15405550000" };
 

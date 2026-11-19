@@ -104,7 +104,7 @@ describe("inviting someone", () => {
     const res = await request("/team/invite", { email: "New@Juliet.test", full_name: "Robin Lee" });
     expect(res.status).toBe(201);
     expect(await res.json()).toEqual({ user_id: "new-person", invited: true, emailed: true, reason: null, link: "https://ops.example.com/?token_hash=tok-1&type=invite" });
-    expect(state.sent).toEqual([expect.objectContaining({ to: "new@juliet.test", subject: "Join Juliet Lawn on Crewtavo" })]);
+    expect(state.sent).toEqual([expect.objectContaining({ to: "new@juliet.test", subject: "Join Juliet Lawn" })]);
     expect(state.sent[0]!.text).toContain("Hi Robin,");
   });
 
@@ -172,7 +172,7 @@ describe("resending an invite", () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ emailed: true, reason: null, link: "https://ops.example.com/?token_hash=tok-1&type=recovery&welcome=1" });
     expect(state.links).toEqual([{ type: "recovery", email: "sam@juliet.test" }]);
-    expect(state.sent).toEqual([expect.objectContaining({ to: "sam@juliet.test", subject: "Join Juliet Lawn on Crewtavo" })]);
+    expect(state.sent).toEqual([expect.objectContaining({ to: "sam@juliet.test", subject: "Join Juliet Lawn" })]);
     expect(state.sent[0]!.text).toContain("Hi Sam,");
   });
 

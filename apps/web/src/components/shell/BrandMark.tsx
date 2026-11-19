@@ -1,3 +1,5 @@
+import { appName } from "@/lib/api";
+
 /** The Crewtavo mark (same shapes as public/crewtavo-mark.svg). */
 export function BrandMark({ size = 28, className }: { size?: number; className?: string }) {
   return (
@@ -9,12 +11,12 @@ export function BrandMark({ size = 28, className }: { size?: number; className?:
   );
 }
 
-/** Mark and name together, for the sidebar and sign-in pages. */
+/** Mark and the business's app name together (not used on any screen: the mark is Crewtavo's). */
 export function BrandLockup({ size = 28 }: { size?: number }) {
   return (
     <>
       <BrandMark size={size} />
-      <span className="brand-name">Crewtavo</span>
+      <span className="brand-name">{appName()}</span>
     </>
   );
 }

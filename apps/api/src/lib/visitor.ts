@@ -45,7 +45,7 @@ function visitorRule(env: Env): Rule {
   if (named && Number(named[2] ?? 1) >= 1) return { header: named[1]!, fromEnd: Number(named[2] ?? 1), privateOnly: false };
   if (setting && warnedAbout !== setting) {
     warnedAbout = setting;
-    console.warn(`CREWTAVO_VISITOR_IP=${setting} isn't something Crewtavo understands (see docs/deploy.md), so it goes by the default.`);
+    console.warn(`CREWTAVO_VISITOR_IP=${setting} isn't something the app understands (see docs/deploy.md), so it goes by the default.`);
   }
   return platformOf(env) === "railway"
     ? { header: "x-real-ip", fromEnd: 1, privateOnly: false }

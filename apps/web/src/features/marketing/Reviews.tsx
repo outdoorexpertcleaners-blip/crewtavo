@@ -256,8 +256,8 @@ function AskAutomatically({ rules, google }: { rules: AskRuleRow[]; google: Goog
               <Icon name="alert" size={18} />
               <div className="grow">
                 {emails && session.config.features.email
-                  ? "Texting isn't set up on this Crewtavo, so asks go by email only, or fail for clients with no email."
-                  : "Texting isn't set up on this Crewtavo, so asks can't go by text."}
+                  ? "Texting isn't set up on this app, so asks go by email only, or fail for clients with no email."
+                  : "Texting isn't set up on this app, so asks can't go by text."}
               </div>
             </div>
           )}
@@ -516,7 +516,7 @@ function AskNow() {
             ))}
             <button type="button" aria-pressed={channel === "link"} onClick={() => setChannel("link")}>Copy link</button>
           </div>
-          {!ready.sms && <span className="muted small">Texting isn't set up on this Crewtavo.</span>}
+          {!ready.sms && <span className="muted small">Texting isn't set up on this app.</span>}
           {!ready.email && <span className="muted small">Email isn't connected yet.<ConnectEmailHint /></span>}
           {!settings.review_url && <span className="small" style={{ color: "var(--warning)", fontWeight: 600 }}>Save your Google review link first.</span>}
           {refusal && <span className="small" style={{ color: "var(--warning)", fontWeight: 600 }}>{refusal}</span>}

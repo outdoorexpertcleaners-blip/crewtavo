@@ -70,8 +70,8 @@ describe("the setting (settings.clock.geofence)", () => {
 
 describe("what the office is told under the setting", () => {
   it("says plainly that the times go by when the phone notices, which is when Crewtavo is opened there, not when they pulled in", () => {
-    expect(GEOFENCE_NOTE).toContain("This goes by when the phone notices, and it only notices while Crewtavo is open on it");
-    expect(GEOFENCE_NOTE).toContain("Someone who pulls in at 8:00 and opens Crewtavo at 8:40 is at the property from 8:40");
+    expect(GEOFENCE_NOTE).toContain("This goes by when the phone notices, and it only notices while the app is open on it");
+    expect(GEOFENCE_NOTE).toContain("Someone who pulls in at 8:00 and opens the app at 8:40 is at the property from 8:40");
     expect(GEOFENCE_NOTE).toContain("leaving is noticed when they next open it");
     for (const mode of ["remind", "clock"] as const) expect(GEOFENCE_MODE_HINTS[mode]).toMatch(/phone notices/);
     // And what the phone won't do by itself.

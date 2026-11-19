@@ -77,7 +77,7 @@ describe("files storage", () => {
   });
 
   it("says when a move stopped, and why", () => {
-    const html = page({ ...ON_VOLUME, move: { ...MOVE, step: "failed", error: "1 file didn't copy to the bucket, so Crewtavo didn't switch over.", problems: ["plans/0b1c.pdf: the bucket answered 500"] } });
+    const html = page({ ...ON_VOLUME, move: { ...MOVE, step: "failed", error: "1 file didn't copy to the bucket, so the app didn't switch over.", problems: ["plans/0b1c.pdf: the bucket answered 500"] } });
     expect(html).toContain("Files didn&#x27;t move to the bucket");
     expect(html).toContain("plans/0b1c.pdf: the bucket answered 500");
     expect(html).toContain("Try again");

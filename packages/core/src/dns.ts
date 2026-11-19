@@ -276,7 +276,7 @@ export function providerById(id: string | null | undefined): DnsProvider {
 /** Cloudflare's "create token" page, filled in: Zone read and DNS edit, named Crewtavo. */
 export function cloudflareTokenUrl(): string {
   const permissions = JSON.stringify([{ key: "dns", type: "edit" }, { key: "zone", type: "read" }]);
-  return `https://dash.cloudflare.com/profile/api-tokens?permissionGroupKeys=${encodeURIComponent(permissions)}&accountId=*&zoneId=all&name=Crewtavo`;
+  return `https://dash.cloudflare.com/profile/api-tokens?permissionGroupKeys=${encodeURIComponent(permissions)}&accountId=*&zoneId=all&name=Outdoor%20Expert%20app`;
 }
 
 /** A provider step with the record put in. `unknown` stands in for a value only the owner can see (Railway's, or their server's address). */

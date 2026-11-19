@@ -153,7 +153,7 @@ describe("moving to Jobber", () => {
     expect(rows.map((r) => r["Quote Number"])).toEqual([3, 5]);
     expect(rows[0]).toMatchObject({
       "Client First Name": "Mary Ann", "Client Email": "mary@example.com", "Property Street 1": "40 Elm Ave", "Property Street 2": "Unit 2",
-      "Quote Status (Draft/Awaiting Response/Approved)": "Approved", "Quote Internal Note": "From Crewtavo. Option: Best. Sent Sep 1, 2026. Approved Sep 4, 2026.",
+      "Quote Status (Draft/Awaiting Response/Approved)": "Approved", "Quote Internal Note": "From the app. Option: Best. Sent Sep 1, 2026. Approved Sep 4, 2026.",
       "Quote Discount Type (Unit/Percentage)": "Unit", "Quote Discount Amount (Unit/Percentage)": 10, "Quote Deposit Amount (Unit/Percentage)": 50,
       "Quote New Tax Rate Name": "Sales tax (8.25%)", "Quote New Tax Rate (Percentage)": "8.25", "Tax Method (Inclusive/Exclusive)": "Exclusive",
       "Line Item 1 Name": "Sealcoat", "Line Item 1 Quantity": 1200, "Line Item 1 UNIT Price": 0.25, "Line Item 1 UNIT Cost": 0.1, "Line Item 1 Taxable (True/False)": "TRUE",
@@ -181,7 +181,7 @@ describe("moving to Jobber", () => {
     expect(byNumber(2)).toMatchObject({ "Start Date": "Jun 1, 2025", "How do you want to invoice?": "One price", "When do you want to invoice?": "Never" });
     expect(byNumber(8)).toMatchObject({ "Start Date": "May 5, 2026", "Repeating": "Weekly", "Duration Length": "57", "When do you want to invoice?": "Never" });
     expect(byNumber(12)["Repeating"]).toBe("AsNeeded");
-    expect(byNumber(12)["Instructions"]).toBe("Back gate.\n\nRepeats every 3 weeks on Thursday in Crewtavo.\n\nIn season Apr, May, Jun, Jul, Aug, Sep, Oct.");
+    expect(byNumber(12)["Instructions"]).toBe("Back gate.\n\nRepeats every 3 weeks on Thursday in the app.\n\nIn season Apr, May, Jun, Jul, Aug, Sep, Oct.");
   });
 
   it("asks Jobber's two billing questions as a recurring job answers them", () => {
@@ -196,7 +196,7 @@ describe("moving to Jobber", () => {
       ],
     }).files.find((f) => f.name.startsWith("3-jobs"))!.rows;
     const byNumber = (n: number) => rows.find((r) => r["Job Number"] === n)!;
-    expect(byNumber(31)).toMatchObject({ "How do you want to invoice?": "One price", "When do you want to invoice?": "Periodic", "Instructions": "Invoiced monthly on the 15th in Crewtavo." });
+    expect(byNumber(31)).toMatchObject({ "How do you want to invoice?": "One price", "When do you want to invoice?": "Periodic", "Instructions": "Invoiced monthly on the 15th in the app." });
     expect(byNumber(32)).toMatchObject({ "How do you want to invoice?": "Per visit", "When do you want to invoice?": "Never" });
     // Saved before the questions: a fixed schedule is a fixed price, monthly.
     expect(byNumber(33)).toMatchObject({ "How do you want to invoice?": "One price", "When do you want to invoice?": "Periodic", "Instructions": "" });
@@ -207,8 +207,8 @@ describe("moving to Jobber", () => {
     const weekly = { client_id: "c3", property_id: "p3", kind: "recurring", status: "active", starts_on: "2026-04-07", recurrence_rule: "FREQ=WEEKLY;INTERVAL=1;BYDAY=TU", billing_mode: "per_visit", paused_at: "2026-10-20T14:00:00Z" };
     const rows = jobberExport({ ...INPUT, jobs: [job({ ...weekly, number: 41, resume_on: "2026-11-09" }), job({ ...weekly, number: 42, resume_on: null })] }).files.find((f) => f.name.startsWith("3-jobs"))!.rows;
     const byNumber = (n: number) => rows.find((r) => r["Job Number"] === n)!;
-    expect(byNumber(41)).toMatchObject({ "Start Date": "Nov 10, 2026", "Repeating": "Weekly", "When do you want to invoice?": "Per visit", "Instructions": "Paused in Crewtavo until Nov 9, 2026." });
-    expect(byNumber(42)).toMatchObject({ "Start Date": "Apr 7, 2026", "When do you want to invoice?": "Never", "Instructions": "Paused in Crewtavo." });
+    expect(byNumber(41)).toMatchObject({ "Start Date": "Nov 10, 2026", "Repeating": "Weekly", "When do you want to invoice?": "Per visit", "Instructions": "Paused in the app until Nov 9, 2026." });
+    expect(byNumber(42)).toMatchObject({ "Start Date": "Apr 7, 2026", "When do you want to invoice?": "Never", "Instructions": "Paused in the app." });
   });
 
   it("writes invoices with their lines' totals, and payments as a note", () => {
@@ -220,7 +220,7 @@ describe("moving to Jobber", () => {
     });
     expect(rows[1]).toMatchObject({
       "Invoice Subject": "Invoice 21", "Invoice Status (Draft/Sent/Paid)": "Sent", "Invoice New Tax Rate Name": "Sales tax (5%)", "Invoice New Tax Rate (Percentage)": "5",
-      "Invoice Internal Note": "Paid $50.00 of $200.00 in Crewtavo; $150.00 left. Record the payment in Jobber.\n\nRetainage held: $1,234.50.\n\nThanks!",
+      "Invoice Internal Note": "Paid $50.00 of $200.00 in the app; $150.00 left. Record the payment in Jobber.\n\nRetainage held: $1,234.50.\n\nThanks!",
     });
   });
 

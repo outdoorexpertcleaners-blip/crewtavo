@@ -820,7 +820,7 @@ function useVisitPhotos(visitId: string) {
       try {
         const kept = await addVisitPhoto({ userId: session.userId, companyId: company.id, visitId }, file, files.length === 1 ? drawn : null, marks);
         // Said as it's taken: with no signal and nowhere to keep it, only the open app holds it.
-        if (!kept && !onlineManager.isOnline()) toast.warning(t("This phone couldn't save the photo"), { description: t("Keep Crewtavo open until you have signal, or the photo will be lost.") });
+        if (!kept && !onlineManager.isOnline()) toast.warning(t("This phone couldn't save the photo"), { description: t("Keep the app open until you have signal, or the photo will be lost.") });
       } catch (error) {
         toast.error(`${file.name}: ${errorMessage(error)}`);
       }

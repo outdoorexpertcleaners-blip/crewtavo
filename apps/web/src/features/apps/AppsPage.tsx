@@ -26,7 +26,7 @@ export function AppsPage() {
   return (
     <>
       <PageHeader title="Apps">
-        <p className="muted" style={{ margin: 0, flexBasis: "100%" }}>Turn on what's built into Crewtavo, and bring in the calendars, books and tools you already use. Open an app to set it up.</p>
+        <p className="muted" style={{ margin: 0, flexBasis: "100%" }}>Turn on what's built into the app, and bring in the calendars, books and tools you already use. Open an app to set it up.</p>
       </PageHeader>
 
       {apps.error && <div className="card"><ErrorState error={apps.error} onRetry={() => apps.refetch()} /></div>}

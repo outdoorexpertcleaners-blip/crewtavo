@@ -78,7 +78,7 @@ export function LocationNotice() {
         )}
         {has("clock_at_property") && (
           <p style={{ margin: 0 }}>
-            {t("While Crewtavo is open on this phone, it compares where the phone is with the property of your visit, to remind you to start and finish or to move your clock. That's worked out on this phone: your position isn't saved and isn't sent anywhere.")}
+            {t("While the app is open on this phone, it compares where the phone is with the property of your visit, to remind you to start and finish or to move your clock. That's worked out on this phone: your position isn't saved and isn't sent anywhere.")}
           </p>
         )}
         <p style={{ margin: 0 }}>{t("Your phone will ask you to allow location. If you say no, or turn it off later in your phone's settings, your clock still works.")}</p>

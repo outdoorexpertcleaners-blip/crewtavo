@@ -275,7 +275,7 @@ function TemplateEditor({ row, rows, onSelect }: { row: TemplateRow | null; rows
             <div className={styles.group}>
               <span className={styles.label} id="letterhead-kind">Letterhead</span>
               <div className="segmented" role="group" aria-labelledby="letterhead-kind" style={{ justifySelf: "start" }}>
-                <button type="button" aria-pressed={t.letterhead === "built_in"} onClick={() => set("letterhead", "built_in")}>Crewtavo's</button>
+                <button type="button" aria-pressed={t.letterhead === "built_in"} onClick={() => set("letterhead", "built_in")}>Built-in</button>
                 <button type="button" aria-pressed={t.letterhead === "custom"} onClick={() => set("letterhead", "custom")}>Your own</button>
               </div>
             </div>
@@ -287,7 +287,7 @@ function TemplateEditor({ row, rows, onSelect }: { row: TemplateRow | null; rows
                 onChange={(pictures) => setT((prev) => ({ ...prev, letterhead: "custom", letterhead_header: pictures.header, letterhead_footer: pictures.footer }))}
               />
             )}
-            {own.footer && builtInTop && <p className={styles.note}>Your letterhead has no top, so Crewtavo's header prints at the top of the first page, in the style below.</p>}
+            {own.footer && builtInTop && <p className={styles.note}>Your letterhead has no top, so the built-in header prints at the top of the first page, in the style below.</p>}
 
             {builtInTop && (
               <>

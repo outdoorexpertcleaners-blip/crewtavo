@@ -182,7 +182,7 @@ export interface AskPlan {
 /** "Ana asked not to be texted, so texts to them are off." Whether they texted STOP or told the office. */
 export const textsOffReason = (name: string) => `${name} asked not to be texted, so texts to them are off.`;
 export const EMAIL_NOT_CONNECTED = "Email isn't connected yet, so review asks can't go by email. An admin can connect it in Settings → Email.";
-export const TEXTS_NOT_SET_UP = "Texting isn't set up on this Crewtavo, so review asks can't go by text.";
+export const TEXTS_NOT_SET_UP = "Texting isn't set up on this app, so review asks can't go by text.";
 
 /** A client who texted STOP, or asked the office to stop texts, gets no texts from Crewtavo. */
 export const textsOff = (client: { sms_opt_out_at?: string | null } | null | undefined) => Boolean(client?.sms_opt_out_at);
@@ -649,7 +649,7 @@ export function textConsentLine(source: string | null | undefined, on: string | 
     case "website_form": return `They gave this number on your website's form${when}.`;
     case "hub": return `They gave this number in their Client Hub${when}.`;
     case "office": return contact ? `Ticked for texts by the office${when}.` : `Number entered by the office${when}. Text them only if they agreed to it.`;
-    default: return contact ? "Ticked for texts before Crewtavo kept who agreed." : "No record of where this number came from. Text them only if they agreed to it.";
+    default: return contact ? "Ticked for texts before the app kept who agreed." : "No record of where this number came from. Text them only if they agreed to it.";
   }
 }
 
@@ -940,7 +940,7 @@ export function creditLine(referral: CreditReferral, credits: readonly CreditOnI
   const given = cents(referral.given_amount);
   const applied = credits.reduce((sum, c) => sum + cents(c.amount), 0);
   const left = Math.max(Math.round((amount - given - applied) * 100) / 100, 0);
-  const givenPart = given > 0 ? [`, ${money(given)} given outside Crewtavo`] : [];
+  const givenPart = given > 0 ? [`, ${money(given)} given outside the app`] : [];
   switch (referral.reward_status) {
     case "pending":
       if (referral.reward_kind === "percent") return [`${percentWords(cents(referral.reward_value))} of their first job, worked out when they pay their first invoice`];
@@ -948,15 +948,15 @@ export function creditLine(referral: CreditReferral, credits: readonly CreditOnI
     case "earned": {
       const rest = `${money(left)} ${referral.auto_apply ? "to go" : "kept off invoices"}`;
       if (applied) return [`${money(applied)} of ${money(amount)} `, ...onInvoices(credits), ...givenPart, `, ${rest}`];
-      if (given) return [`${money(given)} of ${money(amount)} given outside Crewtavo, ${rest}`];
+      if (given) return [`${money(given)} of ${money(amount)} given outside the app, ${rest}`];
       return [`${money(amount)} credit, ${referral.auto_apply ? "goes on their next invoice" : "kept off invoices"}`];
     }
     case "applied":
       if (given) return [`${money(applied)} `, ...onInvoices(credits), ...givenPart];
       return [`${money(amount)} credit `, ...onInvoices(credits)];
     case "issued":
-      if (!applied) return [`${money(given || amount)} credit, given outside Crewtavo`];
-      return [`${money(applied)} `, ...onInvoices(credits), `, ${money(given)} given outside Crewtavo`];
+      if (!applied) return [`${money(given || amount)} credit, given outside the app`];
+      return [`${money(applied)} `, ...onInvoices(credits), `, ${money(given)} given outside the app`];
     default:
       return [`No credit: ${NO_CREDIT[referral.no_reward_reason ?? ""] ?? "none was set"}`];
   }

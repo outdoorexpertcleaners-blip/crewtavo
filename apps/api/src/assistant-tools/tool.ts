@@ -32,7 +32,7 @@ export interface ToolContext {
  */
 export function requireRole(ctx: ToolContext, roles?: readonly Role[], permission?: Permission) {
   if ((roles && ctx.role !== "owner" && !roles.includes(ctx.role)) || (permission && !ctx.permissions.includes(permission))) {
-    throw new Error("Your role in Crewtavo doesn't allow that. An owner or admin can change your role.");
+    throw new Error("Your role in the app doesn't allow that. An owner or admin can change your role.");
   }
 }
 
@@ -65,7 +65,7 @@ export type AnyTool = Tool<z.ZodType>;
 
 /** Database errors, worded for a person (no table or policy names). */
 export function friendly(message: string) {
-  if (/row-level security|permission denied|violates.*policy/i.test(message)) return "You don't have permission to do that in Crewtavo.";
+  if (/row-level security|permission denied|violates.*policy/i.test(message)) return "You don't have permission to do that in the app.";
   if (/violates foreign key|not present in table/i.test(message)) return "That record doesn't exist (or you can't see it).";
   if (/duplicate key/i.test(message)) return "There's already one with that name or link.";
   if (/quotes_template_check/i.test(message)) return "A quote template is never sent, approved or closed. Make a quote from it first (create_quote with template_id).";

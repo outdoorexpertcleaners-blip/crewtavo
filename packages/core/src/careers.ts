@@ -224,7 +224,7 @@ export function applicationEmail(input: { formName: string; application: Applica
       `New job application from your website's ${formName}.`,
       short.join("\n"),
       ...long,
-      attached.length ? `${attached.join("\n")}\nOpen ${files.length === 1 ? "it" : "them"} in Crewtavo.` : null,
+      attached.length ? `${attached.join("\n")}\nOpen ${files.length === 1 ? "it" : "them"} in the app.` : null,
       link,
       a.email ? `Reply to this email to answer ${first || "them"}.` : null,
     ].filter(Boolean).join("\n\n"),

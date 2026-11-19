@@ -324,6 +324,6 @@ export async function checkOpenAiKey(apiKey: string): Promise<{ models: OpenAiMo
     if (error.status === 403) return { problem: "That OpenAI key isn't allowed to list models. Give it All permissions, or Read on Models, at platform.openai.com/api-keys." };
     if (error.kind === "key") return { problem: "OpenAI turned the key down. Check that it was copied correctly, or make a new one at platform.openai.com/api-keys." };
     if (error.kind === "busy") return { problem: "OpenAI is busy right now. Try again in a minute." };
-    return { problem: "Crewtavo couldn't reach OpenAI to check the key. Try again in a minute." };
+    return { problem: "The app couldn't reach OpenAI to check the key. Try again in a minute." };
   }
 }

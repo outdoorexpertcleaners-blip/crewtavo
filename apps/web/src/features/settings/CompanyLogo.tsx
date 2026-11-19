@@ -26,7 +26,7 @@ export function CompanyLogo({ path }: { path: string | null }) {
   const set = useMutation({
     mutationFn: async (file: File) => {
       const png = await logoPicture(file);
-      if (!png) throw new Error("Crewtavo can't open that picture. Try a PNG, JPEG or SVG.");
+      if (!png) throw new Error("The app can't open that picture. Try a PNG, JPEG or SVG.");
       return api.put<{ logo: string }>("/company/logo", { logo: await base64Of(png) });
     },
     onSuccess: changed,

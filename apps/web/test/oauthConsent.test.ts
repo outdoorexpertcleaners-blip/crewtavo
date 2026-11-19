@@ -103,10 +103,10 @@ describe("the connect screen", () => {
 
   it("says it will read everything the person can see, and can't change anything until they allow it", () => {
     const html = screen({ name: "Claude" }, "https://claude.ai/api/mcp/auth_callback");
-    expect(CAN_READ).toMatch(/^Everything you can see in Crewtavo\./);
+    expect(CAN_READ).toMatch(/^Everything you can see in the app\./);
     for (const what of ["gate and alarm codes", "invoices and payments", "pay"]) expect(CAN_READ).toContain(what);
     expect(html).toContain(CAN_READ);
-    expect(CANT_CHANGE).toBe("It can't change anything until you allow it, in Crewtavo under Settings → AI assistants.");
+    expect(CANT_CHANGE).toBe("It can't change anything until you allow it, in the app under Settings → AI assistants.");
     expect(html).toContain("It can&#x27;t change anything until you allow it");
     // What it used to say it could look at, which left out the money, the codes and the pay.
     expect(html).not.toContain("Knowledge base");

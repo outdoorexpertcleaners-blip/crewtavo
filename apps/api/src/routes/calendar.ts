@@ -202,7 +202,7 @@ calendar.get("/calendar/:file", async (c) => {
       job ? `Job #${job.number}` : null,
       crew ? `Crew: ${crew.name}` : null,
       v.notes,
-      `Open in Crewtavo: ${everything ? `${base}/schedule?view=day&date=${v.scheduled_on}` : `${base}/field/visits/${v.id}`}`,
+      `Open in the app: ${everything ? `${base}/schedule?view=day&date=${v.scheduled_on}` : `${base}/field/visits/${v.id}`}`,
     ].filter(Boolean);
     return {
       uid: `${v.id}@crewtavo`,
@@ -262,7 +262,7 @@ async function googleState(c: Ctx) {
     account_label: data?.account_label ?? null,
     last_sync_at: data?.last_sync_at ?? null,
     last_error: data?.last_error ?? null,
-    visits_calendar: settings.push_calendar_id ? { name: settings.push_calendar_name ?? "Crewtavo visits" } : null,
+    visits_calendar: settings.push_calendar_id ? { name: settings.push_calendar_name ?? "Outdoor Expert visits" } : null,
     push_calendar_id: settings.push_calendar_id ?? null,
   };
 }

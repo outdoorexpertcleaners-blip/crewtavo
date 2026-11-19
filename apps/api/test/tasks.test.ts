@@ -579,7 +579,7 @@ describe("clients who haven't had a visit in a while", () => {
         if (call.path === "rpc/emit_inactive_clients") return call.body.p_company === "co-1" ? 3 : 1;
         return [];
       });
-      const sending = { ...env, APP_URL: "https://ops.example.com", RESEND_API_KEY: "re_test", EMAIL_FROM: "Crewtavo <noreply@example.com>" };
+      const sending = { ...env, APP_URL: "https://ops.example.com", RESEND_API_KEY: "re_test", EMAIL_FROM: "The app <noreply@example.com>" };
       expect(await runTask("inactive", sending)).toEqual({ companies: 2, queued: 4, waiting: 0 });
       const rules = calls.find((c) => c.path === "automation_rules")!;
       expect([rules.url.searchParams.get("trigger"), rules.url.searchParams.get("enabled"), rules.url.searchParams.get("company.settings->marketing->>enabled")]).toEqual(["eq.client.inactive", "eq.true", "eq.true"]);

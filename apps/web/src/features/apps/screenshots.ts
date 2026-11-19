@@ -187,7 +187,7 @@ export const SCREENSHOTS: Record<string, Screenshot[]> = {
     { light: chatgptAccessLight, dark: chatgptAccessDark, alt: "Choosing what ChatGPT can change: read only, chosen areas, or full access with or without money" },
   ],
   quickbooks: [
-    { light: quickbooksInvoicesLight, dark: quickbooksInvoicesDark, alt: "The invoices Crewtavo sends to QuickBooks as they're sent and paid: who owes what, what's past due and what was collected" },
+    { light: quickbooksInvoicesLight, dark: quickbooksInvoicesDark, alt: "The invoices the app sends to QuickBooks as they're sent and paid: who owes what, what's past due and what was collected" },
   ],
   zoho_books: [
     { light: zohoBooksInvoiceLight, dark: zohoBooksInvoiceDark, alt: "An invoice and the check that paid it: the lines, the total and the payment that are copied to Zoho Books" },

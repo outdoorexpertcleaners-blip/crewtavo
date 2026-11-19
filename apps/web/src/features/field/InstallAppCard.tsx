@@ -25,13 +25,13 @@ export function InstallAppCard() {
       <Icon name={hint === "ios" ? "share" : "apps"} size={20} />
       {hint === "ios" ? (
         <div className="grow small" style={{ fontWeight: 400 }}>
-          <div>{t("Add Crewtavo to your Home Screen")}</div>
+          <div>{t("Add the app to your Home Screen")}</div>
           <T text="Tap Share {icon}, then <b>Add to Home Screen</b>. It opens like any other app." icon={<span style={{ verticalAlign: "-2px" }}><Icon name="share" size={14} /></span>} b={(s) => <strong>{s}</strong>} />
           {signIn && <> {signIn}</>}
         </div>
       ) : (
         <div className="grow small" style={{ fontWeight: 400 }}>
-          <div>{t("Get the Crewtavo app")}</div>
+          <div>{t("Get the app")}</div>
           {t("It opens from your home screen like any other app.")}
           {/* Outlined: the green button on My day is the visit to do now. */}
           <div style={{ marginTop: 8 }}><InstallAppButton size="sm" variant="secondary" /></div>

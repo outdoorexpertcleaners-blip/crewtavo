@@ -101,7 +101,7 @@ export function homeScreenSignInNote(features: CodeFeatures, sub: Pick<SubLogin,
 export const ASK_THE_OFFICE = msg("On a new phone? Ask the office to text you a new sign-in link.");
 
 /** After asking for a code on a Crewtavo that can't text (the API's { sent: false, reason: "sms_off" }). */
-export const TEXTING_OFF = msg("This Crewtavo isn't set up to send texts yet. On a new phone? Ask the office to text you a new sign-in link.");
+export const TEXTING_OFF = msg("This app isn't set up to send texts yet. On a new phone? Ask the office to text you a new sign-in link.");
 
 /** Under the code: what to do when nothing comes, since the answer never says whether the number or address has a sign-in. */
 export const NOTHING_CAME: Record<CodeWay, string> = {
@@ -112,17 +112,17 @@ export const NOTHING_CAME: Record<CodeWay, string> = {
 /** The sub's Profile → Signing in: how to get back in on a new phone. */
 export function signingInNote(companyName: string, ways: CodeWays): string {
   const company = companyName;
-  if (ways.text && ways.email) return t("There's no password. You stay signed in on this phone until you sign out. On a new phone, open Crewtavo and tap Get a sign-in code by text. We'll text a code to the number {company} has for you. No number on file? Tap Get a code by email instead, and we'll email one to the address they have. If no code comes, ask {company} for a new sign-in link.", { company });
-  if (ways.text) return t("There's no password. You stay signed in on this phone until you sign out. On a new phone, open Crewtavo and tap Get a sign-in code by text. We'll text a code to the number {company} has for you. If no code comes, ask {company} for a new sign-in link.", { company });
-  if (ways.email) return t("There's no password. You stay signed in on this phone until you sign out. On a new phone, open Crewtavo and tap Get a sign-in code by email. We'll email a code to the address {company} has for you. If no code comes, ask {company} for a new sign-in link.", { company });
+  if (ways.text && ways.email) return t("There's no password. You stay signed in on this phone until you sign out. On a new phone, open the app and tap Get a sign-in code by text. We'll text a code to the number {company} has for you. No number on file? Tap Get a code by email instead, and we'll email one to the address they have. If no code comes, ask {company} for a new sign-in link.", { company });
+  if (ways.text) return t("There's no password. You stay signed in on this phone until you sign out. On a new phone, open the app and tap Get a sign-in code by text. We'll text a code to the number {company} has for you. If no code comes, ask {company} for a new sign-in link.", { company });
+  if (ways.email) return t("There's no password. You stay signed in on this phone until you sign out. On a new phone, open the app and tap Get a sign-in code by email. We'll email a code to the address {company} has for you. If no code comes, ask {company} for a new sign-in link.", { company });
   return t("There's no password. You stay signed in on this phone until you sign out. On a new phone, ask {company} to text you a new sign-in link.", { company });
 }
 
 /** The "Sign out?" question a sub is asked first, since there's no password: how they get back in. */
 export function signOutNote(companyName: string, ways: CodeWays): string {
-  if (ways.text && ways.email) return t("There's no password. To get back in, open Crewtavo and get a sign-in code by text or by email.");
-  if (ways.text) return t("There's no password. To get back in, open Crewtavo and tap Get a sign-in code by text.");
-  if (ways.email) return t("There's no password. To get back in, open Crewtavo and tap Get a sign-in code by email.");
+  if (ways.text && ways.email) return t("There's no password. To get back in, open the app and get a sign-in code by text or by email.");
+  if (ways.text) return t("There's no password. To get back in, open the app and tap Get a sign-in code by text.");
+  if (ways.email) return t("There's no password. To get back in, open the app and tap Get a sign-in code by email.");
   return t("There's no password. To get back in, ask {company} to text you a new sign-in link.", { company: companyName });
 }
 

@@ -67,7 +67,7 @@ const REPORT: StorageReport = {
     { user_id: "u-sam", name: "Sam Crew", role: "crew_lead", role_name: "Foreman", used_bytes: 9e9, limit_bytes: 10e9, limit_source: "role" },
     { user_id: "u-ana", name: "Ana Office", role: "office", role_name: "Office", used_bytes: 3.1e9, limit_bytes: 20e9, limit_source: "person" },
     { user_id: "u-gone", name: "Lee Former", role: null, role_name: null, used_bytes: 1e9, limit_bytes: null, limit_source: null },
-    { user_id: null, name: "Uploaded by Crewtavo", role: null, role_name: null, used_bytes: 7.9e9, limit_bytes: null, limit_source: null },
+    { user_id: null, name: "Uploaded by the app", role: null, role_name: null, used_bytes: 7.9e9, limit_bytes: null, limit_source: null },
   ],
   by_area: [
     { area: "plans", bytes: 30e9 },
@@ -182,17 +182,17 @@ describe("Settings → Storage", () => {
     expect(page).toContain("Sam Crew Foreman 9 GB in use");
     expect(page).toContain("Limit: 10 GB From their role");
     expect(page).toContain("Limit: 20 GB Their own");
-    expect(page).toContain("Uploaded by Crewtavo");
+    expect(page).toContain("Uploaded by the app");
     expect(html).toContain('aria-label="Set a storage limit for Sam Crew"');
     expect(html).toContain('aria-label="Set a storage limit for Ana Office"');
     expect(html).not.toContain('aria-label="Set a storage limit for Pat Owner"');
-    expect(html).not.toContain('aria-label="Set a storage limit for Uploaded by Crewtavo"');
+    expect(html).not.toContain('aria-label="Set a storage limit for Uploaded by the app"');
     // Someone who left still has files here, but no limit to set.
     expect(page).toContain("Lee Former 1 GB in use — No longer on the team");
     expect(html).not.toContain('aria-label="Set a storage limit for Lee Former"');
     // Most first, with what no one in particular added at the end.
     expect(page.indexOf("Pat Owner")).toBeLessThan(page.indexOf("Sam Crew"));
-    expect(page.indexOf("Ana Office")).toBeLessThan(page.indexOf("Uploaded by Crewtavo"));
+    expect(page.indexOf("Ana Office")).toBeLessThan(page.indexOf("Uploaded by the app"));
   });
 
   it("gives owners limits by role: the company's roles and every built-in level but the owner's", () => {

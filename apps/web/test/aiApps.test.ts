@@ -15,13 +15,13 @@ const source = (path: string) => readFileSync(fileURLToPath(new URL(`../src/${pa
 const app = (more: Partial<AppRow>) => ({ id: "chatgpt", auth: "api_key", status: "disconnected", ...more }) as AppRow;
 
 describe("the Claude and ChatGPT apps", () => {
-  it.each(["anthropic", "chatgpt"])("%s is about Crewtavo's own AI, and points to Settings for the connector", (id) => {
+  it.each(["anthropic", "chatgpt"])("%s is about the app's own AI, and points to Settings for the connector", (id) => {
     const info = APP_INFO[id]!;
     expect(info.about).toContain("add the connector in Settings → AI assistants");
     expect(info.connectsWith).not.toMatch(/connector/i);
     // What goes to the AI service and what doesn't, as the other AI app (fal.ai) says it.
     expect(info.access[0]).toMatch(/^Send (Anthropic|OpenAI) what an ask is about/);
-    expect(info.access).toContain("Nothing else: it can't look things up in Crewtavo or change anything");
+    expect(info.access).toContain("Nothing else: it can't look things up in the app or change anything");
     // Nothing left that says it reads clients or changes the price list: that was the connector.
     expect(JSON.stringify(info)).not.toMatch(/Search clients|once you allow it|full access/);
   });
@@ -37,7 +37,7 @@ describe("the Claude and ChatGPT apps", () => {
   it("have no connector link on their pages: that's in Settings alone", () => {
     const page = source("features/apps/AppDetailPage.tsx");
     expect(page).not.toMatch(/ConnectorCard|mcp_url|mcpUrl|CONNECTOR_STEPS|Connector link copied/);
-    expect(page).toContain('To use Crewtavo from inside {app.name}, add the connector in <Link to="/settings?tab=assistants" style={{ textDecoration: "underline" }}>Settings → AI assistants</Link>.');
+    expect(page).toContain('To use the app from inside {app.name}, add the connector in <Link to="/settings?tab=assistants" style={{ textDecoration: "underline" }}>Settings → AI assistants</Link>.');
     const settings = source("features/settings/AssistantSettings.tsx");
     expect(settings).toContain("Connector link copied");
     expect(settings).toContain("CONNECTOR_STEPS.chatgpt");

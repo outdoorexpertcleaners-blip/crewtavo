@@ -68,7 +68,7 @@ export function LobPanel({ app, onChanged }: { app: AppRow; onChanged: () => voi
               <span className="muted small" style={{ display: "block", marginTop: 4 }}>No account yet? Sign up at lob.com first. Mailing for real needs a payment method in Lob.</span>
             </li>
             <li>Copy the <strong>secret</strong> key: the test one starts with <code>test_</code>, the live one with <code>live_</code>. Not the publishable key.</li>
-            <li>Paste it here. Crewtavo checks it with Lob before saving, at no cost.</li>
+            <li>Paste it here. The app checks it with Lob before saving, at no cost.</li>
           </ol>
         )}
         <form className="stack-sm" onSubmit={(e: FormEvent) => { e.preventDefault(); if (typed.length >= 10) save.mutate(); }}>

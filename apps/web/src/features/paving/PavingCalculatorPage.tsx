@@ -641,7 +641,7 @@ function ProfitPicker({ input, calc, onChange }: { input: CalcInput; calc: Calc;
           </>
         ) : (
           <span className="muted small grow">
-            No profit line: it's in your prices, where Crewtavo can't see it. So this quote and its job show a 0% margin (or just what the minimum charge adds). That's expected, not a mistake.
+            No profit line: it's in your prices, where the app can't see it. So this quote and its job show a 0% margin (or just what the minimum charge adds). That's expected, not a mistake.
           </span>
         )}
         <strong className="num calc-line-total">{formatMoney(calc.profit)}</strong>

@@ -56,7 +56,7 @@ export function RailwaySetupPage({ companyName, needed, onDone, onSignOut }: { c
         <div className={`stack ${authStyles.wide}`}>
           <div className="stack-sm" style={{ gap: 6 }}>
             <h1 className={authStyles.title}>{railway?.error ? "Connect Railway again" : "Connect Railway"}</h1>
-            <p className="muted" style={{ margin: 0 }}>{companyName}'s Crewtavo runs on Railway. This takes a minute, and you only do it once.</p>
+            <p className="muted" style={{ margin: 0 }}>{companyName}'s app runs on Railway. This takes a minute, and you only do it once.</p>
           </div>
           {overview.isPending ? (
             <CardSkeleton lines={4} />
@@ -71,7 +71,7 @@ export function RailwaySetupPage({ companyName, needed, onDone, onSignOut }: { c
             <Button variant="ghost" loading={later.isPending} onClick={() => later.mutate()}>Ask me tomorrow</Button>
           </div>
           <span className="muted small" style={{ textAlign: "center" }}>
-            Can't right now, or someone else looks after Railway? Ask me tomorrow lets you in for today. Until Railway is connected, Crewtavo can't warn you before it stops.
+            Can't right now, or someone else looks after Railway? Ask me tomorrow lets you in for today. Until Railway is connected, the app can't warn you before it stops.
           </span>
         </div>
       </AuthLayout>
@@ -101,14 +101,14 @@ export function RailwaySetupPage({ companyName, needed, onDone, onSignOut }: { c
           <Button variant="ghost" icon="logout" onClick={() => onSignOut()}>Sign out</Button>
           {connected ? (
             <Button variant={started ? "primary" : "ghost"} loading={finish.isPending} onClick={() => finish.mutate("done")}>
-              {started ? "Continue to Crewtavo" : "Not now"}
+              {started ? "Continue to the app" : "Not now"}
             </Button>
           ) : (
             <Button variant="ghost" loading={finish.isPending} onClick={() => finish.mutate("skipped")}>Skip for now</Button>
           )}
         </div>
         {connected && started && data?.change?.status !== "done" && (
-          <span className="muted small" style={{ textAlign: "center" }}>Crewtavo finishes setting up the address by itself and lets you know when it's done.</span>
+          <span className="muted small" style={{ textAlign: "center" }}>The app finishes setting up the address by itself and lets you know when it's done.</span>
         )}
       </div>
     </AuthLayout>

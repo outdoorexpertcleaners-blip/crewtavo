@@ -21,7 +21,7 @@ export function SpareKeysCard() {
   return (
     <div className="card card-pad stack-sm">
       <strong>{t("Key file")}</strong>
-      <span className="muted small">{t("If you forget your password while Crewtavo can't email you, uploading your key file gets you back in.")}</span>
+      <span className="muted small">{t("If you forget your password while the app can't email you, uploading your key file gets you back in.")}</span>
       {status.data && (left === 0 ? (
         <div className="callout callout-warning" style={{ padding: "10px 12px" }}>
           <Icon name="alert" size={16} />

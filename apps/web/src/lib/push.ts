@@ -46,7 +46,7 @@ export async function pushState(): Promise<PushState> {
 /** Ask permission, subscribe, and tell the server about this device. */
 export async function enablePush(): Promise<void> {
   const permission = await Notification.requestPermission();
-  if (permission !== "granted") throw new Error(permission === "denied" ? t("Notifications are blocked for Crewtavo in this browser's settings.") : t("Notifications weren't allowed."));
+  if (permission !== "granted") throw new Error(permission === "denied" ? t("Notifications are blocked for the app in this browser's settings.") : t("Notifications weren't allowed."));
   const registration = (await navigator.serviceWorker.getRegistration()) ?? (await navigator.serviceWorker.register("/sw.js"));
   await navigator.serviceWorker.ready;
   const { publicKey } = await api.get<{ publicKey: string }>("/push/key");

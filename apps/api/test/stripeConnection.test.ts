@@ -667,7 +667,7 @@ describe("replacing the Stripe key", () => {
     const res = await app.request("/api/apps/stripe/key", { method: "PUT", headers, body: JSON.stringify({ api_key: "rk_live_NEW", password: others.password }) }, env);
     expect(res.status).toBe(400);
     expect(((await res.json()) as { error: string }).error).toBe(
-      "That key can't add a webhook. Make a new one with Get a key from Stripe, which gives it everything Crewtavo needs. Stripe stays connected as it was.",
+      "That key can't add a webhook. Make a new one with Get a key from Stripe, which gives it everything the app needs. Stripe stays connected as it was.",
     );
     // Nothing was taken out, and the old key and its webhook are still the ones in use.
     expect(stripe.calls.filter((c) => c.includes("DELETE"))).toEqual([]);
@@ -837,7 +837,7 @@ describe("changing the Stripe key: the password, the record and the owners", () 
   const ALEX = "00000000-0000-4000-8000-0000000000ac";
   const LEFT = "00000000-0000-4000-8000-0000000000ad";
   // Email by the server's Resend account.
-  const mailing: Env = { ...env, RESEND_API_KEY: "re_test", EMAIL_FROM: "Crewtavo <hello@crewtavo.example>" };
+  const mailing: Env = { ...env, RESEND_API_KEY: "re_test", EMAIL_FROM: "The app <hello@crewtavo.example>" };
   beforeEach(() => {
     // Another owner, an admin, and an owner who left: only the two owners hear about it.
     db.tables.memberships!.push(
@@ -939,7 +939,7 @@ describe("changing the Stripe key: the password, the record and the owners", () 
     expect(first!.text).toContain("Who: Pat Owner (pat@greenlawn.example)");
     expect(first!.text).toContain("Stripe account: Business acct_A (acct_A)");
     expect(first!.text).toMatch(/When: \w{3} \d{1,2}, \d{4}, \d{1,2}:\d{2} [AP]M C[DS]T/);
-    expect(first!.text).toContain("If this wasn't you, sign in, disconnect Stripe on the Apps page, change your password, and delete the Crewtavo key in your Stripe dashboard.");
+    expect(first!.text).toContain("If this wasn't you, sign in, disconnect Stripe on the Apps page, change your password, and delete the Outdoor Expert app key in your Stripe dashboard.");
     expect(first!.text).toContain(`${BASE}/apps/stripe`);
 
     expect((await putKey(b, others.password)).status).toBe(200);
@@ -2826,7 +2826,7 @@ describe("refunds from Crewtavo", () => {
     // Made in a Stripe account Crewtavo has since left.
     db.tables.payments!.push({ ...payment, id: crypto.randomUUID(), processor_ref: "pi_elsewhere" });
     await expect(refundStripePayment(env, db.db, CO, db.tables.payments!.at(-1)!.id, 1000)).rejects.toMatchObject({
-      status: 409, message: "This payment was made in a Stripe account Crewtavo no longer uses. Refund it in that Stripe account.",
+      status: 409, message: "This payment was made in a Stripe account the app no longer uses. Refund it in that Stripe account.",
     });
     // What was owed from before, or a payment marked paid in Stripe.
     db.tables.payments!.push({ ...payment, id: crypto.randomUUID(), processor_ref: `${payment.processor_ref}:before` });

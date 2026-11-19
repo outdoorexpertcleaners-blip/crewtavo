@@ -284,12 +284,12 @@ account.post("/companies", requireUser, async (c) => {
   const { data: mine, error: mineError } = await adminClient(c.env).from("memberships").select("role").eq("user_id", c.var.userId);
   if (mineError) throw dbError(mineError);
   if (isSubLogin(c.var.appMetadata) && !mine?.some((m) => m.role !== "subcontractor")) {
-    throw new HttpError(403, "This sign-in is for your work with another business. To run your own business on Crewtavo, use a different email address.");
+    throw new HttpError(403, "This sign-in is for your work with another business. To run your own business, use a different email address.");
   }
   // A Crewtavo instance belongs to one business; everyone after the owner joins it by invite.
   if (c.env.CREWTAVO_SINGLE_COMPANY === "1") {
     const { data: existing } = await adminClient(c.env).from("companies").select("id").limit(1);
-    if (existing?.length) throw new HttpError(403, "This Crewtavo already has a business. Ask its owner to invite you.");
+    if (existing?.length) throw new HttpError(403, "This app already has a business. Ask its owner to invite you.");
   }
   let preset: TradePreset;
   try {
@@ -748,7 +748,7 @@ account.post("/team/:userId/invite-link", requireUser, requireCompany(ADMINS, "t
   if (invite.status !== "pending") {
     throw invite.status === "joined"
       ? new HttpError(400, "They've already set up their account. If they can't get in, use Reset password.")
-      : new HttpError(403, "This person also uses Crewtavo with another business, so they need to use Forgot password on the sign-in screen.");
+      : new HttpError(403, "This person also uses the app with another business, so they need to use Forgot password on the sign-in screen.");
   }
 
   const link = await welcomeLink(c.env, appUrl(c), invite.email);
@@ -801,7 +801,7 @@ account.post("/auth/email-link", async (c) => {
     }
   }
   if (!sender && emailConfigured(c.env)) {
-    sender = { id: null, name: onlyCompany?.name ?? "Crewtavo", email: onlyCompany?.email ?? null };
+    sender = { id: null, name: onlyCompany?.name ?? "Outdoor Expert", email: onlyCompany?.email ?? null };
   }
   if (!sender) {
     const fallback = body.kind === "recovery"
@@ -818,8 +818,8 @@ account.post("/auth/email-link", async (c) => {
   }
   const link = await emailAuthLink(c.env, appUrl(c), data.properties.hashed_token, body.kind);
   const text = body.kind === "recovery"
-    ? `Someone asked to reset the password for your ${sender.name} account on Crewtavo. Choose a new password here:\n\n${link}\n\nIf that wasn't you, ignore this email. Your password stays the same.`
-    : `Here's your link to sign in to ${sender.name} on Crewtavo. It works once and expires soon:\n\n${link}\n\nIf you didn't ask for it, ignore this email.`;
+    ? `Someone asked to reset the password for your ${sender.name} account. Choose a new password here:\n\n${link}\n\nIf that wasn't you, ignore this email. Your password stays the same.`
+    : `Here's your link to sign in to ${sender.name}. It works once and expires soon:\n\n${link}\n\nIf you didn't ask for it, ignore this email.`;
   const message = { to: email, subject: body.kind === "recovery" ? `Reset your ${sender.name} password` : `Your ${sender.name} sign-in link`, ...renderEmail({ companyName: sender.name, text }), replyTo: sender.email ?? undefined, fromName: sender.name };
   let result = await sendEmail(c.env, message, sender.id);
   // The company mailbox didn't take it: the install's own email still can (Supabase's mailer can't

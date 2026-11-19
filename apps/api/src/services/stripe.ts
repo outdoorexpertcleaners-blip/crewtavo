@@ -313,7 +313,7 @@ export function centsCurrency(currency: string): string {
   const code = currency.toLowerCase();
   if (IN_CENTS.has(code)) return code;
   throw new StripeError(
-    `Crewtavo can't bill through Stripe in ${currency.toUpperCase()}: it only knows currencies counted in cents, like USD. Change the currency in Settings → Company.`,
+    `The app can't bill through Stripe in ${currency.toUpperCase()}: it only knows currencies counted in cents, like USD. Change the currency in Settings → Company.`,
     400, "currency_not_supported", "currency", undefined, "invalid_request_error",
   );
 }

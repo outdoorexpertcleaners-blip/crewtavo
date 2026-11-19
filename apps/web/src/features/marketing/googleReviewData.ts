@@ -123,7 +123,7 @@ export function problemCopy(g: GoogleState, timeZone: string): ProblemCopy | nul
         tone: "warning",
         title: message,
         body: admin
-          ? `Whoever owns ${g.own_app ? "your Google app's" : "this server's"} Google Cloud project asks Google for access with Google's form, using an email that manages your Business Profile. The profile needs to have been verified for 60 days or more, and Google takes about 2 weeks. Review asks keep working meanwhile, and Crewtavo checks again every 6 hours.`
+          ? `Whoever owns ${g.own_app ? "your Google app's" : "this server's"} Google Cloud project asks Google for access with Google's form, using an email that manages your Business Profile. The profile needs to have been verified for 60 days or more, and Google takes about 2 weeks. Review asks keep working meanwhile, and the app checks again every 6 hours.`
           : "Review asks keep working meanwhile. An owner or admin can request access in Apps.",
         link: link("Open in Apps"),
       };
@@ -152,7 +152,7 @@ export function problemCopy(g: GoogleState, timeZone: string): ProblemCopy | nul
     case "location":
       return { tone: "warning", title: message, body: admin ? "" : "An owner or admin can fix this in Apps.", link: link("Open in Apps") };
     case "error":
-      return { tone: "warning", title: message, body: g.next_sync_at ? `Crewtavo tries again at ${formatTime(g.next_sync_at, timeZone)}.` : "Crewtavo tries again soon.", link: null };
+      return { tone: "warning", title: message, body: g.next_sync_at ? `The app tries again at ${formatTime(g.next_sync_at, timeZone)}.` : "The app tries again soon.", link: null };
     case "disconnected":
       return {
         tone: "info",

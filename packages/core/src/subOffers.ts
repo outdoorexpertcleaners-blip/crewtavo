@@ -119,11 +119,11 @@ export interface AnswerBy { respondBy: string | null | undefined; timeZone: stri
 const answerByWords = (by: AnswerBy | null | undefined) => (by?.respondBy ? ` Answer by ${offerTimeWords(by.respondBy, by.timeZone)}.` : "");
 
 /** What the sub's sign-ins get (and their text says) when an offer goes out, with the time to answer by. */
-export const offerText = (o: OfferLineInput, by?: AnswerBy | null) => `${offerLine(o)}.${answerByWords(by)} Open Crewtavo to accept or decline.`;
+export const offerText = (o: OfferLineInput, by?: AnswerBy | null) => `${offerLine(o)}.${answerByWords(by)} Open the app to accept or decline.`;
 
 /** What they get for a new price on agreed work. */
 export const changeText = (o: { title: string; total: number | string; agreed: number | string }, by?: AnswerBy | null) =>
-  `New price for ${o.title}: ${moneyShort(o.total)} (was ${moneyShort(o.agreed)}).${answerByWords(by)} Open Crewtavo to accept or decline.`;
+  `New price for ${o.title}: ${moneyShort(o.total)} (was ${moneyShort(o.agreed)}).${answerByWords(by)} Open the app to accept or decline.`;
 
 // ---------------------------------------------------------------------------------------------
 // What's wrong with a sub's insurance (it only warns)

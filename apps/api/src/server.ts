@@ -123,7 +123,7 @@ server.get("*", (c) => {
 });
 
 const listener = serve({ fetch: server.fetch, port, hostname: "0.0.0.0" }, () => {
-  console.log(`Crewtavo listening on port ${port}${env.APP_URL ? ` (${env.APP_URL})` : ""}`);
+  console.log(`App listening on port ${port}${env.APP_URL ? ` (${env.APP_URL})` : ""}`);
 });
 closeAfterUnreadBodies(listener as HttpServer);
 
@@ -196,7 +196,7 @@ async function migrate(again = false): Promise<void> {
       firstInstall = status.firstInstall ?? firstInstall;
       // Ready can come with a problem that doesn't stop it (newer_database). Error monitoring hears
       // of it too: nobody may be reading this instance's log.
-      if (status.ok && status.problem) reportError(new Error(`Crewtavo ${version} started on a database a newer version has updated (${status.detail ?? "no detail"})`), { startup: status.problem });
+      if (status.ok && status.problem) reportError(new Error(`App ${version} started on a database a newer version has updated (${status.detail ?? "no detail"})`), { startup: status.problem });
       setStartup(
         status.ok
           ? { state: "ready", ...(status.problem ? { problem: status.problem, detail: status.detail } : {}) }

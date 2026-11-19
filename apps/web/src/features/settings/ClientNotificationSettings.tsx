@@ -103,7 +103,7 @@ export function ClientNotificationSettings() {
       <div className="card card-pad stack">
         <div>
           <strong>Requests, quotes, invoices and reviews</strong>
-          <span className="muted small" style={{ display: "block" }}>The rest of what Crewtavo sends your clients for you, each a rule in <Link to="/automations">Automations</Link> too.</span>
+          <span className="muted small" style={{ display: "block" }}>The rest of what the app sends your clients for you, each a rule in <Link to="/automations">Automations</Link> too.</span>
         </div>
         {rest.map(row)}
       </div>

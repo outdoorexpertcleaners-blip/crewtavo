@@ -140,7 +140,7 @@ async function shapeMessages(db: Db, companyId: string, rows: MessageRow[]): Pro
       attachments: Array.isArray(row.attachments) ? (row.attachments as Attachment[]) : [],
       author: row.author_id ? people.get(row.author_id) ?? null : null,
       reply: reply
-        ? { id: reply.id, author: (reply.author_id && people.get(reply.author_id)?.name) || "Crewtavo", body: reply.deleted_at ? "" : reply.body.slice(0, 300), deleted: Boolean(reply.deleted_at) }
+        ? { id: reply.id, author: (reply.author_id && people.get(reply.author_id)?.name) || "The app", body: reply.deleted_at ? "" : reply.body.slice(0, 300), deleted: Boolean(reply.deleted_at) }
         : null,
       reactions: groupReactions((reactions.data ?? []).filter((r) => r.message_id === row.id)),
     };

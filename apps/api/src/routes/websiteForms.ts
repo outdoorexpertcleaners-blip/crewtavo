@@ -163,7 +163,7 @@ formInbox.post("/f/:key", async (c) => {
       return refuse(c, json, 403, "This form only takes messages from its own website.", company);
     }
     const sent = await sentFields(c);
-    if (!sent) return refuse(c, json, 400, "The form didn't send anything Crewtavo can read. Its method should be POST.", company);
+    if (!sent) return refuse(c, json, 400, "The form didn't send anything the app can read. Its method should be POST.", company);
     if (form.kind === "careers") return await takeApplication(c, json, form, sent);
     const cleaned = cleanFields(sent);
     if (!cleaned.ok) return refuse(c, json, 413, cleaned.error, company);

@@ -88,8 +88,8 @@ export function GeofenceCard({ visitId, onStatus }: { visitId?: string; onStatus
         <div className="callout callout-warning" role="status">
           <Icon name="pin" size={20} />
           <div className="grow small" style={{ fontWeight: 400 }}>
-            <div>{t("Location is off for Crewtavo")}</div>
-            {mode === "clock" ? t("Your clock can't start at the property. Turn on location for Crewtavo in your phone's settings.") : t("Crewtavo can't remind you at the property. Turn on location for Crewtavo in your phone's settings.")}
+            <div>{t("Location is off for the app")}</div>
+            {mode === "clock" ? t("Your clock can't start at the property. Turn on location for the app in your phone's settings.") : t("The app can't remind you at the property. Turn on location for the app in your phone's settings.")}
           </div>
         </div>
       )}
@@ -97,9 +97,9 @@ export function GeofenceCard({ visitId, onStatus }: { visitId?: string; onStatus
         <span className="muted small">
           {mode === "clock"
             ? dayClock
-              ? t("Your clock starts when Crewtavo is open on this phone at your next visit, not when you pull in. Once it sees you've left, it moves your clock to driving. Open it when you get there and when you leave, or tap the clock yourself.")
-              : t("Your clock starts when Crewtavo is open on this phone at your next visit, not when you pull in. It never stops your clock by itself: once it sees you've left, it asks you. Open it when you get there and when you leave, or tap the clock yourself.")
-            : t("Crewtavo reminds you to start and finish visits when it's open on this phone at the property. It can't tell while the phone is locked.")}
+              ? t("Your clock starts when the app is open on this phone at your next visit, not when you pull in. Once it sees you've left, it moves your clock to driving. Open it when you get there and when you leave, or tap the clock yourself.")
+              : t("Your clock starts when the app is open on this phone at your next visit, not when you pull in. It never stops your clock by itself: once it sees you've left, it asks you. Open it when you get there and when you leave, or tap the clock yourself.")
+            : t("The app reminds you to start and finish visits when it's open on this phone at the property. It can't tell while the phone is locked.")}
         </span>
       )}
     </>

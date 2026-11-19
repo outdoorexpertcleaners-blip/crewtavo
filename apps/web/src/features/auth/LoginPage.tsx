@@ -251,10 +251,10 @@ export function LoginPage({ notice = null }: { notice?: string | null } = {}) {
       <AuthLayout>
         <div className={`card card-pad ${styles.card}`} style={{ padding: 28 }}>
           <h1 className={styles.title}>{t("We can't email you a link")}</h1>
-          <p className="muted" style={{ margin: 0 }}>{t("This Crewtavo isn't set up to send email yet, so here's how to get back in:")}</p>
+          <p className="muted" style={{ margin: 0 }}>{t("This app isn't set up to send email yet, so here's how to get back in:")}</p>
           <ul style={{ margin: 0, paddingLeft: 20, display: "grid", gap: 10, lineHeight: 1.5 }}>
             <li><T text="<b>On a team?</b> Ask the owner or an admin for a reset link. They make one under <b>Settings → People</b>, next to your name." b={(s) => <strong>{s}</strong>} /></li>
-            <li><T text="<b>The owner?</b> Upload the key file you saved when you set up Crewtavo." b={(s) => <strong>{s}</strong>} /></li>
+            <li><T text="<b>The owner?</b> Upload the key file you saved when you set up the app." b={(s) => <strong>{s}</strong>} /></li>
           </ul>
           <Button variant="primary" icon="lock" onClick={() => { setEmailOff(false); switchTo("recover"); }}>{t("I'm the owner: use my key file")}</Button>
           <Button variant="ghost" icon="arrowLeft" onClick={() => { setEmailOff(false); switchTo("sign_in"); }}>{t("Back to sign in")}</Button>
@@ -315,7 +315,7 @@ export function LoginPage({ notice = null }: { notice?: string | null } = {}) {
 
         {mode === "recover" && !typingKey && (
           <>
-            <p style={{ margin: 0, lineHeight: 1.5 }}><T text="Upload the key file you saved when you set up Crewtavo. It's called <b>{file}</b>." b={(s) => <strong>{s}</strong>} file={KEY_FILE_NAME} /></p>
+            <p style={{ margin: 0, lineHeight: 1.5 }}><T text="Upload the key file you saved when you set up the app. It's called <b>{file}</b>." b={(s) => <strong>{s}</strong>} file={KEY_FILE_NAME} /></p>
             <input ref={keyFileInput} type="file" accept=".txt,text/plain" hidden onChange={submitKeyFile} />
             <Button variant="primary" size="lg" icon="upload" loading={busy === "form"} onClick={() => keyFileInput.current?.click()}>{t("Upload key file")}</Button>
           </>
@@ -370,7 +370,7 @@ export function LoginPage({ notice = null }: { notice?: string | null } = {}) {
 
         <div className={styles.links} style={{ justifyContent: "center" }}>
           {mode === "sign_in" ? (
-            signupOpen(settings.data) && <span className="muted">{t("New to Crewtavo?")} <button type="button" className="link-btn" onClick={() => switchTo("sign_up")}>{t("Create an account")}</button></span>
+            signupOpen(settings.data) && <span className="muted">{t("New here?")} <button type="button" className="link-btn" onClick={() => switchTo("sign_up")}>{t("Create an account")}</button></span>
           ) : (
             <span className="muted">{mode === "sign_up" ? t("Already have an account? ") : ""}<button type="button" className="link-btn" onClick={() => switchTo("sign_in")}>{mode === "sign_up" ? t("Sign in") : t("Back to sign in")}</button></span>
           )}

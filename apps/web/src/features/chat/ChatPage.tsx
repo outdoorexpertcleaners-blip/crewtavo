@@ -417,7 +417,7 @@ function PinsDialog({ open, channel, ctx, onClose }: { open: boolean; channel: C
         <div className={s.pinList}>
           {pins.data?.map((m) => (
             <button key={m.id} type="button" className={s.pinItem} onClick={() => { ctx.onJumpTo(m.id); onClose(); }}>
-              <span className="small"><strong>{m.author?.name ?? "Crewtavo"}</strong> <span className="muted">{dayLabel(m.created_at)}, {timeLabel(m.created_at)}</span></span>
+              <span className="small"><strong>{m.author?.name ?? t("The app")}</strong> <span className="muted">{dayLabel(m.created_at)}, {timeLabel(m.created_at)}</span></span>
               <span style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{m.body ? <MessageText body={m.body} ctx={ctx} /> : m.attachments.length ? t("Photo") : t("Job")}</span>
             </button>
           ))}

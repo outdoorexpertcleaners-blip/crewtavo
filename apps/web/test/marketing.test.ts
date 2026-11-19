@@ -85,14 +85,14 @@ describe("Crewtavo - Marketing in Apps", () => {
   it("opens Marketing, and says what uninstalling does", () => {
     const info = APP_INFO.marketing!;
     expect(info.open).toBe("/marketing");
-    expect(info.developer).toBe("Crewtavo");
+    expect(info.developer).toBe("Built into the app");
     expect(info.highlights.map((h) => h.title)).toEqual(["Reviews", "Referrals", "Campaigns", "Social"]);
     expect(info.access).toContain("Uninstalling hides Marketing and stops every automatic message it sends to clients, and keeps everything");
     expect(info.website).toBe("https://crewtavo.com/docs/clients/marketing/");
   });
 
-  it("has Crewtavo's own icon, and installs and uninstalls like the other built-in apps", () => {
-    expect(source("../src/features/apps/AppIcon.tsx")).toContain("marketing: crewtavoLogo");
+  it("has the business's own app icon, and installs and uninstalls like the other built-in apps", () => {
+    expect(source("../src/features/apps/AppIcon.tsx")).toContain("marketing: BUILT_IN");
     const page = source("../src/features/apps/AppDetailPage.tsx");
     expect(page).toContain('app.id === "marketing" ? marketingSwitch');
     expect(page).toContain("<MarketingPanel />");
@@ -588,13 +588,13 @@ describe("Google Business Profile in Apps", () => {
   it("is a Marketing app that shows reviews in Marketing, and says what it can't do", () => {
     const info = APP_INFO.google_business!;
     expect([CATEGORY_LABELS.Marketing, MORE_LABELS.Marketing]).toEqual(["Marketing", "More marketing apps"]);
-    expect(info.tagline).toBe("Your Google reviews in Crewtavo");
+    expect(info.tagline).toBe("Your Google reviews in the app");
     expect(info.open).toBe("/marketing?tab=reviews");
     expect(info.highlights.map((h) => h.title)).toEqual(["Reviews in Marketing", "Reply with a suggestion", "Asks stop once they've reviewed"]);
     expect(info.access).toEqual(expect.arrayContaining([
       "Post, change and delete the replies you write here, publicly on Google",
       "It can't change or remove your reviews",
-      "Needs Marketing - Crewtavo",
+      "Needs Marketing",
       "Uninstalling stops bringing reviews in and keeps the ones already here",
     ]));
     expect(info.website).toBe("https://crewtavo.com/docs/connections/google-business-profile/");
@@ -604,7 +604,7 @@ describe("Google Business Profile in Apps", () => {
 
   it("waits for Marketing, and never signs in straight from Install: Google's access request comes first", () => {
     const page = source("../src/features/apps/AppDetailPage.tsx");
-    expect(page).toContain("Install Marketing - Crewtavo first: your Google reviews show in Marketing → Reviews.");
+    expect(page).toContain("Install Marketing first: your Google reviews show in Marketing → Reviews.");
     expect(page).toContain('app.id !== "google_calendar" && app.id !== "google_business" && !keysFirst(app)');
     expect(page).toContain('{ label: "Waiting on Google", tone: "warning" }');
     expect(page).toContain('{ label: "Paused", tone: "warning" }');
@@ -613,7 +613,7 @@ describe("Google Business Profile in Apps", () => {
     const before = panel.slice(panel.indexOf("export function GoogleBeforeSignIn"));
     expect(before.indexOf("GOOGLE_ACCESS_FORM")).toBeLessThan(before.indexOf("Sign in with Google"));
     expect(panel).toContain("Marketing is off, so reviews aren't brought in and replies can't be posted. Reviews already here are kept.");
-    expect(panel).toContain("Crewtavo brings in one location's reviews.");
+    expect(panel).toContain("The app brings in one location's reviews.");
     expect(panel).toContain("body: changeLocationWords(reviewCount, current?.title),");
     // Signed in with no location in use, the picker shows: also after reconnecting to an account
     // without the location the kept reviews came from, or one with no Business Profile at all.
@@ -690,7 +690,7 @@ describe("Google reviews on the Reviews tab", () => {
     expect(problemCopy({ ...waiting, own_app: true }, "UTC")!.body).toContain("your Google app's Google Cloud project");
     expect(problemCopy({ ...waiting, can_connect: false }, "UTC")!.body).toBe("Review asks keep working meanwhile. An owner or admin can request access in Apps.");
     expect(problemCopy(g({ state: "signin", can_connect: false }), "UTC")!.body).toBe("An owner or admin can reconnect it in Apps.");
-    expect(problemCopy(g({ state: "error", problem_message: "Reviews couldn't be brought in: Internal error.", next_sync_at: "2026-10-31T19:30:00Z" }), "America/New_York")!.body).toBe("Crewtavo tries again at 3:30 PM.");
+    expect(problemCopy(g({ state: "error", problem_message: "Reviews couldn't be brought in: Internal error.", next_sync_at: "2026-10-31T19:30:00Z" }), "America/New_York")!.body).toBe("The app tries again at 3:30 PM.");
     expect(problemCopy(g(), "UTC")).toBeNull();
   });
 
@@ -1127,7 +1127,7 @@ describe("Facebook & Instagram in Apps", () => {
     expect(info.access).toEqual(expect.arrayContaining([
       "Post photos and reviews to the Page and Instagram account you pick, when someone posts or schedules one (or automatic posts are on)",
       "It can't read your messages, comments or ads",
-      "Needs Marketing - Crewtavo",
+      "Needs Marketing",
     ]));
     expect(APP_INFO.google_business!.access).toContain("Post to your Business Profile when you post from Marketing → Social");
     expect(source("../src/features/apps/AppIcon.tsx")).toContain("meta: metaLogo");
@@ -1136,7 +1136,7 @@ describe("Facebook & Instagram in Apps", () => {
 
   it("waits for Marketing, is Paused without it, and is only Live once someone says so", () => {
     const page = source("../src/features/apps/AppDetailPage.tsx");
-    expect(page).toContain("Install Marketing - Crewtavo first: your posts are made in Marketing → Social.");
+    expect(page).toContain("Install Marketing first: your posts are made in Marketing → Social.");
     expect(page).toContain('const metaOpens = !(app.id === "meta" && app.meta?.marketing_on === false);');
     expect(page).toContain('{ label: "Not Live yet", tone: "warning" }');
     expect(page).toContain("Use Post again once you've connected again.");
@@ -1168,7 +1168,7 @@ describe("Facebook & Instagram in Apps", () => {
     expect(page).toContain('app.id === "meta" ? pending === "no_pages"');
     expect(page).toContain("Signed in, but that Facebook account doesn't manage a Page.");
     expect(page).toContain("{!installed && (setup || keysSaved) && !unavailable && (");
-    expect(page).toContain("Crewtavo's access to them is removed at Meta.");
+    expect(page).toContain("the app's access to them is removed at Meta.");
     expect(source("../src/features/apps/MetaPanel.tsx")).toContain(`if {m.missing.length === 1 ? "it isn't" : "they aren't"} there`);
     const keys = source("../src/features/apps/AppKeysCard.tsx");
     const steps = keys.slice(keys.indexOf("export function MetaSteps"));

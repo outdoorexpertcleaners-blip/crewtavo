@@ -108,11 +108,11 @@ const AREA_NOUNS: Record<AssistantArea, string> = {
 /** Why an assistant can't make a change, and where to allow it. The database says the same (hooks.before_request). */
 export function assistantRefusal(area: AssistantArea, deleting = false, access: AssistantAccess = READ_ONLY_ACCESS): string {
   if (access.level === "full_no_money" && isMoneyArea(area)) {
-    return "This assistant can't change money: quotes, invoices, payments, pay or promo codes. To let it, give it Full access in Crewtavo, under Settings → AI assistants.";
+    return "This assistant can't change money: quotes, invoices, payments, pay or promo codes. To let it, give it Full access in the app, under Settings → AI assistants.";
   }
   return deleting && access.level === "areas"
-    ? "This assistant can't delete things. Only an assistant with full access can, in Crewtavo, under Settings → AI assistants."
-    : `This assistant can't change ${AREA_NOUNS[area]}. To let it, choose what it can change in Crewtavo, under Settings → AI assistants.`;
+    ? "This assistant can't delete things. Only an assistant with full access can, in the app, under Settings → AI assistants."
+    : `This assistant can't change ${AREA_NOUNS[area]}. To let it, choose what it can change in the app, under Settings → AI assistants.`;
 }
 
 /** "Read only", "Can change: Price list, Crews", "Full access", "Full access, no money". */

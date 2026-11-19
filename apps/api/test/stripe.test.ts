@@ -213,7 +213,7 @@ describe("stripe api", () => {
       const error = await stripeApi("sk_test_1", "POST", "/v1/invoiceitems", { customer: "cus_1", currency, amount: 500000 }, { idempotencyKey: "k1" }).catch((e) => e);
       expect(error).toBeInstanceOf(StripeError);
       expect(error).toMatchObject({ status: 400, code: "currency_not_supported", param: "currency" });
-      expect((error as StripeError).message).toBe(`Crewtavo can't bill through Stripe in ${currency.toUpperCase()}: it only knows currencies counted in cents, like USD. Change the currency in Settings → Company.`);
+      expect((error as StripeError).message).toBe(`The app can't bill through Stripe in ${currency.toUpperCase()}: it only knows currencies counted in cents, like USD. Change the currency in Settings → Company.`);
     }
     expect(fetch).not.toHaveBeenCalled();
     // Every currency a business can pick goes through, and so do the others its smallest charge is known for.

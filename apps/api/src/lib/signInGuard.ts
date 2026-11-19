@@ -54,7 +54,7 @@ export function authRoute(url: URL, prefix: string): string {
 /** Auth's own emails (a reset, a sign-in link or code, another copy of one): Crewtavo sends its own. */
 const AUTH_MAIL = new Set(["/recover", "/otp", "/magiclink", "/resend"]);
 export const sendsAuthMail = (route: string) => AUTH_MAIL.has(route);
-export const NO_AUTH_MAIL = "Crewtavo sends sign-in links itself. Use Forgot password on the sign-in page.";
+export const NO_AUTH_MAIL = "The app sends sign-in links itself. Use Forgot password on the sign-in page.";
 export const LINK_EXPIRED = "Email link is invalid or has expired";
 
 const signature = async (env: Env, tokenHash: string, type: string) => (await keyedHash(env, `auth-link/v1:${type}:${tokenHash}`)).slice(0, 40);

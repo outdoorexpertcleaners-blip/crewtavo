@@ -84,7 +84,7 @@ export function ImportJobberDialog({ onClose }: { onClose: () => void }) {
               <div className="callout callout-warning">
                 <Icon name="info" size={20} />
                 <div className="grow small" style={{ fontWeight: 400 }}>
-                  <div>Some clients aren&apos;t in Crewtavo yet</div>
+                  <div>Some clients aren&apos;t in the app yet</div>
                   {count(KINDS.reduce((n, { kind }) => n + preview.data.plan[kind].missing_clients, 0), "row")} are for clients who aren&apos;t here, so they&apos;d be skipped. Add Jobber&apos;s clients export (Clients → More actions → Export clients, as CSV) and they come in first.
                   <label className="btn btn-sm" style={{ marginTop: 8, display: "inline-flex" }}>
                     <Icon name="upload" size={14} /> Add the clients file
@@ -96,7 +96,7 @@ export function ImportJobberDialog({ onClose }: { onClose: () => void }) {
             {preview.data.plan.jobs.ready.some((r) => r.record.needs_schedule) && (
               <p className="muted small" style={{ margin: 0 }}>
                 {count(preview.data.plan.jobs.ready.filter((r) => r.record.needs_schedule).length, "recurring job")} don&apos;t say how they repeat
-                {files.some((f) => f.kind === "visits") ? <> in a way Crewtavo can follow: they come in </> : <>. Add Jobber&apos;s visits report and their schedule is worked out from their visits; otherwise they come in </>}
+                {files.some((f) => f.kind === "visits") ? <> in a way the app can follow: they come in </> : <>. Add Jobber&apos;s visits report and their schedule is worked out from their visits; otherwise they come in </>}
                 without one, listed at the end for you to set.
               </p>
             )}
@@ -104,7 +104,7 @@ export function ImportJobberDialog({ onClose }: { onClose: () => void }) {
               <Icon name="info" size={20} />
               <div className="grow small" style={{ fontWeight: 400 }}>
                 <div>Nothing is sent or charged</div>
-                No emails or texts go to clients as it comes in, and no trip charge, minimum charge or late fee is added: each invoice owes what it owed in Jobber, with what was paid there as one payment. Crewtavo gives each its own number and keeps Jobber&apos;s beside it. To carry on from Jobber&apos;s numbers afterwards, set your next quote, job and invoice numbers under Settings → Company. Importing the same files again adds nothing. After that they&apos;re like the rest: an invoice that falls past due later gets your usual reminder.
+                No emails or texts go to clients as it comes in, and no trip charge, minimum charge or late fee is added: each invoice owes what it owed in Jobber, with what was paid there as one payment. The app gives each its own number and keeps Jobber&apos;s beside it. To carry on from Jobber&apos;s numbers afterwards, set your next quote, job and invoice numbers under Settings → Company. Importing the same files again adds nothing. After that they&apos;re like the rest: an invoice that falls past due later gets your usual reminder.
               </div>
             </div>
             {run.isPending && (
@@ -134,7 +134,7 @@ export function ImportJobberDialog({ onClose }: { onClose: () => void }) {
               <li>In Jobber, go to <strong>Insights → Reports</strong>.</li>
               <li>Open the <strong>Quotes</strong>, <strong>Invoices</strong>, <strong>One-off jobs</strong> and <strong>Recurring jobs</strong> reports in turn, set the dates to All time, and choose <strong>Export to CSV</strong> with all columns.</li>
               <li>Export the <strong>Visits</strong> report too, for the next few months: recurring jobs keep their schedule when their visits show it, and one-off jobs come with their visits still to do.</li>
-              <li>Clients not in Crewtavo yet? Add Jobber&apos;s Clients export (and its Properties export) as well, and they come in first.</li>
+              <li>Clients not in the app yet? Add Jobber&apos;s Clients export (and its Properties export) as well, and they come in first.</li>
             </ol>
             <span className="muted small">Only what&apos;s still open comes in: quotes not yet won or lost, invoices not paid, and jobs not closed.</span>
           </>

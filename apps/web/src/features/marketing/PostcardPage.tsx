@@ -217,7 +217,7 @@ function PostcardScreen() {
   const cardProblems = [
     !s?.lob && "Lob isn't connected.",
     s?.lob?.problem,
-    s && !s.public_address && "Crewtavo's address isn't public, so Lob can't fetch the front picture.",
+    s && !s.public_address && "The app's address isn't public, so Lob can't fetch the front picture.",
     s && !s.return_address && (s.return_address_problem ?? "Add your company's full address in Settings → Company. Lob prints it on each card as the return address."),
     !draft.front_attachment_id && !draft.front_path && "Pick a picture for the front.",
     messageProblem(message, draft.size),
@@ -276,7 +276,7 @@ function PostcardScreen() {
                   onSelect: async () => {
                     // Lob may still fetch the front's picture, which deleting the campaign takes down.
                     const wait = deletableFrom(c);
-                    if (wait) return void (await confirm({ title: "This campaign can't be deleted yet", body: `Lob fetches the picture on the front from Crewtavo while it draws the cards, and deleting the campaign takes the picture down. It can be deleted from ${formatDate(wait.toISOString())}, ${POSTCARD_KEEP_DAYS} days after its last card.`, confirmLabel: "OK" }));
+                    if (wait) return void (await confirm({ title: "This campaign can't be deleted yet", body: `Lob fetches the picture on the front from the app while it draws the cards, and deleting the campaign takes the picture down. It can be deleted from ${formatDate(wait.toISOString())}, ${POSTCARD_KEEP_DAYS} days after its last card.`, confirmLabel: "OK" }));
                     if (await confirm({ title: "Delete this postcard campaign?", body: c.status === "draft" ? undefined : "Its list of who was mailed goes too. Cards already mailed aren't affected.", confirmLabel: "Delete", danger: true })) remove.mutate();
                   },
                 },
@@ -538,7 +538,7 @@ function PostcardStats({ id, mode, live }: { id: string; mode: "test" | "live"; 
           <div className="hint">{mode === "test" ? "Test cards weren't mailed" : r?.revenue == null ? "Needs the Invoices area" : `${(r.clients_paid ?? 0).toLocaleString("en-US")} ${r.clients_paid === 1 ? "client" : "clients"} paid, before tax`}</div>
         </div>
       </div>
-      <p className="muted small" style={{ margin: 0 }}>Lob draws each card after it accepts it. For {POSTCARD_KEEP_DAYS} days after the last card, Crewtavo asks Lob every hour whether any failed, and marks those failed below with Lob's reason.</p>
+      <p className="muted small" style={{ margin: 0 }}>Lob draws each card after it accepts it. For {POSTCARD_KEEP_DAYS} days after the last card, the app asks Lob every hour whether any failed, and marks those failed below with Lob's reason.</p>
       {mode === "live" && <p className="muted small" style={{ margin: 0 }}>Revenue is paid invoices from clients this was mailed to, made after their card and within 90 days of it, before tax. A postcard has no link to follow, so it counts work they'd have booked anyway too.</p>}
     </div>
   );

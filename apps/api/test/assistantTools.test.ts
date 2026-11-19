@@ -151,7 +151,7 @@ describe("importing a schedule", () => {
     expect(preview.items[0].next_dates).toEqual(["2026-04-07", "2026-04-21", "2026-05-05"]);
     expect(preview.items[2].problem).toMatch(/^No client found/);
     expect((await call("jobsonly", "import_schedule", { mode: "commit", items })).error).toBe(
-      "This assistant can't change the schedule. To let it, choose what it can change in Crewtavo, under Settings → AI assistants.",
+      "This assistant can't change the schedule. To let it, choose what it can change in the app, under Settings → AI assistants.",
     );
     expect(db.jobs).toHaveLength(0);
   });
@@ -184,7 +184,7 @@ describe("money", () => {
 
   it("figures are for the roles that see them", async () => {
     supabase("estimator");
-    expect((await call("full", "money_report", {})).error).toBe("Your role in Crewtavo doesn't allow that. An owner or admin can change your role.");
+    expect((await call("full", "money_report", {})).error).toBe("Your role in the app doesn't allow that. An owner or admin can change your role.");
     expect((await call("full", "pay_summary", {})).error).toMatch(/^Pay is for the office/);
   });
 });
@@ -421,7 +421,7 @@ describe("quotes that offer options", () => {
     const { db, sent } = supabase();
     offering(db);
     const result = await call("full", "update_quote", { quote_id: QUOTE, title: "Roof", lines: [{ name: "Gutters", unit_price: 900 }] });
-    expect(result.error).toBe("This quote offers options; edit its lines in Crewtavo.");
+    expect(result.error).toBe("This quote offers options; edit its lines in the app.");
     expect(writes(sent)).toEqual([]);
   });
 
@@ -466,7 +466,7 @@ describe("quotes that offer options", () => {
     offering(db);
     db.quotes![0]!.lines = db.quotes![0]!.lines.filter((l: Row) => l.option_id !== BEST);
     expect((await call("full", "mark_quote", { quote_id: QUOTE, status: "approved", option_id: BEST })).error).toBe(
-      "That option isn't priced yet: it has no lines of its own. Add them in Crewtavo, or pick another one.",
+      "That option isn't priced yet: it has no lines of its own. Add them in the app, or pick another one.",
     );
     expect(writes(sent)).toEqual([]);
   });
@@ -642,8 +642,8 @@ describe("marketing", () => {
 
   it("is for the office with the Marketing area", async () => {
     supabase("field_crew");
-    expect((await call("full", "save_campaign", { subject: "Hi" })).error).toMatch(/Your role in Crewtavo doesn't allow that/);
-    expect((await call("full", "reply_to_review", { review_id: CAMPAIGN, comment: "Thank you!" })).error).toMatch(/Your role in Crewtavo doesn't allow that/);
+    expect((await call("full", "save_campaign", { subject: "Hi" })).error).toMatch(/Your role in the app doesn't allow that/);
+    expect((await call("full", "reply_to_review", { review_id: CAMPAIGN, comment: "Thank you!" })).error).toMatch(/Your role in the app doesn't allow that/);
   });
 });
 

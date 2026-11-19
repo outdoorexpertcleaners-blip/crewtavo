@@ -207,7 +207,7 @@ export const STRIPE_KEY_PERMISSIONS = [
 export const PASSWORD_HINT = "To make sure it's you. No password yet? Set one under Settings → Profile.";
 
 /** Stripe's create-key form with the permissions above already set. */
-export const STRIPE_NEW_KEY = `https://dashboard.stripe.com/apikeys/create?name=Crewtavo&${STRIPE_KEY_PERMISSIONS.map((p) => `permissions%5B%5D=rak_${p}`).join("&")}`;
+export const STRIPE_NEW_KEY = `https://dashboard.stripe.com/apikeys/create?name=Outdoor%20Expert%20app&${STRIPE_KEY_PERMISSIONS.map((p) => `permissions%5B%5D=rak_${p}`).join("&")}`;
 /** The same form in Stripe's test mode: a test key (rk_test_), test cards only, no real money. */
 export const STRIPE_NEW_TEST_KEY = STRIPE_NEW_KEY.replace("https://dashboard.stripe.com/apikeys/", "https://dashboard.stripe.com/test/apikeys/");
 
@@ -258,7 +258,7 @@ export function useApps() {
 }
 
 export const CATEGORY_LABELS: Record<AppRow["category"], string> = {
-  Team: "Built by Crewtavo",
+  Team: "Built in",
   Marketing: "Marketing",
   Calendar: "Calendars",
   AI: "AI",
@@ -271,7 +271,7 @@ export const CATEGORY_LABELS: Record<AppRow["category"], string> = {
 };
 
 /** An app's category on its own page: the built-in ones are simply Crewtavo's. */
-export const categoryName = (category: AppRow["category"]) => (category === "Team" ? "Crewtavo" : (CATEGORY_LABELS[category] ?? category));
+export const categoryName = (category: AppRow["category"]) => (category === "Team" ? "Built in" : (CATEGORY_LABELS[category] ?? category));
 
 /** The row of related apps at the bottom of an app's page. */
 export const MORE_LABELS: Record<AppRow["category"], string> = {
@@ -319,7 +319,7 @@ export interface AppInfo {
 
 const CALENDAR_HIGHLIGHTS: AppInfo["highlights"] = [
   { icon: "calendar", title: "Next to your visits", text: "Events show on the schedule in the calendar's color, by day, week and month." },
-  { icon: "clock", title: "Find a time knows", text: "Busy time counts when Crewtavo suggests open slots, so nobody gets double-booked." },
+  { icon: "clock", title: "Find a time knows", text: "Busy time counts when the app suggests open slots, so nobody gets double-booked." },
   { icon: "refresh", title: "Always current", text: "Read again every 15 minutes, with repeats, moved meetings and cancellations." },
 ];
 
@@ -327,7 +327,7 @@ export const LINK_ACCESS = ["Read the events on the calendars you add", "Nothing
 
 export const APP_INFO: Record<string, AppInfo> = {
   team_chat: {
-    developer: "Crewtavo",
+    developer: "Built into the app",
     tagline: "Channels for the whole team, each crew and the office",
     about:
       "Talk to your team where the work already is. Post news everyone reads in Announcements, keep each crew's day in its own channel, and keep quotes and billing in the office's. Who sees each channel goes by role, the same roles as Settings → Roles, so field crew only see what's theirs. Share photos from the job, link a job so everyone opens the same one, and @mention a person or a whole role to get their attention, with a push to their phone.",
@@ -336,16 +336,16 @@ export const APP_INFO: Record<string, AppInfo> = {
       { icon: "mention", title: "@mentions", text: "Mention someone or a whole role, like @Field crew. They get a push on their phone." },
       { icon: "camera", title: "Photos and jobs", text: "Send photos from the job site and link a job so everyone opens the same one." },
     ],
-    access: ["Show chat to the people on your team, by their role", "Keep messages and photos in your own Crewtavo, like everything else", "Turning it off hides chat and keeps every message"],
-    connectsWith: "Crewtavo",
+    access: ["Show chat to the people on your team, by their role", "Keep messages and photos in your own app, like everything else", "Turning it off hides chat and keeps every message"],
+    connectsWith: "Built in",
     website: "https://crewtavo.com/docs/connections/team-chat/",
     open: "/chat",
   },
   website_analytics: {
-    developer: "Crewtavo",
+    developer: "Built into the app",
     tagline: "Who visits your website, and what brings in work",
     about:
-      "Paste one line into your website and see how many people visit it, which pages they read, where they came from (Google, Facebook, Yelp, an email or a campaign) and whether they were on a phone or a computer, in Marketing. Booking requests from your website's form say which page and source brought them in, so you can tell what's worth your time and money. It works like Google Analytics without the cookies: nothing that tells who a visitor is gets kept, so most businesses don't need a cookie banner for it, and it's all in your own Crewtavo.",
+      "Paste one line into your website and see how many people visit it, which pages they read, where they came from (Google, Facebook, Yelp, an email or a campaign) and whether they were on a phone or a computer, in Marketing. Booking requests from your website's form say which page and source brought them in, so you can tell what's worth your time and money. It works like Google Analytics without the cookies: nothing that tells who a visitor is gets kept, so most businesses don't need a cookie banner for it, and it's all in your own app.",
     highlights: [
       { icon: "metrics", title: "Visits and pages", text: "Visitors and page views against the period before, and the pages people read most." },
       { icon: "globe", title: "Where they came from", text: "Search, social, directories like Yelp, AI assistants, emails and your own campaign links." },
@@ -362,10 +362,10 @@ export const APP_INFO: Record<string, AppInfo> = {
     open: "/marketing?tab=website",
   },
   website_forms: {
-    developer: "Crewtavo",
-    tagline: "Your website's own form, sending to Crewtavo",
+    developer: "Built into the app",
+    tagline: "Your website's own form, sending to the app",
     about:
-      "Keep the contact or quote form your website already has, in its own fonts and colors, and change one thing: where it sends. Install, copy your form's address into its action, and every message becomes a request in Crewtavo and an email to the people you choose, with Reply going straight to whoever sent it. Messages from someone you already know land on their client record, found by their email or phone number; anyone new becomes a lead. It works like Formspree, so a Formspree form moves over by changing its address, and it's free and kept in your own Crewtavo.",
+      "Keep the contact or quote form your website already has, in its own fonts and colors, and change one thing: where it sends. Install, copy your form's address into its action, and every message becomes a request in the app and an email to the people you choose, with Reply going straight to whoever sent it. Messages from someone you already know land on their client record, found by their email or phone number; anyone new becomes a lead. It works like Formspree, so a Formspree form moves over by changing its address, and it's free and kept in your own app.",
     highlights: [
       { icon: "code", title: "Any form, any website", text: "Wix, Squarespace, WordPress or hand-written HTML: point the form's action here and it works." },
       { icon: "requests", title: "Straight into Requests", text: "Each message is a request on the right client, with every field the form asked." },
@@ -382,7 +382,7 @@ export const APP_INFO: Record<string, AppInfo> = {
     open: "/requests?from=website",
   },
   careers: {
-    developer: "Crewtavo",
+    developer: "Built into the app",
     tagline: "Job applications from your website, résumés and all",
     about:
       "Keep the careers page and Apply form your website already has, in its own fonts and colors, and change one thing: where it sends. Install, copy your form's address into its action, and every application lands in Applicants, a new place in the sidebar for the office: when they applied, the position, when they can start, their availability, pay, experience and driver's license, and their résumé. The people you choose get an email for each one, with Reply going straight to the applicant. Move each one from New to Interview to Hired, rate them, set the interview and keep notes. Applicants never become clients, and only owners, admins and office staff with the hiring area see them.",
@@ -402,22 +402,22 @@ export const APP_INFO: Record<string, AppInfo> = {
     open: "/applicants",
   },
   drive: {
-    developer: "Crewtavo",
+    developer: "Built into the app",
     tagline: "All your files in one place",
     about:
-      "Every file your business keeps, in one place in the sidebar. Company files holds the ones that belong to no client, like your forms, price sheets and insurance papers, in folders you make. Clients lists every file on each client's properties, requests, quotes and jobs, so the plans from last year's job are one tap away. Drop in as many files as you like, big plan sets included, open PDFs, Word documents and pictures right in Crewtavo, fill in a form or mark up a plan, and each save keeps the one before it as an older version. Attach a file to a job and the crew on it gets it on their visit. Pick files in your Google Drive to copy them in. Files deleted in Crewtavo, from a plan to a visit photo or a receipt, wait in the Trash for 30 days. Most go straight back where they were; a sub's paperwork, an applicant's file or a receipt whose record is gone is downloaded from the Trash instead.",
+      "Every file your business keeps, in one place in the sidebar. Company files holds the ones that belong to no client, like your forms, price sheets and insurance papers, in folders you make. Clients lists every file on each client's properties, requests, quotes and jobs, so the plans from last year's job are one tap away. Drop in as many files as you like, big plan sets included, open PDFs, Word documents and pictures right in the app, fill in a form or mark up a plan, and each save keeps the one before it as an older version. Attach a file to a job and the crew on it gets it on their visit. Pick files in your Google Drive to copy them in. Files deleted in the app, from a plan to a visit photo or a receipt, wait in the Trash for 30 days. Most go straight back where they were; a sub's paperwork, an applicant's file or a receipt whose record is gone is downloaded from the Trash instead.",
     highlights: [
       { icon: "folder", title: "Company folders", text: "Forms, price sheets and insurance papers in folders of your own, with no client needed." },
-      { icon: "edit", title: "Open and edit", text: "Fill in a PDF form, mark up a plan or change a Word document without leaving Crewtavo." },
+      { icon: "edit", title: "Open and edit", text: "Fill in a PDF form, mark up a plan or change a Word document without leaving the app." },
       { icon: "history", title: "Every version kept", text: "Saving or uploading a new version keeps the older ones, so you can always go back." },
       { icon: "trash", title: "A 30-day Trash", text: "Deleted files, from plans to visit photos and receipts, wait 30 days in the Trash, to put back or download." },
-      { icon: "cloud", title: "From Google Drive", text: "Pick files in your Google Drive and they're copied into Crewtavo." },
+      { icon: "cloud", title: "From Google Drive", text: "Pick files in your Google Drive and they're copied into the app." },
       { icon: "link", title: "On the right job", text: "Attach a file to a client's property, a request, a quote or a job, and the crew on it gets it." },
     ],
     access: [
       "Show Drive in the menu to owners, admins, office staff and estimators",
-      "Keep your files in your own Crewtavo, like everything else",
-      "Copy the files you pick in Google Drive into Crewtavo, with a Google sign-in that lasts an hour and is never kept",
+      "Keep your files in your own app, like everything else",
+      "Copy the files you pick in Google Drive into the app, with a Google sign-in that lasts an hour and is never kept",
       "Keep deleted files in the Trash for 30 days, then delete them for good",
       "Uninstalling hides Drive and keeps every file and folder",
     ],
@@ -426,10 +426,10 @@ export const APP_INFO: Record<string, AppInfo> = {
     open: "/drive",
   },
   marketing: {
-    developer: "Crewtavo",
+    developer: "Built into the app",
     tagline: "Reviews, referrals, campaigns and social posts that bring in work",
     about:
-      "Turn happy clients into more work. Crewtavo asks for a Google review after a job, a visit or a paid invoice, whichever you choose, by text, email or both. Anyone who hasn't opened the link gets up to two reminders, and no client is asked automatically more than once every six months. Every client has a referral link to share, an email can ask for referrals a week after a job, and they get a $ or % credit on their next invoice once the friend pays their first one. Automated campaigns send by themselves: re-engage clients who haven't had a visit in a year, win back lost quotes and follow up on quotes nobody has answered. One-off email campaigns go to the clients you pick, by status, tags, city, the services they've had, their recurring work or time since their last visit, with promo codes and one-click unsubscribe. Every campaign shows who opened it, who clicked and the work it brought in. Post job photos your crew marks OK to share, and 4 and 5-star Google reviews as a picture, to your Facebook Page, Instagram and Google Business Profile, now or later, or have new 5-star reviews post by themselves. Clients who opt out aren't asked, and anyone who texts STOP gets no more texts.",
+      "Turn happy clients into more work. The app asks for a Google review after a job, a visit or a paid invoice, whichever you choose, by text, email or both. Anyone who hasn't opened the link gets up to two reminders, and no client is asked automatically more than once every six months. Every client has a referral link to share, an email can ask for referrals a week after a job, and they get a $ or % credit on their next invoice once the friend pays their first one. Automated campaigns send by themselves: re-engage clients who haven't had a visit in a year, win back lost quotes and follow up on quotes nobody has answered. One-off email campaigns go to the clients you pick, by status, tags, city, the services they've had, their recurring work or time since their last visit, with promo codes and one-click unsubscribe. Every campaign shows who opened it, who clicked and the work it brought in. Post job photos your crew marks OK to share, and 4 and 5-star Google reviews as a picture, to your Facebook Page, Instagram and Google Business Profile, now or later, or have new 5-star reviews post by themselves. Clients who opt out aren't asked, and anyone who texts STOP gets no more texts.",
     highlights: [
       { icon: "star", title: "Reviews", text: "Ask after a job, a visit or a paid invoice, with up to two reminders for anyone who hasn't opened the link." },
       { icon: "gift", title: "Referrals", text: "A link for every client, an email asking for referrals after a job, and a $ or % credit on their next invoice once the friend pays." },
@@ -450,7 +450,7 @@ export const APP_INFO: Record<string, AppInfo> = {
     open: "/marketing",
   },
   paving: {
-    developer: "Crewtavo",
+    developer: "Built into the app",
     tagline: "Parking lots and driveways, from takeoff to invoice",
     about:
       "Adds Paving to the sidebar. Start from an address, measure the lot on the aerial map, and each project goes from the takeoff to the estimate, the proposal, the schedule and the invoice in one place. The measuring map gets paving items, like asphalt, sealcoat, crack seal and stall rows, each in its own color. Your trade in Settings → Company only picks your starter prices and terms, so you can have Roofing too.",
@@ -464,12 +464,12 @@ export const APP_INFO: Record<string, AppInfo> = {
       "Show paving items on the measuring map",
       "Uninstalling hides Paving and keeps every takeoff and estimate",
     ],
-    connectsWith: "Crewtavo",
+    connectsWith: "Built in",
     website: "https://crewtavo.com/docs/",
     open: "/paving",
   },
   roofing: {
-    developer: "Crewtavo",
+    developer: "Built into the app",
     tagline: "Roof estimates, from measuring to invoice",
     about:
       "Adds Roofing to the sidebar. Start from an address and a roof package, measure the roof on the map with its pitch and edges, and each project goes from the estimate to the price range the homeowner is sent first, the site visit, the schedule and the invoice. Packages become roofs priced by the square, with Good, Better and Best options, and roof tools show on every measurement. Your trade in Settings → Company only picks your starter prices and terms, so you can have Paving too.",
@@ -483,12 +483,12 @@ export const APP_INFO: Record<string, AppInfo> = {
       "Show roof tools on every measurement, and price packages as roofs",
       "Uninstalling hides Roofing and keeps every estimate, package and price range",
     ],
-    connectsWith: "Crewtavo",
+    connectsWith: "Built in",
     website: "https://crewtavo.com/docs/",
     open: "/roofing",
   },
   snow: {
-    developer: "Crewtavo",
+    developer: "Built into the app",
     tagline: "Snow customers, and crews told the day before",
     about:
       "Adds Snow to the sidebar. Mark any job as a snow customer: the inches that send the plow, the inches that send the salt, how soon it's cleared and who works it, a sub included. From 10am to 10pm the snow forecast from 6pm through the next day, so an overnight storm counts whole, is checked every hour at each property. When it calls for service, those people and whoever schedules your team are told once, and again if the storm grows into more pushes, and a subcontractor on it answers whether they can go out. A storm that turns up on the day itself, or grew overnight, is caught from 4am: they're told then, and you can schedule it for today. Salting customers are warned of freezing rain and refreezes. Nothing is scheduled by itself unless you turn that on: the Storm tab sorts your customers by what's left to do, and you schedule a storm in one click, which puts the crew and the people on tomorrow's visits. With Schedule storms automatically switched on there, each storm is scheduled as its people are told. On the day it shows how far along each customer is, and who's past the time they were to be clear by. Every storm goes in the season's log with what fell, a printable service report for each visit, and what it bills, by the push or by the depth of the storm. Set your standard storm prices once, as multiples of a push, and each customer's prices fill from them.",
@@ -506,15 +506,15 @@ export const APP_INFO: Record<string, AppInfo> = {
       "Show the National Weather Service's winter alerts in force where your snow customers are",
       "Uninstalling hides Snow and stops the notices, and keeps every snow customer and trigger",
     ],
-    connectsWith: "Crewtavo",
+    connectsWith: "Built in",
     website: "https://crewtavo.com/docs/",
     open: "/snow",
   },
   google_business: {
     developer: "Google",
-    tagline: "Your Google reviews in Crewtavo",
+    tagline: "Your Google reviews in the app",
     about:
-      "See every Google review of your business in Marketing → Reviews: your rating and how it's trending, how many you've answered and how fast, and which review asks led to a review. Reply right from Crewtavo, starting from a suggestion AI drafts from what the client wrote, and the office hears about new reviews, low ratings first. Each review is matched to the client who left it when only one fits, and that client isn't asked for a review again. Google approves each Crewtavo server's access to reviews first, which takes about 2 weeks, and review asks keep working meanwhile.",
+      "See every Google review of your business in Marketing → Reviews: your rating and how it's trending, how many you've answered and how fast, and which review asks led to a review. Reply right from the app, starting from a suggestion AI drafts from what the client wrote, and the office hears about new reviews, low ratings first. Each review is matched to the client who left it when only one fits, and that client isn't asked for a review again. Google approves each the app server's access to reviews first, which takes about 2 weeks, and review asks keep working meanwhile.",
     highlights: [
       { icon: "star", title: "Reviews in Marketing", text: "Your rating, a monthly trend, response rate and time to reply, with every review and its reply." },
       { icon: "sparkle", title: "Reply with a suggestion", text: "AI drafts a short reply from what they wrote. Read it, change it, then post it on Google." },
@@ -526,7 +526,7 @@ export const APP_INFO: Record<string, AppInfo> = {
       "Post, change and delete the replies you write here, publicly on Google",
       "Post to your Business Profile when you post from Marketing → Social",
       "It can't change or remove your reviews",
-      "Needs Marketing - Crewtavo",
+      "Needs Marketing",
       "Uninstalling stops bringing reviews in and keeps the ones already here",
     ],
     connectsWith: "Google sign-in",
@@ -547,7 +547,7 @@ export const APP_INFO: Record<string, AppInfo> = {
       "Post photos and reviews to the Page and Instagram account you pick, when someone posts or schedules one (or automatic posts are on)",
       "See the Pages you manage and the Instagram accounts linked to them",
       "It can't read your messages, comments or ads",
-      "Needs Marketing - Crewtavo",
+      "Needs Marketing",
       "Uninstalling signs your Meta app out of your Page and keeps the posts already made",
     ],
     connectsWith: "Your own Meta app",
@@ -558,10 +558,10 @@ export const APP_INFO: Record<string, AppInfo> = {
     developer: "Google",
     tagline: "Your Google calendars on the schedule, and visits on Google",
     about:
-      "See appointments from your Google calendars next to your crews' visits, so nobody books over a supplier meeting or a day off. Crewtavo can also put every visit on a Google calendar it makes for you and keep it up to date as the schedule changes, so anyone you share it with sees the day on their phone.",
+      "See appointments from your Google calendars next to your crews' visits, so nobody books over a supplier meeting or a day off. The app can also put every visit on a Google calendar it makes for you and keep it up to date as the schedule changes, so anyone you share it with sees the day on their phone.",
     highlights: [
       { icon: "calendar", title: "Pick your calendars", text: "Choose which calendars show on the schedule. Each one can belong to a crew." },
-      { icon: "clock", title: "Find a time knows", text: "Busy time on those calendars counts when Crewtavo suggests an open slot." },
+      { icon: "clock", title: "Find a time knows", text: "Busy time on those calendars counts when the app suggests an open slot." },
       { icon: "calendarCheck", title: "Visits on Google", text: "New, moved and finished visits show up in Google Calendar too, so the day is on everyone's phone." },
     ],
     access: [
@@ -583,7 +583,7 @@ export const APP_INFO: Record<string, AppInfo> = {
     developer: "Zoho",
     tagline: "Zoho calendars on your schedule",
     about:
-      "Show any Zoho calendar next to your crews' visits: the office calendar, a crew's calendar or someone's days off. Crewtavo reads it from its private ICS link, including repeating events and the changes made to them.",
+      "Show any Zoho calendar next to your crews' visits: the office calendar, a crew's calendar or someone's days off. The app reads it from its private ICS link, including repeating events and the changes made to them.",
     highlights: CALENDAR_HIGHLIGHTS,
     access: LINK_ACCESS,
     connectsWith: "Calendar link (ICS)",
@@ -599,7 +599,7 @@ export const APP_INFO: Record<string, AppInfo> = {
     developer: "Microsoft",
     tagline: "Outlook and Microsoft 365 calendars on your schedule",
     about:
-      "Show Outlook.com, Microsoft 365 and Exchange calendars next to your crews' visits. Crewtavo reads a published calendar's ICS link, with Outlook's time zones, repeating meetings and free or busy time.",
+      "Show Outlook.com, Microsoft 365 and Exchange calendars next to your crews' visits. The app reads a published calendar's ICS link, with Outlook's time zones, repeating meetings and free or busy time.",
     highlights: CALENDAR_HIGHLIGHTS,
     access: LINK_ACCESS,
     connectsWith: "Calendar link (ICS)",
@@ -615,7 +615,7 @@ export const APP_INFO: Record<string, AppInfo> = {
     developer: "Apple",
     tagline: "iCloud calendars on your schedule",
     about:
-      "Show calendars from iPhone, iPad and Mac (iCloud) next to your crews' visits. Turn on Public Calendar for the calendar and add its link here. Anyone with that link can see the calendar, so Crewtavo keeps it encrypted.",
+      "Show calendars from iPhone, iPad and Mac (iCloud) next to your crews' visits. Turn on Public Calendar for the calendar and add its link here. Anyone with that link can see the calendar, so the app keeps it encrypted.",
     highlights: CALENDAR_HIGHLIGHTS,
     access: LINK_ACCESS,
     connectsWith: "Calendar link (webcal)",
@@ -644,29 +644,29 @@ export const APP_INFO: Record<string, AppInfo> = {
   },
   anthropic: {
     developer: "Anthropic",
-    tagline: "Crewtavo's AI on your own Anthropic key",
+    tagline: "The app's AI on your own Anthropic key",
     about:
-      "Power Crewtavo's own AI with Claude: rewriting a message, drafting a quote, a campaign, a caption or a reply to a review, answering a crew's question from your guides, and reading receipts. Add your Anthropic API key and everyone's asks, and anything Crewtavo drafts by itself, use it; Anthropic bills your account for what's used. Only what an ask is about goes to Anthropic: the message to rewrite, the request and price list a quote is drafted from, the review a reply answers, the parts of your guides that match a question, the receipt to read. To use Crewtavo from inside Claude instead, add the connector in Settings → AI assistants.",
+      "Power the app's own AI with Claude: rewriting a message, drafting a quote, a campaign, a caption or a reply to a review, answering a crew's question from your guides, and reading receipts. Add your Anthropic API key and everyone's asks, and anything the app drafts by itself, use it; Anthropic bills your account for what's used. Only what an ask is about goes to Anthropic: the message to rewrite, the request and price list a quote is drafted from, the review a reply answers, the parts of your guides that match a question, the receipt to read. To use the app from inside Claude instead, add the connector in Settings → AI assistants.",
     highlights: [
       { icon: "sparkle", title: "Drafts and answers", text: "Rewrites, quote and campaign drafts, captions, review replies and answers from your guides." },
       { icon: "receipt", title: "Receipts read for you", text: "A photo or a supplier's invoice fills in the expense for you to check, once you turn reading on." },
-      { icon: "dollar", title: "Billed to you", text: "Anthropic bills your own account for what Crewtavo's AI uses." },
+      { icon: "dollar", title: "Billed to you", text: "Anthropic bills your own account for what the app's AI uses." },
     ],
     access: [
       "Send Anthropic what an ask is about: the message to rewrite, the request and price list a quote is drafted from, the review a reply answers, the receipt to read",
       "Send the parts of your guides that match a question, to answer it",
-      "Nothing else: it can't look things up in Crewtavo or change anything",
+      "Nothing else: it can't look things up in the app or change anything",
       "Anthropic bills your account directly for what's used",
-      "Uninstalling removes your key from Crewtavo",
+      "Uninstalling removes your key from the app",
     ],
     connectsWith: "Key from Anthropic",
     website: "https://claude.ai/",
   },
   open_meteo: {
     developer: "Open-Meteo",
-    tagline: "For commercial use, with your own key. Non-commercial use is included in Crewtavo.",
+    tagline: "For commercial use, with your own key. Non-commercial use is included in the app.",
     about:
-      "This app is for commercial use of Open-Meteo. Non-commercial use is already included in Crewtavo, with nothing to add: Open-Meteo's free service is a choice in Settings → Weather rules, and it's where the forecast for a property outside the United States comes from when the source is the US National Weather Service, as it is until you change it. Open-Meteo's terms keep that free service to non-commercial use. A paid Open-Meteo plan comes with a key and a commercial licence: paste the key here, then pick Open-Meteo (commercial) in Settings → Weather rules, and every forecast, for the weather warnings on visits and for Snow, is asked of the paid service with your key. The forecasts are the same ones. Remove the key and forecasts go back to the National Weather Service.",
+      "This app is for commercial use of Open-Meteo. Non-commercial use is already included in the app, with nothing to add: Open-Meteo's free service is a choice in Settings → Weather rules, and it's where the forecast for a property outside the United States comes from when the source is the US National Weather Service, as it is until you change it. Open-Meteo's terms keep that free service to non-commercial use. A paid Open-Meteo plan comes with a key and a commercial licence: paste the key here, then pick Open-Meteo (commercial) in Settings → Weather rules, and every forecast, for the weather warnings on visits and for Snow, is asked of the paid service with your key. The forecasts are the same ones. Remove the key and forecasts go back to the National Weather Service.",
     highlights: [
       { icon: "cloudSnow", title: "The same forecasts", text: "Hour by hour and ten days out, for every property." },
       { icon: "check", title: "Licensed for business", text: "Open-Meteo's paid plans allow commercial use. Its free service, built in, doesn't." },
@@ -674,7 +674,7 @@ export const APP_INFO: Record<string, AppInfo> = {
     ],
     access: [
       "Ask Open-Meteo's paid service for forecasts with your key, sending only each property's location",
-      "Nothing else: no clients, prices or anything else from Crewtavo",
+      "Nothing else: no clients, prices or anything else from the app",
       "Open-Meteo bills your account directly",
     ],
     connectsWith: "Key from Open-Meteo",
@@ -691,16 +691,16 @@ export const APP_INFO: Record<string, AppInfo> = {
       { icon: "scissors", title: "Islands cut out", text: "Planted islands and buildings in the lot come out of the asphalt, so sealcoat isn't priced on grass." },
       { icon: "pin", title: "Stalls counted", text: "Striped stalls are counted where the imagery is sharp enough to see the lines." },
     ],
-    access: ["Send fal.ai the aerial picture of the lot when someone uses Find paving's Find everything in view", "Nothing else: no clients, prices or anything else from Crewtavo", "fal.ai bills your account directly, about half a cent per thing found"],
+    access: ["Send fal.ai the aerial picture of the lot when someone uses Find paving's Find everything in view", "Nothing else: no clients, prices or anything else from the app", "fal.ai bills your account directly, about half a cent per thing found"],
     connectsWith: "Key from fal.ai",
     website: "https://fal.ai/",
     open: "/measure",
   },
   chatgpt: {
     developer: "OpenAI",
-    tagline: "Crewtavo's AI on your OpenAI key or your ChatGPT plan",
+    tagline: "The app's AI on your OpenAI key or your ChatGPT plan",
     about:
-      "Power Crewtavo's own AI with OpenAI: rewriting a message, drafting a quote, a campaign, a caption or a reply to a review, answering a crew's question from your guides, and reading receipts. There are two ways, and you can use both. An OpenAI API key is for the whole company: everyone's asks, and anything Crewtavo drafts by itself, use it, and OpenAI bills your API account for what's used. Continue with ChatGPT is each person's own: sign in with your ChatGPT account and what you ask the AI yourself is answered on your ChatGPT Plus or Pro plan, never anyone else's asks. Only what an ask is about goes to OpenAI: the message to rewrite, the request and price list a quote is drafted from, the review a reply answers, the parts of your guides that match a question, the receipt to read. To use Crewtavo from inside ChatGPT instead, add the connector in Settings → AI assistants.",
+      "Power the app's own AI with OpenAI: rewriting a message, drafting a quote, a campaign, a caption or a reply to a review, answering a crew's question from your guides, and reading receipts. There are two ways, and you can use both. An OpenAI API key is for the whole company: everyone's asks, and anything the app drafts by itself, use it, and OpenAI bills your API account for what's used. Continue with ChatGPT is each person's own: sign in with your ChatGPT account and what you ask the AI yourself is answered on your ChatGPT Plus or Pro plan, never anyone else's asks. Only what an ask is about goes to OpenAI: the message to rewrite, the request and price list a quote is drafted from, the review a reply answers, the parts of your guides that match a question, the receipt to read. To use the app from inside ChatGPT instead, add the connector in Settings → AI assistants.",
     highlights: [
       { icon: "sparkle", title: "Drafts and answers", text: "Rewrites, quote and campaign drafts, captions, review replies and answers from your guides." },
       { icon: "receipt", title: "Receipts read for you", text: "A photo or a supplier's invoice fills in the expense for you to check, once you turn reading on." },
@@ -709,10 +709,10 @@ export const APP_INFO: Record<string, AppInfo> = {
     access: [
       "Send OpenAI what an ask is about: the message to rewrite, the request and price list a quote is drafted from, the review a reply answers, the receipt to read",
       "Send the parts of your guides that match a question, to answer it",
-      "Nothing else: it can't look things up in Crewtavo or change anything",
+      "Nothing else: it can't look things up in the app or change anything",
       "With an API key, OpenAI bills your API account directly for what's used",
       "With Continue with ChatGPT, your own ChatGPT plan pays for what you ask yourself, and what you ask goes to OpenAI on your own account",
-      "Uninstalling removes your key from Crewtavo and signs your ChatGPT plan out",
+      "Uninstalling removes your key from the app and signs your ChatGPT plan out",
     ],
     connectsWith: "OpenAI key or ChatGPT sign-in",
     website: "https://chatgpt.com/",
@@ -721,7 +721,7 @@ export const APP_INFO: Record<string, AppInfo> = {
     developer: "Intuit",
     tagline: "Your books, without typing anything twice",
     about:
-      "When QuickBooks Online is your book of record, Crewtavo sends clients, invoices and payments there as they happen. Your bookkeeper works in QuickBooks; your team works in Crewtavo.",
+      "When QuickBooks Online is your book of record, the app sends clients, invoices and payments there as they happen. Your bookkeeper works in QuickBooks; your team works in the app.",
     highlights: [
       { icon: "invoice", title: "Invoices", text: "Sent invoices arrive with their lines, discounts and tax, and keep up when they change." },
       { icon: "dollar", title: "Payments", text: "Each payment is recorded against the right invoice." },
@@ -737,7 +737,7 @@ export const APP_INFO: Record<string, AppInfo> = {
     developer: "Zoho",
     tagline: "Your books, without typing anything twice",
     about:
-      "When Zoho Books is your book of record, Crewtavo sends clients, invoices and payments there as they happen, in whichever Zoho data center your account lives.",
+      "When Zoho Books is your book of record, the app sends clients, invoices and payments there as they happen, in whichever Zoho data center your account lives.",
     highlights: [
       { icon: "invoice", title: "Invoices", text: "Sent invoices arrive with their lines and discounts, and keep up when they change." },
       { icon: "dollar", title: "Payments", text: "Each payment is recorded against the right invoice." },
@@ -753,7 +753,7 @@ export const APP_INFO: Record<string, AppInfo> = {
     developer: "Stripe",
     tagline: "Invoices, payments and deposits, in step with Stripe",
     about:
-      "Invoices you send from Crewtavo go to Stripe too, and clients pay them by card or bank from their link or client portal, once. Invoices you make in Stripe, like a big job you'd rather bill by hand, come into Crewtavo by themselves. Every payment shows the fee Stripe kept and the bank deposit it arrived in, and your past invoices can come in from Stripe without anyone being emailed.",
+      "Invoices you send from the app go to Stripe too, and clients pay them by card or bank from their link or client portal, once. Invoices you make in Stripe, like a big job you'd rather bill by hand, come into the app by themselves. Every payment shows the fee Stripe kept and the bank deposit it arrived in, and your past invoices can come in from Stripe without anyone being emailed.",
     highlights: [
       { icon: "invoice", title: "Both ways", text: "Sent invoices appear in Stripe; invoices made in Stripe come in here." },
       { icon: "dollar", title: "Paid once", text: "Card or bank. A bank payment shows as on its way until it clears." },
@@ -808,7 +808,7 @@ export const APP_INFO: Record<string, AppInfo> = {
     developer: "Twilio",
     tagline: "Texts that reach your clients",
     about:
-      "Send visit reminders and on-my-way texts, and keep two-way conversations with clients in Messages. Connect your own Twilio account with three things from your Twilio console: your Account SID, your Auth Token and your number. Crewtavo checks them with Twilio before saving, texts from your number, and can point the number's replies at Messages for you. Twilio bills you directly for what you send.",
+      "Send visit reminders and on-my-way texts, and keep two-way conversations with clients in Messages. Connect your own Twilio account with three things from your Twilio console: your Account SID, your Auth Token and your number. The app checks them with Twilio before saving, texts from your number, and can point the number's replies at Messages for you. Twilio bills you directly for what you send.",
     highlights: [
       { icon: "bell", title: "Reminders", text: "The day before, so clients leave the gate open." },
       { icon: "truck", title: "On my way", text: "One tap from the field when a crew heads out." },
@@ -823,7 +823,7 @@ export const APP_INFO: Record<string, AppInfo> = {
     developer: "Quo",
     tagline: "Text from your own business lines",
     about:
-      "Text customers from the Quo lines they already know: your wash line for washing, your lighting line for Christmas lights. Texts show in the Quo app like any other, and replies come into Messages here. Quo is test only until you go live: Crewtavo texts only the test numbers you list and drops every other text without keeping it. Try it in practice mode first, with no Quo account at all. Calls stay in the Quo app.",
+      "Text customers from the Quo lines they already know: your wash line for washing, your lighting line for Christmas lights. Texts show in the Quo app like any other, and replies come into Messages here. Quo is test only until you go live: the app texts only the test numbers you list and drops every other text without keeping it. Try it in practice mode first, with no Quo account at all. Calls stay in the Quo app.",
     highlights: [
       { icon: "messages", title: "Your own lines", text: "Each brand texts from its own number." },
       { icon: "lock", title: "Test only", text: "Only your test numbers, until you go live." },
@@ -851,16 +851,16 @@ export const APP_INFO: Record<string, AppInfo> = {
   },
   sveltia: {
     developer: "Sveltia",
-    tagline: "Edit your website without leaving Crewtavo",
+    tagline: "Edit your website without leaving the app",
     about:
       "Sveltia CMS is the editor many fast, modern websites come with: pages, blog posts, services and photos, with a preview as you type. Add your website's address once and Website appears in the menu with your editor right there, next to your clients and schedule. Sign in the way you do on your site, with GitHub or a token, and changes save to your website exactly as they do when you open it on its own. Decap CMS (once called Netlify CMS) works too.",
     highlights: [
-      { icon: "globe", title: "Your site, in Crewtavo", text: "Website in the menu opens your site's editor, for owners, admins and anyone with Marketing." },
+      { icon: "globe", title: "Your site, in the app", text: "Website in the menu opens your site's editor, for owners, admins and anyone with Marketing." },
       { icon: "edit", title: "Pages, posts and photos", text: "Write a post, change a price or swap a photo, and see it as visitors will before it goes live." },
-      { icon: "lock", title: "Your own sign-in", text: "Sign in with GitHub, as you do on your site. Crewtavo never sees it." },
+      { icon: "lock", title: "Your own sign-in", text: "Sign in with GitHub, as you do on your site. The app never sees it." },
     ],
     access: [
-      "Show your website's editor (its /admin page) inside Crewtavo",
+      "Show your website's editor (its /admin page) inside the app",
       "Read that page and its settings, to check the editor is there and where it saves",
       "Nothing else: it can't see your sign-in or change your website. Sveltia saves your edits, as it does on your site",
     ],

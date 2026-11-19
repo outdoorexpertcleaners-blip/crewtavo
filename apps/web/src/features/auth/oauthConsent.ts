@@ -65,13 +65,13 @@ export function consentDestination(redirectUri: string | null | undefined): Cons
 
 /** What the app will be able to read once allowed: all of it, said plainly. */
 export const CAN_READ =
-  "Everything you can see in Crewtavo. Depending on your role, that includes clients and their addresses, gate and alarm codes, quotes, invoices and payments, the schedule and pay.";
+  "Everything you can see in the app. Depending on your role, that includes clients and their addresses, gate and alarm codes, quotes, invoices and payments, the schedule and pay.";
 
 /** And what it can't do yet. */
-export const CANT_CHANGE = "It can't change anything until you allow it, in Crewtavo under Settings → AI assistants.";
+export const CANT_CHANGE = "It can't change anything until you allow it, in the app under Settings → AI assistants.";
 
 /**
  * What it can change, for an app this person connected before and gave more than reading (the
  * sign-in server asks again when an app wants more than it was approved for): it keeps that.
  */
-export const keepsAccess = (access: string) => `It keeps what you gave it before (${access}). Change that in Crewtavo, under Settings → AI assistants.`;
+export const keepsAccess = (access: string) => `It keeps what you gave it before (${access}). Change that in the app, under Settings → AI assistants.`;

@@ -155,8 +155,8 @@ const connect = (provider: MailboxSlot) => async (c: Context<AppEnv>) => {
   if (to) {
     const brand = lightsName(company);
     const test = lights
-      ? { subject: `Email is connected for ${brand}`, text: `This is a test from Crewtavo.\n\nQuotes, invoices, receipts and reminders for ${brand} clients will now be sent from ${settings.from_email}. Replies go to ${settings.from_email}.` }
-      : { subject: `Email is connected for ${company.name}`, text: `This is a test from Crewtavo.\n\nQuotes, invoices, reminders and team notifications for ${company.name} will now be sent from ${settings.from_email}. Replies go to ${company.email || settings.from_email}.` };
+      ? { subject: `Email is connected for ${brand}`, text: `This is a test from the app.\n\nQuotes, invoices, receipts and reminders for ${brand} clients will now be sent from ${settings.from_email}. Replies go to ${settings.from_email}.` }
+      : { subject: `Email is connected for ${company.name}`, text: `This is a test from the app.\n\nQuotes, invoices, reminders and team notifications for ${company.name} will now be sent from ${settings.from_email}. Replies go to ${company.email || settings.from_email}.` };
     const message = { to, subject: test.subject, ...renderEmail({ companyName: lights ? brand : company.name, logo: logoImage(appUrl(c), c.var.companyId, company.settings), text: test.text }), replyTo: company.email ?? undefined, fromName: company.name };
     const result = lights ? await sendFromLights({ settings, secret, brandName: brand }, message) : await sendWithMailbox(settings, secret, message);
     if (!result.sent) throw new HttpError(400, result.reason ?? "The test email wasn't sent.");
@@ -213,7 +213,7 @@ email.post("/email/test", ...requireEmailAdmin, async (c) => {
   forgetMailbox(c.var.companyId);
   const result = await sendEmail(
     c.env,
-    { to, subject: `Test email from ${company.name}`, ...renderEmail({ companyName: company.name, logo: logoImage(appUrl(c), c.var.companyId, company.settings), text: "This is a test from Crewtavo. If you can read it, email is working." }), replyTo: company.email ?? undefined, fromName: company.name },
+    { to, subject: `Test email from ${company.name}`, ...renderEmail({ companyName: company.name, logo: logoImage(appUrl(c), c.var.companyId, company.settings), text: "This is a test from the app. If you can read it, email is working." }), replyTo: company.email ?? undefined, fromName: company.name },
     c.var.companyId,
   );
   if (!result.sent) throw new HttpError(400, result.reason ?? "The test email wasn't sent.");
@@ -233,7 +233,7 @@ email.post("/email/lights/test", ...requireEmailAdmin, async (c) => {
   const brand = lightsName(company);
   const result = await sendEmail(
     c.env,
-    { to, subject: `Test email from ${brand}`, ...renderEmail({ companyName: brand, logo: logoImage(appUrl(c), c.var.companyId, company.settings), text: "This is a test from Crewtavo. If you can read it, email for Christmas lights clients is working." }), replyTo: company.email ?? undefined, fromName: company.name, brand: "lights" },
+    { to, subject: `Test email from ${brand}`, ...renderEmail({ companyName: brand, logo: logoImage(appUrl(c), c.var.companyId, company.settings), text: "This is a test from the app. If you can read it, email for Christmas lights clients is working." }), replyTo: company.email ?? undefined, fromName: company.name, brand: "lights" },
     c.var.companyId,
     { only: true },
   );

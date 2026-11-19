@@ -71,7 +71,7 @@ function Usage({ o }: { o: StorageReport }) {
       <div className="row-between" style={{ alignItems: "flex-start", gap: 12 }}>
         <div className="stack-sm" style={{ gap: 2 }}>
           <h2 id="storage-usage" className={styles.title}>Storage</h2>
-          <span className="muted small">Every photo and file in Crewtavo, the Trash included.</span>
+          <span className="muted small">Every photo and file in the app, the Trash included.</span>
         </div>
         {o.railway?.backend && <span className={`chip ${o.railway.backend === "bucket" ? "chip-blue" : ""}`}>{o.railway.backend === "bucket" ? "Bucket" : "Volume"}</span>}
       </div>
@@ -151,8 +151,8 @@ export function GbInput({ value, onChange, onFocus, label, disabled, invalid, pl
 function defaultNote(o: StorageReport): string {
   if (!o.default_bytes) {
     return o.railway
-      ? "No limit for now. Crewtavo sets one once it can read where Railway keeps your files."
-      : "Crewtavo doesn't know how much room this server has, so there's no default limit. Choose a size to set one.";
+      ? "No limit for now. The app sets one once it can read where Railway keeps your files."
+      : "The app doesn't know how much room this server has, so there's no default limit. Choose a size to set one.";
   }
   const basis = o.default_basis ? `${formatBytes(o.default_bytes)}: ${o.default_basis}.` : `${formatBytes(o.default_bytes)}.`;
   if (o.railway?.backend === "volume") return `${basis} A volume holds only its size, so this stops a little short of it and leaves time to grow the volume in Railway.`;
@@ -445,7 +445,7 @@ function Areas({ areas }: { areas: NonNullable<StorageReport["by_area"]> }) {
   return (
     <section className="card card-pad stack-sm" aria-labelledby="storage-areas">
       <h2 id="storage-areas" className={styles.title}>By area</h2>
-      <span className="muted small">What each part of Crewtavo holds.</span>
+      <span className="muted small">What each part of the app holds.</span>
       <ul className={styles.areas}>
         {rows.map((a) => (
           <li key={a.area}>

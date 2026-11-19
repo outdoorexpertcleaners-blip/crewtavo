@@ -253,7 +253,7 @@ export function storageError(status: number, body: string, label: string, size: 
     message = /^\s*</.test(body ?? "") ? "" : (body ?? "").trim().slice(0, 200);
   }
   if (status === 507) return new StorageFullError(message);
-  if (status === 413 || /maximum allowed size|too large/i.test(message)) return new TooLargeError(t("{label} ({size}) is bigger than this Crewtavo accepts.", { label, size: megabytes(size) }), true);
+  if (status === 413 || /maximum allowed size|too large/i.test(message)) return new TooLargeError(t("{label} ({size}) is bigger than this app accepts.", { label, size: megabytes(size) }), true);
   if (status === 401 || status === 403 || /row-level security|unauthorized/i.test(message)) return new Error(t("You don't have permission to add files here."));
   return new Error(message ? t("Upload failed: {reason}. Try again.", { reason: message.replace(/[.\s]+$/, "") }) : t("Upload failed. Try again."));
 }

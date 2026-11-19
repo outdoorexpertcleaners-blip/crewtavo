@@ -68,7 +68,7 @@ export const replyByWords = (at: string | null, timeZone: string) =>
  * promised.
  */
 export const reachWords = (sms: boolean) =>
-  `They get it in Crewtavo, and by email${sms ? " or text" : ""} as their notification settings allow. They accept or decline it in one tap.`;
+  `They get it in the app, and by email${sms ? " or text" : ""} as their notification settings allow. They accept or decline it in one tap.`;
 
 // ---------------------------------------------------------------------------------------------
 // A sub's pay on the job: its chip, its line, and what's next

@@ -26,7 +26,7 @@ export function CalendarSettings() {
       <section className="card" aria-labelledby="calendars-shown">
         <div className="card-pad stack-sm" style={{ gap: 4 }}>
           <h2 id="calendars-shown" className="section-title" style={{ fontSize: 16 }}>Calendars on your schedule</h2>
-          <span className="muted small">Their events show next to your visits, and busy time counts in Find a time. Changes here only affect Crewtavo.</span>
+          <span className="muted small">Their events show next to your visits, and busy time counts in Find a time. Changes here only affect the app.</span>
         </div>
         {calendars.isPending ? (
           <div className="card-row"><Skeleton height={36} radius={8} style={{ flex: 1 }} /></div>
@@ -46,7 +46,7 @@ export function CalendarSettings() {
 
       <section className="card card-pad stack-sm" aria-labelledby="calendars-live">
         <h2 id="calendars-live" className="section-title" style={{ fontSize: 16 }}>Calendars that stay up to date</h2>
-        <span className="muted small">Add a calendar by its link and Crewtavo reads it again every 15 minutes. No sign-in or setup needed.</span>
+        <span className="muted small">Add a calendar by its link and the app reads it again every 15 minutes. No sign-in or setup needed.</span>
         <div className="row wrap" style={{ gap: 8 }}>
           {LIVE.map((app) => (
             <Link key={app.id} className="btn btn-sm" to={`/apps/${app.id}`}>

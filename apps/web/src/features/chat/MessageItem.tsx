@@ -7,7 +7,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Fragment, useState, type KeyboardEvent, type MouseEvent } from "react";
 import { Link } from "react-router-dom";
 import { CHAT_REACTIONS, fromEditable, messageParts, toEditable, type Mentionable } from "@crewtavo/core/chat";
-import { BrandMark } from "@/components/shell/BrandMark";
 import { Face } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { confirm } from "@/components/ui/Confirm";
@@ -165,7 +164,7 @@ export function MessageItem({ message, head, flash, ctx }: { message: ChatMessag
             <Face name={author.name} photo={author.avatar_url} />
           </button>
         ) : (
-          <span className={s.avatar} style={{ background: "var(--fill-2)", cursor: "default" }} aria-hidden="true"><BrandMark size={20} /></span>
+          <span className={s.avatar} style={{ background: "var(--fill-2)", cursor: "default" }} aria-hidden="true"><Icon name="apps" size={18} /></span>
         )
       ) : (
         <span className={s.stamp} title={new Date(message.created_at).toLocaleString(browserOrSpanish())}>{shortTime(message.created_at)}</span>
@@ -184,7 +183,7 @@ export function MessageItem({ message, head, flash, ctx }: { message: ChatMessag
             {author ? (
               <button type="button" className={s.name} style={{ color: nameColor }} onClick={() => ctx.onPerson(author.id)}>{author.name}</button>
             ) : (
-              <span className={s.name} style={{ cursor: "default" }}>Crewtavo</span>
+              <span className={s.name} style={{ cursor: "default" }}>{t("The app")}</span>
             )}
             {author ? <span className={s.roleBadge} style={badgeStyle(author.color)}>{author.role_label}</span> : <span className={s.appBadge}>{t("App")}</span>}
             <time className={s.time} dateTime={message.created_at} title={new Date(message.created_at).toLocaleString(browserOrSpanish())}>{timeLabel(message.created_at)}</time>

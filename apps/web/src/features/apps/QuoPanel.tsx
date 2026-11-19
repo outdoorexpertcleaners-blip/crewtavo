@@ -39,7 +39,7 @@ export function QuoPanel({ app, onChanged }: { app: AppRow; onChanged: () => voi
         <div className="row wrap" style={{ gap: 10 }}>
           <Icon name="check" size={16} />
           <span className="grow">
-            {state.practice ? <><strong>Practice mode</strong>: no Quo account. Texts are marked sent but never leave Crewtavo.</> : <>Connected to your Quo workspace</>}
+            {state.practice ? <><strong>Practice mode</strong>: no Quo account. Texts are marked sent but never leave the app.</> : <>Connected to your Quo workspace</>}
           </span>
           <Button size="sm" onClick={() => setConnecting(true)}>{state.practice ? "Connect your Quo account" : "Change"}</Button>
         </div>
@@ -62,8 +62,8 @@ function TestOnlyNote() {
     <div className="row" style={{ gap: 10, alignItems: "flex-start" }}>
       <Icon name="lock" size={16} />
       <span className="small">
-        <strong>Test only.</strong> Crewtavo texts only the test numbers below, and drops texts from any other number without keeping them. Your customers never hear from this
-        Crewtavo, and their texts stay in Quo only.
+        <strong>Test only.</strong> The app texts only the test numbers below, and drops texts from any other number without keeping them. Your customers never hear from this
+        app, and their texts stay in Quo only.
       </span>
     </div>
   );
@@ -80,7 +80,7 @@ function PracticeCard({ onChanged }: { onChanged: () => void }) {
     <section className="card card-pad stack" aria-labelledby="quo-practice-title">
       <div className="stack-sm" style={{ gap: 4 }}>
         <h2 id="quo-practice-title" className="section-title" style={{ fontSize: 16 }}>Try it first: practice mode</h2>
-        <span className="muted small">No Quo account needed. Texts are marked sent without leaving Crewtavo, and you can pretend one of your test numbers texted back.</span>
+        <span className="muted small">No Quo account needed. Texts are marked sent without leaving the app, and you can pretend one of your test numbers texted back.</span>
       </div>
       <form className="stack-sm" onSubmit={(e: FormEvent) => { e.preventDefault(); save.mutate(); }}>
         <Field label="Test numbers" hint="One per line, up to 10. Use fake 555-01xx numbers, or your own cell.">
@@ -129,7 +129,7 @@ function ConnectForm({ state, onSaved, onCancel }: { state: QuoState | null; onS
           <a className="btn btn-sm" href={QUO_API_SETTINGS} target="_blank" rel="noreferrer">Open Quo's API settings <Icon name="external" size={12} /></a>
           <span className="muted small" style={{ display: "block", marginTop: 4 }}>Only an owner or admin of the Quo workspace can make a key.</span>
         </li>
-        <li>Make a key named <strong>Crewtavo test</strong> and copy it.</li>
+        <li>Make a key named <strong>Outdoor Expert app test</strong> and copy it.</li>
         <li>Paste it here and press <strong>Find my lines</strong>. It's checked with Quo, stored encrypted and never shown again.</li>
       </ol>
       <form className="stack-sm" onSubmit={(e: FormEvent) => { e.preventDefault(); if (lines || hasKey) save.mutate(); else check.mutate(); }}>
@@ -158,7 +158,7 @@ function ConnectForm({ state, onSaved, onCancel }: { state: QuoState | null; onS
         )}
         {/* Set up already: the test numbers stay as they are, and change on their own card. */}
         {!state && (
-          <Field label="Test numbers" hint="The only numbers Crewtavo texts or hears from. One per line, up to 10: your own cell, or a teammate's who agreed.">
+          <Field label="Test numbers" hint="The only numbers the app texts or hears from. One per line, up to 10: your own cell, or a teammate's who agreed.">
             <textarea className="input" rows={3} value={numbers} onChange={(e) => setNumbers(e.target.value)} placeholder="(470) 555-0101" />
           </Field>
         )}
@@ -200,17 +200,17 @@ function IncomingCard({ state, onChanged }: { state: QuoState; onChanged: () => 
     <section className="card card-pad stack-sm" aria-labelledby="quo-incoming" style={{ gap: 10 }}>
       <h2 id="quo-incoming" className="section-title" style={{ fontSize: 16 }}>Replies</h2>
       {state.webhook_set ? (
-        <div className="row" style={{ gap: 10 }}><Icon name="check" size={16} /><span className="grow">Quo tells Crewtavo when a text comes in. Texts from your test numbers land in Messages; all others are dropped.</span></div>
+        <div className="row" style={{ gap: 10 }}><Icon name="check" size={16} /><span className="grow">Quo tells the app when a text comes in. Texts from your test numbers land in Messages; all others are dropped.</span></div>
       ) : (
         <>
           <span className="muted small">
-            For replies to show here, Quo has to tell Crewtavo when a text comes in. This adds a webhook named "Crewtavo (test)" to your Quo workspace. Nothing changes in the Quo
+            For replies to show here, Quo has to tell the app when a text comes in. This adds a webhook named "Outdoor Expert app (test)" to your Quo workspace. Nothing changes in the Quo
             app, and while it's test only, texts from customers are dropped the moment they arrive.
           </span>
           {state.reachable ? (
-            <div className="row"><Button variant="primary" loading={set.isPending} onClick={() => set.mutate()}>Send replies to Crewtavo</Button></div>
+            <div className="row"><Button variant="primary" loading={set.isPending} onClick={() => set.mutate()}>Send replies to the app</Button></div>
           ) : (
-            <span className="small" style={{ color: "var(--warning)", fontWeight: 600 }}>Quo can only reach a public https address, and this Crewtavo doesn't have one yet.</span>
+            <span className="small" style={{ color: "var(--warning)", fontWeight: 600 }}>Quo can only reach a public https address, and this app doesn't have one yet.</span>
           )}
           <FormError error={set.error} />
         </>

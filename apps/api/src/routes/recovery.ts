@@ -54,7 +54,7 @@ recovery.post("/team/:userId/password-link", requireUser, requireCompany(ADMINS,
   }
   // Their account may unlock other businesses too; that isn't this company's to hand out.
   if (memberships.some((m) => m.company_id !== companyId)) {
-    throw new HttpError(403, "This person also uses Crewtavo with another business, so they need to reset their password themselves.");
+    throw new HttpError(403, "This person also uses the app with another business, so they need to reset their password themselves.");
   }
   // A way into an account with admin-level access asks for the password, as giving that access does.
   if (await adminAccess(admin, companyId, here.role, here.role_id)) await confirmAdminGrant(c, await passwordIn(c));
@@ -83,7 +83,7 @@ recovery.post("/team/:userId/password-link", requireUser, requireCompany(ADMINS,
   });
 
   if (await emailReady(c.env, companyId)) {
-    const text = `${requesterName} made a link for you to choose a new password for ${companyName} on Crewtavo. It works once:\n\n${link}\n\nIf you didn't ask for this, tell ${requesterName} or the owner.`;
+    const text = `${requesterName} made a link for you to choose a new password for ${companyName}. It works once:\n\n${link}\n\nIf you didn't ask for this, tell ${requesterName} or the owner.`;
     const sent = await sendEmail(c.env, { to: email, subject: `Choose a new password for ${companyName}`, ...renderEmail({ companyName, text }), replyTo: company.data?.email ?? undefined, fromName: companyName }, companyId);
     if (sent.sent) return c.json({ emailed: true, link: null });
   }

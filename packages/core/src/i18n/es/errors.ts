@@ -101,5 +101,5 @@ export const ERRORS: PatternTable = [
   // Why someone can't be ticked for a text in the Send dialog, and why a text wasn't sent (services/textsOff.ts).
   ["Texts off", "Mensajes de texto desactivados"],
   ["{name} asked not to be texted, so texts to them are off. Send it by email instead.", "{name} pidió no recibir mensajes de texto, así que están desactivados. Envíalo por correo."],
-  ["{phone} asked not to be texted, so Crewtavo can't text it.", "{phone} pidió no recibir mensajes de texto, así que Crewtavo no puede enviarle."],
+  ["{phone} asked not to be texted, so the app can't text it.", "{phone} pidió no recibir mensajes de texto, así que la aplicación no puede enviarle."],
 ];

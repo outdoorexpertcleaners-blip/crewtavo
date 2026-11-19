@@ -53,8 +53,8 @@ describe("Settings → Packages", () => {
 
 describe("Paving and Roofing in Apps", () => {
   it("say what each adds and open its section", () => {
-    expect(APP_INFO.paving).toMatchObject({ developer: "Crewtavo", open: "/paving" });
-    expect(APP_INFO.roofing).toMatchObject({ developer: "Crewtavo", open: "/roofing" });
+    expect(APP_INFO.paving).toMatchObject({ developer: "Built into the app", open: "/paving" });
+    expect(APP_INFO.roofing).toMatchObject({ developer: "Built into the app", open: "/roofing" });
     for (const info of [APP_INFO.paving!, APP_INFO.roofing!]) {
       expect(info.about).toContain("only picks your starter prices and terms");
       expect(info.access.at(-1)).toMatch(/^Uninstalling hides/);

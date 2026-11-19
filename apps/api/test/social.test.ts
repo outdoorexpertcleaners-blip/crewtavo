@@ -120,7 +120,7 @@ function functions(): World["rpc"] {
         if (p.status !== "posting" || !lapsed(p) || (b.p_post && p.id !== b.p_post)) continue;
         const sending = netsOf(w, p.id).filter((n) => n.status === "sending");
         if (!sending.length) continue;
-        for (const n of sending) Object.assign(n, { status: "unknown", error: "Crewtavo stopped partway, so it may have posted.", error_kind: null });
+        for (const n of sending) Object.assign(n, { status: "unknown", error: "The app stopped partway, so it may have posted.", error_kind: null });
         Object.assign(p, { claim: null, locked_until: null });
         finish(w, p);
       }
@@ -775,7 +775,7 @@ describe("posting to Instagram", () => {
     const w = serve({ tables: { ...c.tables, social_posts: [due({ id: "00000000-0000-4000-8000-0000000000d1", attachment_ids: [c.ids[0]], networks: ["instagram"] })] }, files: c.files, outside: graph(f) });
     await run(w);
     const n = net(w, "00000000-0000-4000-8000-0000000000d1", "instagram");
-    expect(n).toMatchObject({ status: "retry", error_kind: "limit", error: "Instagram's daily limit of 100 posts is used up. Crewtavo tries again in an hour." });
+    expect(n).toMatchObject({ status: "retry", error_kind: "limit", error: "Instagram's daily limit of 100 posts is used up. The app tries again in an hour." });
     expect(Date.parse(n.next_attempt_at) - Date.now()).toBeGreaterThan(59 * 60_000);
     expect(graphCalls(w, `/${IG}/media`, "POST")).toHaveLength(0);
   });
@@ -1185,14 +1185,14 @@ describe("what posts is checked when it posts", () => {
       return row.error as string;
     };
     // Disconnected with the reviews removed: connecting brings it back.
-    expect(await gone({})).toBe("The review isn't in Crewtavo anymore. Connect Google Business Profile to bring it back.");
+    expect(await gone({})).toBe("The review isn't in the app anymore. Connect Google Business Profile to bring it back.");
     // Connected, and moved to another location (Change location away): not "Connect".
-    expect(await gone({ google: true }, "locations/7/r1")).toBe("The review isn't in Crewtavo anymore. Google Business Profile is set to another location now.");
+    expect(await gone({ google: true }, "locations/7/r1")).toBe("The review isn't in the app anymore. Google Business Profile is set to another location now.");
     // Connected to the review's own location: only that it isn't here.
-    expect(await gone({ google: true })).toBe("The review isn't in Crewtavo anymore.");
-    expect(reviewGoneWords({ status: "disconnected", location: "locations/9" }, "locations/9/r1")).toBe("The review isn't in Crewtavo anymore. Connect Google Business Profile to bring it back.");
-    expect(reviewGoneWords(null, null)).toBe("The review isn't in Crewtavo anymore. Connect Google Business Profile to bring it back.");
-    expect(reviewGoneWords({ status: "error", location: "locations/9" }, null)).toBe("The review isn't in Crewtavo anymore.");
+    expect(await gone({ google: true })).toBe("The review isn't in the app anymore.");
+    expect(reviewGoneWords({ status: "disconnected", location: "locations/9" }, "locations/9/r1")).toBe("The review isn't in the app anymore. Connect Google Business Profile to bring it back.");
+    expect(reviewGoneWords(null, null)).toBe("The review isn't in the app anymore. Connect Google Business Profile to bring it back.");
+    expect(reviewGoneWords({ status: "error", location: "locations/9" }, null)).toBe("The review isn't in the app anymore.");
   });
 
   it("skips Facebook and Instagram once disconnected, and still posts to Google", async () => {
@@ -1211,7 +1211,7 @@ describe("what posts is checked when it posts", () => {
     const w = serve({ tables: { ...c.tables, social_posts: [due({ id: "00000000-0000-4000-8000-0000000000d1", attachment_ids: [c.ids[0]] })] }, files: c.files, outside: graph(f) });
     await postDueSocial({ ...env, APP_URL: "http://localhost:8787" });
     await settle(w);
-    expect(net(w, "00000000-0000-4000-8000-0000000000d1", "facebook")).toMatchObject({ status: "failed", error: "Crewtavo's address isn't public, so Meta and Google can't fetch the photos." });
+    expect(net(w, "00000000-0000-4000-8000-0000000000d1", "facebook")).toMatchObject({ status: "failed", error: "The app's address isn't public, so Meta and Google can't fetch the photos." });
   });
 });
 
@@ -1358,7 +1358,7 @@ describe("the routes", () => {
     const post = (b: Row, path = "/social/posts", method = "POST") => app.request(`/api${path}`, { method, headers: { Authorization: `Bearer ${token}`, "X-Company-Id": CO, "Content-Type": "application/json" }, body: JSON.stringify(b) }, local);
     const photos = await post(body({ attachment_ids: [c.ids[0]] }));
     expect(photos.status).toBe(409);
-    expect(((await photos.json()) as { error: string }).error).toBe("Crewtavo's address isn't public, so Meta and Google can't fetch the pictures. Save it as a draft, or use Share elsewhere.");
+    expect(((await photos.json()) as { error: string }).error).toBe("The app's address isn't public, so Meta and Google can't fetch the pictures. Save it as a draft, or use Share elsewhere.");
     expect((await post(body({ attachment_ids: [c.ids[0]], when: "draft" }))).status).toBe(201);
     expect((await post(body({ source: "text", caption: "Booking spring cleanups now" }))).status).toBe(201);
     expect((await post({ auto: { enabled: true, networks: ["facebook"] } }, "/social/settings", "PUT")).status).toBe(409);

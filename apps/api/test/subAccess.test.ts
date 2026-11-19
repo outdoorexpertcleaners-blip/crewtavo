@@ -23,7 +23,7 @@ const env: Env = {
   ENCRYPTION_KEY: btoa(String.fromCharCode(...new Uint8Array(32).map((_, i) => i * 7))),
   APP_URL: "https://ops.example.com",
   RESEND_API_KEY: "re_test",
-  EMAIL_FROM: "Crewtavo <noreply@example.com>",
+  EMAIL_FROM: "The app <noreply@example.com>",
 };
 const texting: Env = { ...env, TWILIO_ACCOUNT_SID: "AC123", TWILIO_AUTH_TOKEN: "twilio-token", TWILIO_FROM_NUMBER: "+15405550000" };
 
@@ -291,7 +291,7 @@ const SUB_REFUSAL = "You don't have permission to do that. Ask an admin if you n
 /** Routes that refuse a sub in their own words before requireCompany is reached. */
 const OWN_REFUSALS: Record<string, string> = {
   // Setting up a business isn't a company's route: a sign-in made for a sub can't (routes/account.ts).
-  "POST /api/companies": "This sign-in is for your work with another business. To run your own business on Crewtavo, use a different email address.",
+  "POST /api/companies": "This sign-in is for your work with another business. To run your own business, use a different email address.",
 };
 
 /** Every route behind a sign-in (requireUser), as method and path. Public routes have their own checks. */
@@ -586,7 +586,7 @@ describe("a sub's sign-in", () => {
     const { calls } = serve(world);
     const body = await (await as(OFFICE, `/subs/${APEX}/sign-in-link`, { method: "POST", body: { send: "none" } })).json();
     expect(body).toMatchObject({ access: { state: "active", user_id: null, last_sign_in_at: null, shared: true }, link: null, sms_link: null });
-    expect(body.reason).toMatch(/^They already have their own Crewtavo sign-in/);
+    expect(body.reason).toMatch(/^They already have their own sign-in/);
     expect(calls.some((c) => c.url.pathname === "/auth/v1/admin/users" || c.url.pathname === "/auth/v1/admin/generate_link")).toBe(false);
     expect(world.tables.memberships).toContainEqual(expect.objectContaining({ user_id: AL, role: "subcontractor", subcontractor_id: APEX, active: true }));
     // Their profile is theirs: the office's name and phone for the sub don't go on it.
@@ -697,7 +697,7 @@ describe("a sub's sign-in", () => {
     const { texts, calls } = serve(world);
     const body = await (await as(OFFICE, `/subs/${APEX}/sign-in-link`, { method: "POST", body: { send: "text" } }, texting)).json();
     expect(body).toMatchObject({ access: { state: "active", user_id: null, last_sign_in_at: null, shared: true }, link: null, texted: false, sms_link: null });
-    expect(body.reason).toMatch(/They already have their own Crewtavo sign-in/);
+    expect(body.reason).toMatch(/They already have their own sign-in/);
     expect(calls.some((c) => c.url.pathname === "/auth/v1/admin/generate_link")).toBe(false);
     expect(texts()).toEqual([]);
   });

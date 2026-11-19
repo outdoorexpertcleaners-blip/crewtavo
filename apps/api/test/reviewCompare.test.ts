@@ -168,7 +168,7 @@ describe("the switch", () => {
   });
 
   it("needs Marketing installed", async () => {
-    await expect(setComparison(env, memoryDb(world({ maps: { google_key: "AIzaBrowser" } })) as never, CO, USER, true)).rejects.toThrow(/Install Marketing - Crewtavo/);
+    await expect(setComparison(env, memoryDb(world({ maps: { google_key: "AIzaBrowser" } })) as never, CO, USER, true)).rejects.toThrow(/Install Marketing/);
   });
 
   it("adds the business's own place ID from Google Business Profile, without looking it up", async () => {

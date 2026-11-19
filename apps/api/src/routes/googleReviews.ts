@@ -121,7 +121,7 @@ googleReviews.post("/reviews/google/sync", requireUser, requireCompany(OFFICE, "
   if (row.data?.status === "error") throw new HttpError(409, SIGNIN_MESSAGE);
   if (row.data?.status !== "connected") throw new HttpError(409, "Connect Google Business Profile in Apps first.");
   if (sync.data?.problem === "approval" || sync.data?.problem === "not_enabled") {
-    throw new HttpError(409, "Google isn't letting Crewtavo in yet, so there's nothing to bring in. Crewtavo checks again every 6 hours.");
+    throw new HttpError(409, "Google isn't letting the app in yet, so there's nothing to bring in. The app checks again every 6 hours.");
   }
   if (sync.data?.locked_until && Date.parse(sync.data.locked_until) > Date.now()) throw new HttpError(409, "Reviews are being brought in right now.");
   if (!(await allow(c.env, `review-sync:${c.var.companyId}`, 1, 120))) throw new HttpError(429, "Google was checked a moment ago. Try again in a couple of minutes.");

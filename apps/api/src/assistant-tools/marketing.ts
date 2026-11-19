@@ -60,7 +60,7 @@ export const marketingTools = {
 
   list_campaigns: tool({
     description:
-      "Email campaigns, newest first, with how each did (sent, opened, clicked, work booked). With campaign_id, that one in full: its subject, body and audience. Automated ones (kind automated) send by themselves and are changed in Crewtavo.",
+      "Email campaigns, newest first, with how each did (sent, opened, clicked, work booked). With campaign_id, that one in full: its subject, body and audience. Automated ones (kind automated) send by themselves and are changed in the app.",
     input: z.object({ campaign_id: z.uuid().optional(), ...companyArg }),
     run: async (ctx, a) => {
       marketer(ctx);
@@ -90,7 +90,7 @@ export const marketingTools = {
       const [saved] = a.campaign_id
         ? await rows(ctx.db.from("campaigns").update(fields).eq("id", a.campaign_id).eq("company_id", ctx.companyId).eq("status", "draft").neq("kind", "automated").select("id, audience"))
         : [await one(ctx.db.from("campaigns").insert({ name: "Untitled campaign", ...fields, company_id: ctx.companyId }).select("id, audience").single(), "The campaign")];
-      if (!saved) throw new Error("Only a draft campaign can be changed (stop a scheduled one with cancel_campaign first). Automated campaigns are changed in Crewtavo.");
+      if (!saved) throw new Error("Only a draft campaign can be changed (stop a scheduled one with cancel_campaign first). Automated campaigns are changed in the app.");
       const reach = await rows(ctx.db.rpc("campaign_audience", { p_company_id: ctx.companyId, p_audience: saved.audience }));
       return { campaign_id: saved.id, status: "draft", audience_count: reach.length };
     },

@@ -27,8 +27,8 @@ export function assistantLogo(name: string): string | null {
 
 /** Where each assistant keeps its connector settings, after copying the link. */
 export const CONNECTOR_STEPS: Record<string, string[]> = {
-  anthropic: ["In Claude, open Settings, then Connectors.", "Choose Add custom connector and paste the link above.", "Sign in with your Crewtavo account when Claude asks."],
-  chatgpt: ["In ChatGPT, open Settings, then Apps and connectors.", "With developer mode on, add a connector and paste the link above.", "Sign in with your Crewtavo account when ChatGPT asks."],
+  anthropic: ["In Claude, open Settings, then Connectors.", "Choose Add custom connector and paste the link above.", "Sign in with your app account when Claude asks."],
+  chatgpt: ["In ChatGPT, open Settings, then Apps and connectors.", "With developer mode on, add a connector and paste the link above.", "Sign in with your app account when ChatGPT asks."],
 };
 
 export interface AssistantConnection {

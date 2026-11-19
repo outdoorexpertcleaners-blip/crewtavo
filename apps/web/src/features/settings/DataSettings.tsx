@@ -56,7 +56,7 @@ export function DataSettings() {
         <div className="stack-sm" style={{ gap: 2 }}>
           <strong>Download all your data</strong>
           <span className="muted small">
-            Everything {session.company.name} keeps in Crewtavo, as one .zip file. Keep it as a copy, or take it to another app. It opens on any computer, with nothing to install.
+            Everything {session.company.name} keeps in the app, as one .zip file. Keep it as a copy, or take it to another app. It opens on any computer, with nothing to install.
           </span>
         </div>
         <ul className="app-steps">

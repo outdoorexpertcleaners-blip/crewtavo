@@ -25,7 +25,7 @@ export function PhotoButtons({ userId, photo }: { userId: string; photo: string 
   const set = useMutation({
     mutationFn: async (file: File) => {
       const square = await squarePhoto(file);
-      if (!square) throw new Error(t("Crewtavo can't open that picture. Try a JPEG or PNG photo."));
+      if (!square) throw new Error(t("The app can't open that picture. Try a JPEG or PNG photo."));
       return api.put<{ avatar_url: string }>(`/team/${userId}/photo`, { photo: await base64Of(square) });
     },
     onSuccess: changed,

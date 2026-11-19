@@ -40,7 +40,7 @@ vi.mock("../src/tasks", () => ({
 
 let port = 0;
 const web = mkdtempSync(join(tmpdir(), "crewtavo-web-"));
-writeFileSync(join(web, "index.html"), "<!doctype html><title>Crewtavo</title>");
+writeFileSync(join(web, "index.html"), "<!doctype html><title>The app</title>");
 /** What server.ts does on each signal, kept here rather than left on the test's own process. */
 const signals: Record<string, () => void> = {};
 const exit = vi.spyOn(process, "exit").mockImplementation((() => undefined) as never);

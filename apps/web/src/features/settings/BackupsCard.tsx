@@ -41,7 +41,7 @@ export function backupProblem(status: BackupStatus): string | null {
  * a secret's value.
  */
 export function secretsNote(platform: string | undefined): string {
-  const without = "Without JWT_SECRET, a restored Crewtavo can't read its connected apps, the owner's key file stops working, and links already sent to clients stop opening; without POSTGRES_PASSWORD, the services can't sign in to a database volume you kept.";
+  const without = "Without JWT_SECRET, a restored copy of the app can't read its connected apps, the owner's key file stops working, and links already sent to clients stop opening; without POSTGRES_PASSWORD, the services can't sign in to a database volume you kept.";
   return platform === "railway"
     ? `Save JWT_SECRET (and ENCRYPTION_KEY, if you set one) and POSTGRES_PASSWORD somewhere outside Railway, such as a password manager. ${without} In Railway they're under Variables: JWT_SECRET and ENCRYPTION_KEY on the crewtavo service, POSTGRES_PASSWORD on db.`
     : `Save a copy of the .env.instance file somewhere off this server. It holds JWT_SECRET and POSTGRES_PASSWORD (and ENCRYPTION_KEY, if you set one). ${without}`;
@@ -81,7 +81,7 @@ export function BackupsCard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running]);
 
-  const place = session.config.platform === "railway" ? "the same Railway project as Crewtavo" : "the same server as Crewtavo";
+  const place = session.config.platform === "railway" ? "the same Railway project as the app" : "the same server as the app";
   const s = status.data;
   const problem = s ? backupProblem(s) : null;
   return (
@@ -89,7 +89,7 @@ export function BackupsCard() {
       <div className="stack-sm" style={{ gap: 2 }}>
         <strong>Database backups</strong>
         <span className="muted small">
-          Every night Crewtavo saves a copy of its whole database: clients, quotes, jobs, invoices, payments, the team and everyone&apos;s sign-in. It keeps the last {BACKUP_KEEP.daily} days and the last {BACKUP_KEEP.weekly} weeks. A backup is what a new Crewtavo is restored from if this one is ever lost.
+          Every night the app saves a copy of its whole database: clients, quotes, jobs, invoices, payments, the team and everyone&apos;s sign-in. It keeps the last {BACKUP_KEEP.daily} days and the last {BACKUP_KEEP.weekly} weeks. A backup is what a new copy of the app is restored from if this one is ever lost.
         </span>
       </div>
       {s && !s.available && <span className="muted small">{s.unavailable}</span>}
@@ -108,7 +108,7 @@ export function BackupsCard() {
             show.mutate();
           }}
         >
-          <Field label="Your Crewtavo password" hint={PASSWORD_HINT}>
+          <Field label="Your password" hint={PASSWORD_HINT}>
             <input className="input" type="password" value={password} onChange={(e) => { setPassword(e.target.value); show.reset(); backUp.reset(); download.reset(); }} autoComplete="current-password" maxLength={200} style={{ maxWidth: 320 }} />
           </Field>
           <FormError error={show.error ?? backUp.error ?? download.error} />
@@ -121,7 +121,7 @@ export function BackupsCard() {
         </form>
       )}
       {list && <BackupList backups={list} busy={download.isPending ? download.variables?.id ?? null : null} onDownload={(b) => download.mutate(b)} />}
-      <span className="muted small">A backup holds everything, pay rates and clients&apos; details included, so keep a downloaded one somewhere safe. Restoring one into a new Crewtavo is in docs/deploy.md, under Restoring a backup.</span>
+      <span className="muted small">A backup holds everything, pay rates and clients&apos; details included, so keep a downloaded one somewhere safe. Restoring one into a new copy of the app is in docs/deploy.md, under Restoring a backup.</span>
     </div>
   );
 }

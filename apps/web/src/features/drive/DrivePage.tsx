@@ -941,7 +941,7 @@ function FileList({ scope, dropping }: { scope: "recent"; dropping: boolean }) {
   if (!rows.length) {
     return (
       <div className={`card${dropping ? ` ${styles.dropping}` : ""}`}>
-        <EmptyState icon="clock" title="No files yet">Files added anywhere in Crewtavo, on a job, a quote or in your company folders, show up here newest first.</EmptyState>
+        <EmptyState icon="clock" title="No files yet">Files added anywhere in the app, on a job, a quote or in your company folders, show up here newest first.</EmptyState>
       </div>
     );
   }

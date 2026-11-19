@@ -128,7 +128,7 @@ export function TrashList() {
         <div className="card"><ErrorState error={trash.error} onRetry={() => trash.refetch()} /></div>
       ) : items.length === 0 ? (
         <div className="card">
-          <EmptyState icon="trash" title="The Trash is empty">Files deleted in Crewtavo, from a plan to a visit photo or a receipt, wait here for {TRASH_DAYS} days in case you need them back.</EmptyState>
+          <EmptyState icon="trash" title="The Trash is empty">Files deleted in the app, from a plan to a visit photo or a receipt, wait here for {TRASH_DAYS} days in case you need them back.</EmptyState>
         </div>
       ) : (
         <div className={`card${trash.isFetching && !trash.isPending ? " is-stale" : ""}`}>

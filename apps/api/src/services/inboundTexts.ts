@@ -196,11 +196,11 @@ export async function receiveText(admin: Db, text: InboundText, companies: reado
       await clearStop(admin, client.company_id, text.from);
     }
     const notice = changed && phrase
-      ? { title: `${client.display_name} asked to stop texts`, body: `They texted ${theirWords}, so Crewtavo won't text them. If that isn't what they meant, you can turn texts back on from their page, only if they ask.` }
+      ? { title: `${client.display_name} asked to stop texts`, body: `They texted ${theirWords}, so the app won't text them. If that isn't what they meant, you can turn texts back on from their page, only if they ask.` }
       : changed && keyword === "stop"
-      ? { title: `${client.display_name} turned off texts`, body: "They texted STOP. Crewtavo won't text them until they text START." }
+      ? { title: `${client.display_name} turned off texts`, body: "They texted STOP. The app won't text them until they text START." }
       : changed
-        ? { title: `${client.display_name} turned texts back on`, body: `They texted ${body.trim().slice(0, 20).toUpperCase()}, so Crewtavo can text them again.` }
+        ? { title: `${client.display_name} turned texts back on`, body: `They texted ${body.trim().slice(0, 20).toUpperCase()}, so the app can text them again.` }
         : { title: "New text from a client", body: body.slice(0, 200) };
     const told = await tellOffice(admin, client.company_id, { ...notice, link: `/messages?client=${client.id}` });
     // An ordinary text (not STOP or START) reaches the people working there today too.
@@ -232,11 +232,11 @@ export async function receiveText(admin: Db, text: InboundText, companies: reado
     else if (first && keyword === "start") changed = await clearStop(admin, contact.company_id, text.from);
     else if (keyword) continue;
     const notice = changed && phrase
-      ? { title: `${contact.name} asked to stop texts`, body: `They texted ${theirWords} from ${text.from}, so Crewtavo won't text that number. If that isn't what they meant, you can turn its texts back on from the client's page, only if they ask.` }
+      ? { title: `${contact.name} asked to stop texts`, body: `They texted ${theirWords} from ${text.from}, so the app won't text that number. If that isn't what they meant, you can turn its texts back on from the client's page, only if they ask.` }
       : changed && keyword === "stop"
-      ? { title: `${contact.name} turned off texts`, body: `They texted STOP from ${text.from}. Crewtavo won't text that number until they text START.` }
+      ? { title: `${contact.name} turned off texts`, body: `They texted STOP from ${text.from}. The app won't text that number until they text START.` }
       : changed
-        ? { title: `${contact.name} turned texts back on`, body: `They texted ${body.trim().slice(0, 20).toUpperCase()} from ${text.from}, so Crewtavo can text that number again.` }
+        ? { title: `${contact.name} turned texts back on`, body: `They texted ${body.trim().slice(0, 20).toUpperCase()} from ${text.from}, so the app can text that number again.` }
         : { title: `New text from ${contact.name}`, body: body.slice(0, 200) };
     const told = await tellOffice(admin, contact.company_id, { ...notice, link: `/messages?client=${contact.client_id}` });
     if (!keyword) await tellVisitPeople(admin, contact.company_id, contact.client_id, { title: `New text from ${contact.name}`, body: body.slice(0, 200), link: `/messages?client=${contact.client_id}` }, told, text.from);
@@ -271,7 +271,7 @@ export async function receiveText(admin: Db, text: InboundText, companies: reado
   const { error } = await admin.from("unknown_texts").insert({ company_id: company, from_phone: text.from.slice(0, 40), phone_key: key, body, external_id: text.sid });
   if (error) throw new Error(`Couldn't keep a text from an unknown number: ${error.message}`);
   // Once an hour for a number, however much it texts.
-  if (phrase) await tellOffice(admin, company, { title: "An unknown number asked to stop texts", body: `${text.from} texted ${theirWords}, so Crewtavo won't text it.`, link: `/messages?unknown=${key}` });
+  if (phrase) await tellOffice(admin, company, { title: "An unknown number asked to stop texts", body: `${text.from} texted ${theirWords}, so the app won't text it.`, link: `/messages?unknown=${key}` });
   else if (!lastHour) await tellOffice(admin, company, { title: "New text from an unknown number", body: `${text.from}: ${body.slice(0, 180)}`, link: `/messages?unknown=${key}` });
   return [];
 }

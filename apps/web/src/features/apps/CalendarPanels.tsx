@@ -431,7 +431,7 @@ export function LinkCalendarsPanel({ app, appName, steps }: { app: string; appNa
       {(calendars.isPending || calendars.error || mine.length > 0) && <section className="card" aria-labelledby={`${app}-calendars`}>
         <div className="card-pad stack-sm" style={{ gap: 4 }}>
           <h2 id={`${app}-calendars`} className="section-title" style={{ fontSize: 16 }}>Calendars on your schedule</h2>
-          <span className="muted small">Read again every 15 minutes. Changes made here only affect Crewtavo.</span>
+          <span className="muted small">Read again every 15 minutes. Changes made here only affect the app.</span>
         </div>
         {calendars.isPending ? (
           <div className="card-row"><Skeleton height={36} radius={8} style={{ flex: 1 }} /></div>
@@ -542,7 +542,7 @@ export function GoogleCalendarPanel() {
             <span className="muted small">
               {google.visits_calendar
                 ? <>Visits go onto <strong>{google.visits_calendar.name}</strong> in {account}. New, moved and finished visits show up there within a few minutes. Share that calendar in Google to let others see the schedule.</>
-                : <>Crewtavo makes a calendar called <strong>{session.company.name} visits</strong> in {account} and keeps every visit on it, from last week through the next six months.</>}
+                : <>The app makes a calendar called <strong>{session.company.name} visits</strong> in {account} and keeps every visit on it, from last week through the next six months.</>}
             </span>
             {google.visits_calendar && google.last_sync_at && <span className="muted small">Last change sent {timeAgo(google.last_sync_at)}.</span>}
           </div>

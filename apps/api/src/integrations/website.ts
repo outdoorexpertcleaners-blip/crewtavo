@@ -156,7 +156,7 @@ async function fetchPage(start: URL, accept: string): Promise<{ response: Incomi
   let url = start;
   for (let hop = 0; hop < 5; hop++) {
     if (privateHost(url)) throw new WebsiteError(PRIVATE);
-    if (url.protocol !== "https:") throw new WebsiteError("Your website's editor isn't on a secure (https://) address, so it can't open inside Crewtavo.");
+    if (url.protocol !== "https:") throw new WebsiteError("Your website's editor isn't on a secure (https://) address, so it can't open inside the app.");
     let response: IncomingMessage;
     try {
       response = await publicGet(url, { Accept: accept, "Accept-Encoding": "gzip, br", "User-Agent": "Crewtavo website check" }, AbortSignal.timeout(15_000));
@@ -202,7 +202,7 @@ export async function checkSite(address: string, appOrigin: string, options: { a
   if (status < 200 || status > 299) {
     response.destroy();
     if (status === 404 || status === 410) throw new WebsiteError(`Nothing at ${page}. If your editor isn't at /admin, type its whole address, like greenlawn.com/cms.`);
-    if (status === 401 || status === 403) throw new WebsiteError(`${page} asks for a password before it opens, so it can't be shown inside Crewtavo. Turn off the host's password protection for it, then try again.`);
+    if (status === 401 || status === 403) throw new WebsiteError(`${page} asks for a password before it opens, so it can't be shown inside the app. Turn off the host's password protection for it, then try again.`);
     throw new WebsiteError(`Your website answered with an error (${status}). Try again in a few minutes.`);
   }
   let html: string;

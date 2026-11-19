@@ -91,7 +91,7 @@ describe("cloudflareTokenUrl", () => {
       { key: "dns", type: "edit" },
       { key: "zone", type: "read" },
     ]);
-    expect(params).toMatchObject({ accountId: "*", zoneId: "all", name: "Crewtavo" });
+    expect(params).toMatchObject({ accountId: "*", zoneId: "all", name: "Outdoor Expert app" });
     // Encoded, so the JSON's quotes, brackets and commas can't break the query string.
     expect(query).not.toMatch(/["[\]{},]/);
   });

@@ -92,7 +92,7 @@ export function TextsSwitch({ clientId, contactId, name, phone, stop, since, lab
       <Dialog open={asking} onClose={() => setAsking(false)} title={`Turn off texts for ${name}?`} size="sm">
         <form onSubmit={(e: FormEvent) => { e.preventDefault(); set.mutate({ on: false, how, ...(note.trim() ? { note: note.trim() } : {}) }); }}>
           <p className="muted" style={{ marginTop: 0 }}>
-            Crewtavo won't text {phone} again: no reminders, visit notices, on-my-way texts, quotes, invoices or review asks. Emails still go.
+            The app won't text {phone} again: no reminders, visit notices, on-my-way texts, quotes, invoices or review asks. Emails still go.
           </p>
           <Field label="How did they ask?">
             <select className="input" value={how} onChange={(e) => setHow(e.target.value as StopHow)}>

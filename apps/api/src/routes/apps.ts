@@ -698,7 +698,7 @@ apps.put("/apps/twilio/account", requireUser, requireCompany(ADMINS, "apps"), as
  */
 apps.post("/apps/twilio/webhook", requireUser, requireCompany(ADMINS, "apps"), async (c) => {
   const base = appUrl(c);
-  if (!base.startsWith("https://")) throw new HttpError(400, "Twilio can only send texts to a public https address, and this Crewtavo doesn't have one yet.");
+  if (!base.startsWith("https://")) throw new HttpError(400, "Twilio can only send texts to a public https address, and this app doesn't have one yet.");
   const admin = adminClient(c.env);
   forgetTwilio(c.var.companyId);
   const account = await companyTwilio(c.env, c.var.companyId);
@@ -725,7 +725,7 @@ async function stripeAccount(admin: Db, companyId: string): Promise<{ label: str
   return data && data.status !== "disconnected" ? { label: data.account_label ?? "Stripe account", id: data.external_account_id ?? null } : null;
 }
 
-const IF_NOT_YOU = "If this wasn't you, sign in, disconnect Stripe on the Apps page, change your password, and delete the Crewtavo key in your Stripe dashboard.";
+const IF_NOT_YOU = "If this wasn't you, sign in, disconnect Stripe on the Apps page, change your password, and delete the Outdoor Expert app key in your Stripe dashboard.";
 
 /**
  * A security change on record in the activity, and on the bell of every active owner, the person
@@ -791,7 +791,7 @@ export async function emailOwners(
   const { data: company } = await admin.from("companies").select("name, timezone").eq("id", companyId).maybeSingle();
   const companyName = company?.name ?? "your company";
   const when = new Date().toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short", timeZone: company?.timezone || "UTC" });
-  const text = `${note.title} in Crewtavo for ${companyName}.\n\nWho: ${note.who.full_name || note.who.email} (${note.who.email})\nWhen: ${when}\n${note.details}\n\n${note.ifNotYou}\n\n${appUrl(c)}${note.link}`;
+  const text = `${note.title} in the app for ${companyName}.\n\nWho: ${note.who.full_name || note.who.email} (${note.who.email})\nWhen: ${when}\n${note.details}\n\n${note.ifNotYou}\n\n${appUrl(c)}${note.link}`;
   const { data: people } = await admin.from("profiles").select("email").in("user_id", ownerIds);
   for (const person of people ?? []) {
     if (!person.email) continue;

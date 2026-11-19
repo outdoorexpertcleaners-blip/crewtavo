@@ -62,7 +62,7 @@ export const MAIL_PRESETS: MailPreset[] = [
       },
       {
         title: "Create an API key",
-        text: "Open API keys and press Create API Key. Name it Crewtavo, choose Sending access, and leave the domain on all domains so it isn't tied to just one. Copy the key right away: Resend only shows it once.",
+        text: "Open API keys and press Create API Key. Name it Outdoor Expert app, choose Sending access, and leave the domain on all domains so it isn't tied to just one. Copy the key right away: Resend only shows it once.",
         url: "https://resend.com/api-keys",
         urlLabel: "Open API keys",
       },
@@ -83,7 +83,7 @@ export const MAIL_PRESETS: MailPreset[] = [
     passwordLabel: "App password",
     steps: [
       "Turn on 2-Step Verification for the Google account, if it isn't on already.",
-      "Open App passwords, type Crewtavo as the name and press Create.",
+      "Open App passwords, type Outdoor Expert app as the name and press Create.",
       "Copy the 16-letter password Google shows and paste it here.",
     ],
     helpUrl: "https://myaccount.google.com/apppasswords",
@@ -100,7 +100,7 @@ export const MAIL_PRESETS: MailPreset[] = [
     passwordLabel: "App password",
     steps: [
       "Sign in as the mailbox you want to send from (for example office@yourcompany.com).",
-      "Turn on 2-Step Verification, then open App passwords and create one named Crewtavo.",
+      "Turn on 2-Step Verification, then open App passwords and create one named Outdoor Expert app.",
       "Copy the 16-letter password and paste it here.",
     ],
     helpUrl: "https://myaccount.google.com/apppasswords",
@@ -118,7 +118,7 @@ export const MAIL_PRESETS: MailPreset[] = [
     passwordLabel: "App-specific password",
     steps: [
       "Open Zoho Accounts → Security → App Passwords.",
-      "Generate a new password named Crewtavo.",
+      "Generate a new password named Outdoor Expert app.",
       "Paste it here. Your sign-in is your full Zoho email address.",
     ],
     helpUrl: "https://accounts.zoho.com/home#security/app_password",
@@ -150,7 +150,7 @@ export const MAIL_PRESETS: MailPreset[] = [
     port: 465,
     security: "tls",
     passwordLabel: "App password",
-    steps: ["Open Yahoo Account security.", "Choose Generate app password, name it Crewtavo, and paste it here."],
+    steps: ["Open Yahoo Account security.", "Choose Generate app password, name it Outdoor Expert app, and paste it here."],
     helpUrl: "https://login.yahoo.com/account/security",
     helpLabel: "Open Yahoo Account security",
     dailyLimit: "a few hundred emails a day",
@@ -163,7 +163,7 @@ export const MAIL_PRESETS: MailPreset[] = [
     port: 587,
     security: "starttls",
     passwordLabel: "App-specific password",
-    steps: ["Sign in to your Apple Account, open Sign-In and Security → App-Specific Passwords.", "Create one named Crewtavo and paste it here."],
+    steps: ["Sign in to your Apple Account, open Sign-In and Security → App-Specific Passwords.", "Create one named Outdoor Expert app and paste it here."],
     helpUrl: "https://account.apple.com/account/manage",
     helpLabel: "Open Apple Account",
     dailyLimit: "about 1,000 emails a day",

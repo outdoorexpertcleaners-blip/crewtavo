@@ -569,7 +569,7 @@ describe("weak signal", () => {
       throw new ApiError("Something went wrong on our end. Try again in a moment.", 502);
     }],
     ["a checklist, through the gateway to the database (503 while it starts)", "checklist-save", () => {
-      unwrap({ data: null, error: { message: "This part of Crewtavo is still starting. Try again in a moment." }, status: 503 });
+      unwrap({ data: null, error: { message: "This part of the app is still starting. Try again in a moment." }, status: 503 });
     }],
   ])("%s, sent while the server restarts, waits and goes out once the server answers again", async (_, key, restarting) => {
     const qc = newClient();
@@ -770,7 +770,7 @@ describe("closed with updates waiting", () => {
     // The app closed here: the worker, woken by the signal coming back, says so.
     const sw = loadServiceWorker({ caches });
     await sw.dispatch("sync", { tag: SYNC_TAG });
-    expect(sw.showNotification.mock.calls[0]![1]).toMatchObject({ body: "2 updates are waiting to be sent. Open Crewtavo to send them." });
+    expect(sw.showNotification.mock.calls[0]![1]).toMatchObject({ body: "2 updates are waiting to be sent. Open the app to send them." });
 
     // Opened again with signal: the queue goes out and the notice goes.
     onlineManager.setOnline(true);
@@ -905,7 +905,7 @@ describe("closed with updates waiting", () => {
     // The browser wakes the worker. Crewtavo's window is there, but put away.
     const sw = loadServiceWorker({ caches, windows: [{ url: "https://crew.example.com/field", visibilityState: "hidden" }] });
     await expect(sw.dispatch("sync", { tag: SYNC_TAG })).resolves.toBe("done");
-    expect(sw.showNotification.mock.calls[0]![1]).toMatchObject({ body: "1 update is waiting to be sent. Open Crewtavo to send them." });
+    expect(sw.showNotification.mock.calls[0]![1]).toMatchObject({ body: "1 update is waiting to be sent. Open the app to send them." });
 
     // Tapping it brings Crewtavo back on the screen (React Query's own listener hears it in a browser): it goes, and the notice goes.
     show("visible");
@@ -1141,7 +1141,7 @@ describe("closed with updates waiting", () => {
     expect(register).toHaveBeenCalledWith(SYNC_TAG);
     const sw = loadServiceWorker({ caches });
     await sw.dispatch("sync", { tag: SYNC_TAG });
-    expect(sw.showNotification.mock.calls[0]![1]).toMatchObject({ body: "1 update is waiting to be sent. Open Crewtavo to send them." });
+    expect(sw.showNotification.mock.calls[0]![1]).toMatchObject({ body: "1 update is waiting to be sent. Open the app to send them." });
 
     // Or back on the screen in time, with requests getting through: it goes.
     reachable = true;

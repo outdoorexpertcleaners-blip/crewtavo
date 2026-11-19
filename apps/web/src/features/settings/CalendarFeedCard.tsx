@@ -41,7 +41,7 @@ export function CalendarFeedCard({ title = t("Your schedule in your phone's cale
     <div className="card card-pad stack-sm">
       <strong>{title}</strong>
       <span className="muted small">
-        {t("Visits show up in Google, Apple or Outlook Calendar and update on their own. Each calendar app checks for changes on its own schedule, from about an hour to a day (Google is the slowest), so for a change made today, look in Crewtavo. Add it to Google on a computer: Google's phone app can't add calendars.")}
+        {t("Visits show up in Google, Apple or Outlook Calendar and update on their own. Each calendar app checks for changes on its own schedule, from about an hour to a day (Google is the slowest), so for a change made today, look in the app. Add it to Google on a computer: Google's phone app can't add calendars.")}
       </span>
       {feed.isPending ? (
         <Skeleton height={38} radius={8} />
@@ -62,7 +62,7 @@ export function CalendarFeedCard({ title = t("Your schedule in your phone's cale
               </Button>
             )}
             <Button size="sm" variant="ghost" onClick={async () => (await confirm({ title: t("Make a new link?"), body: t("The old link stops working. Add the new one to your calendar."), confirmLabel: t("New link") })) && create.mutate(f.scope)}>{t("New link")}</Button>
-            <Button size="sm" variant="ghost" loading={remove.isPending} onClick={async () => (await confirm({ title: t("Turn off your calendar link?"), body: t("Your calendar stops getting visits from Crewtavo."), confirmLabel: t("Turn off"), danger: true })) && remove.mutate()}>{t("Turn off")}</Button>
+            <Button size="sm" variant="ghost" loading={remove.isPending} onClick={async () => (await confirm({ title: t("Turn off your calendar link?"), body: t("Your calendar stops getting visits from the app."), confirmLabel: t("Turn off"), danger: true })) && remove.mutate()}>{t("Turn off")}</Button>
           </div>
         </>
       ) : (

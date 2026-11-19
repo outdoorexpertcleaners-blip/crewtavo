@@ -216,7 +216,7 @@ const keyOf = (share: number) => String(Math.round(share * 100));
 export function storageWarning(share: number, used: number, limit: number): { title: string; body: string } {
   const full = used >= limit;
   const percent = Math.floor((used / limit) * 100);
-  const title = full ? "Crewtavo's storage is full" : share >= 0.95 ? `Crewtavo's storage is almost full (${percent}%)` : `Crewtavo's storage is ${percent}% full`;
+  const title = full ? "The app's storage is full" : share >= 0.95 ? `The app's storage is almost full (${percent}%)` : `The app's storage is ${percent}% full`;
   const refused = full
     ? "New files in Drive, plans, guides and chat are being turned away until there's room."
     : "When it's full, nobody can add files to Drive, plans, guides or chat.";

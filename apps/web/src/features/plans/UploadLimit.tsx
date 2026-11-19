@@ -35,7 +35,7 @@ export function useTooLarge() {
     toast.error(error.message, {
       description: canRaise
         ? "You can raise the limit to 200 MB from here, or split the plan set into smaller PDFs."
-        : "Split the plan set into smaller PDFs, or ask whoever runs Crewtavo to raise the upload limit.",
+        : "Split the plan set into smaller PDFs, or ask whoever runs the app to raise the upload limit.",
       action: canRaise ? { label: "Raise the limit", onClick: () => setOpen(true) } : { label: "How", onClick: () => window.open(PLAN_LIMIT_DOCS, "_blank", "noopener") },
     });
   };
@@ -57,7 +57,7 @@ export function UploadLimitDialog({ onClose }: { onClose: () => void }) {
         {state.error && <FormError error={state.error} />}
         {s && !s.connected && (
           <>
-            <p style={{ margin: 0 }}>Crewtavo can raise its upload limit to {fileSize(s.target)} for you once it's connected to your Railway project.</p>
+            <p style={{ margin: 0 }}>The app can raise its upload limit to {fileSize(s.target)} for you once it's connected to your Railway project.</p>
             <p className="muted small" style={{ margin: 0 }}>Connect it under Settings → Web address (one press of Allow on Railway), then come back to the file. Or change it by hand on Railway.</p>
             <div className="form-actions">
               <a className="btn" href={PLAN_LIMIT_DOCS} target="_blank" rel="noreferrer">Do it by hand</a>
@@ -67,23 +67,23 @@ export function UploadLimitDialog({ onClose }: { onClose: () => void }) {
         )}
         {s?.connected && s.raised && (
           <>
-            <div className="callout callout-good"><Icon name="check" size={20} /><div className="grow">Done. This Crewtavo now takes files up to {fileSize(s.target)}.</div></div>
+            <div className="callout callout-good"><Icon name="check" size={20} /><div className="grow">Done. This app now takes files up to {fileSize(s.target)}.</div></div>
             <p className="muted small" style={{ margin: 0 }}>File storage is restarting with the new limit, which takes about a minute. Then add the file again.</p>
             <div className="form-actions"><Button variant="primary" onClick={onClose}>Close</Button></div>
           </>
         )}
         {s?.connected && !s.raised && s.limit !== null && s.limit >= s.target && (
           <>
-            <p style={{ margin: 0 }}>This Crewtavo already takes files up to {fileSize(s.limit)}. That file is bigger, so split it into smaller PDFs (most PDF readers can save a range of pages as their own file).</p>
+            <p style={{ margin: 0 }}>This app already takes files up to {fileSize(s.limit)}. That file is bigger, so split it into smaller PDFs (most PDF readers can save a range of pages as their own file).</p>
             <div className="form-actions"><Button variant="primary" onClick={onClose}>Close</Button></div>
           </>
         )}
         {s?.connected && !s.raised && (s.limit === null || s.limit < s.target) && (
           <>
             <p style={{ margin: 0 }}>
-              This Crewtavo takes files up to {s.limit ? fileSize(s.limit) : "a smaller size"}. Raise it to {fileSize(s.target)}, enough for most plan sets?
+              This app takes files up to {s.limit ? fileSize(s.limit) : "a smaller size"}. Raise it to {fileSize(s.target)}, enough for most plan sets?
             </p>
-            <p className="muted small" style={{ margin: 0 }}>Crewtavo changes the setting on Railway and restarts file storage. That takes about a minute, and uploads wait until it's back. Files you already have aren't touched.</p>
+            <p className="muted small" style={{ margin: 0 }}>The app changes the setting on Railway and restarts file storage. That takes about a minute, and uploads wait until it's back. Files you already have aren't touched.</p>
             <FormError error={raise.error} />
             <div className="form-actions">
               <Button onClick={onClose}>Not now</Button>

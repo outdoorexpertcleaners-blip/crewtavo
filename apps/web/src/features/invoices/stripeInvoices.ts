@@ -43,7 +43,7 @@ export function bankPayment<T extends StripeInvoiceRow>(rows: T[], now = Date.no
 export function bankPaymentNote(bank: { amount_due: number; processing_at?: string | null; left: boolean }, timeZone: string): string {
   const amount = formatMoneyCents(bank.amount_due);
   if (bank.left) {
-    return `A bank payment of ${amount} was still clearing in the Stripe account Crewtavo used before, so it won't show up here on its own. Check it in that Stripe account, and record it here once it clears.`;
+    return `A bank payment of ${amount} was still clearing in the Stripe account the app used before, so it won't show up here on its own. Check it in that Stripe account, and record it here once it clears.`;
   }
   return `A bank payment of ${amount} for this invoice is on its way through Stripe${started(bank.processing_at, timeZone)}. It usually clears in a few business days and shows up here when it does. If you record another payment, the client may end up paying twice.`;
 }

@@ -30,7 +30,7 @@ const SCOPE = `openid profile email offline_access resource.invoke ${PLAN_SCOPE}
 const RESOURCE = "https://api.openai.com/v1";
 /** The client every first sign-in starts from; OpenAI answers with the one it registered for the account. */
 const FIRST_CLIENT = "dynamic_agent_client";
-const APP_NAME = "Crewtavo";
+const APP_NAME = "Outdoor Expert app";
 /** Where a person sees and manages what their plan has used. */
 export const USAGE_URL = "https://chatgpt.com/settings/usage";
 /** How long a started sign-in can be finished. */
@@ -357,7 +357,7 @@ export async function notePlanUnsupported(admin: Db, person: Person, row: PlanRo
 
 async function hostId(admin: Db): Promise<string> {
   const { data, error } = await loose(admin).rpc("chatgpt_host_id");
-  if (error || typeof data !== "string" || !data.startsWith("urn:uuid:")) throw new Error(`This Crewtavo's id for OpenAI couldn't be read${error ? `: ${error.message}` : ""}`);
+  if (error || typeof data !== "string" || !data.startsWith("urn:uuid:")) throw new Error(`This app's id for OpenAI couldn't be read${error ? `: ${error.message}` : ""}`);
   return data;
 }
 
@@ -437,7 +437,7 @@ export async function finishSignIn(env: Env, admin: Db, person: Person, pasted: 
   const first = attempt.client_id === FIRST_CLIENT;
   const returned = params.get("client_id");
   if (first && (!returned || returned === FIRST_CLIENT || !/^[\w.:-]{1,200}$/.test(returned))) {
-    throw new HttpError(400, `ChatGPT didn't finish registering Crewtavo for your account. ${START_AGAIN}`);
+    throw new HttpError(400, `ChatGPT didn't finish registering the app for your account. ${START_AGAIN}`);
   }
   if (!first && returned && returned !== attempt.client_id) throw new HttpError(400, `That sign-in came back for a different registration than the one saved for you, so it wasn't used. ${START_AGAIN}`);
   const clientId = first ? returned! : attempt.client_id;

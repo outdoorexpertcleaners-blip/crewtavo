@@ -31,7 +31,7 @@ const quoteLine = z.object({
     .max(40)
     .nullable()
     .optional()
-    .describe("Lines that share a group are one choice: the client picks one of them, and the first starts picked. For Good, Better and Best versions of the whole job, offer options from packages in Crewtavo instead."),
+    .describe("Lines that share a group are one choice: the client picks one of them, and the first starts picked. For Good, Better and Best versions of the whole job, offer options from packages in the app instead."),
 });
 
 async function quoteLines(ctx: ToolContext, quoteId: string, lines: ReadonlyArray<z.infer<typeof quoteLine>>) {
@@ -76,7 +76,7 @@ async function replaceLines(ctx: ToolContext, quoteId: string, lines: ReadonlyAr
 
 const salesScope = (ctx: ToolContext) => ({ db: ctx.db, env: ctx.env, companyId: ctx.companyId, baseUrl: (ctx.env.APP_URL ?? ctx.origin).replace(/\/$/, "") });
 
-const OFFERS_OPTIONS = "This quote offers options; edit its lines in Crewtavo.";
+const OFFERS_OPTIONS = "This quote offers options; edit its lines in the app.";
 /** Approving a quote that's signed (or a job) already: its approval stays the client's. */
 const ALREADY_ANSWERED = "The client has already answered this quote";
 
@@ -206,7 +206,7 @@ export const quoteTools = {
   }),
   update_quote: tool({
     description:
-      "Change a quote or a quote template: title, message, how long it's valid, sales tax, discount, the deposit asked for (an amount, or a percent of the total that follows it as the total changes, and as the client picks an option and add-ons), custom fields, or its lines (lines replaces them all; not on a quote that offers options, whose lines are edited in Crewtavo). Send only what changes. An amount for the deposit is never more than the quote's total (with options, its cheapest option's price): a larger one is lowered to it, and the answer says so.",
+      "Change a quote or a quote template: title, message, how long it's valid, sales tax, discount, the deposit asked for (an amount, or a percent of the total that follows it as the total changes, and as the client picks an option and add-ons), custom fields, or its lines (lines replaces them all; not on a quote that offers options, whose lines are edited in the app). Send only what changes. An amount for the deposit is never more than the quote's total (with options, its cheapest option's price): a larger one is lowered to it, and the answer says so.",
     input: z.object({
       quote_id: z.uuid(),
       title: z.string().trim().min(1).max(200).optional(),
@@ -284,7 +284,7 @@ export const quoteTools = {
           if (!a.option_id) throw new Error(`This quote offers options (${quote.options.map((o) => o.name).join(", ")}). Say which one the client chose with option_id, from get_quote.`);
           const chosen = quote.options.find((o) => o.id === a.option_id);
           if (!chosen) throw new Error("That option isn't on this quote. get_quote lists its options.");
-          if (!isPriced(chosen, quote.lines)) throw new Error("That option isn't priced yet: it has no lines of its own. Add them in Crewtavo, or pick another one.");
+          if (!isPriced(chosen, quote.lines)) throw new Error("That option isn't priced yet: it has no lines of its own. Add them in the app, or pick another one.");
           approval = await manualApproval(ctx.db, ctx.companyId, a.quote_id, { name: "Assistant", optionId: chosen.id });
           // The option first, on its own, so the approval sees that option's lines.
           if (quote.option_id !== chosen.id) {

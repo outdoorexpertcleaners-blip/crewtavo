@@ -2,9 +2,8 @@
  * The ? beside the bell. Crewtavo has no support desk, so this is where people help themselves:
  * ask Claude or ChatGPT with the docs page for this screen attached (the same prompt as the Ask
  * buttons on crewtavo.com/docs), open the docs, the company's own guides, or connect an assistant.
- * Owners and admins, who run the server, also get a bug report on GitHub with the version filled in.
+ * Owners and admins, who run the server, also get a bug report on GitHub (Outdoor Expert's fork).
  */
-import { useQuery } from "@tanstack/react-query";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { hasRole, isSub, useSession } from "@/lib/session";
@@ -77,7 +76,7 @@ export function docsPage(pathname: string, search: string, sub = false): string 
 /** What Ask Claude and Ask ChatGPT send: the docs page (or the index of them all) and the question. */
 export function askUrl(ai: "claude" | "chatgpt", page: string | null, question: string): string {
   const docs = page ? `${DOCS}${page}.md` : "https://crewtavo.com/llms.txt";
-  const q = encodeURIComponent(`Read ${docs} and help me with this question about Crewtavo: ${question}`);
+  const q = encodeURIComponent(`Read ${docs} and help me with this question about the app (it's based on Crewtavo): ${question}`);
   return ai === "claude" ? `https://claude.ai/new?q=${q}` : `https://chatgpt.com/?q=${q}`;
 }
 
@@ -92,15 +91,8 @@ export function HelpButton() {
   const admin = hasRole(session, "admin");
   const page = docsPage(location.pathname, location.search, sub);
 
-  // The release this server runs, for the bug report (GitHub asks for it).
-  const health = useQuery({
-    queryKey: ["health"],
-    enabled: open && admin,
-    staleTime: Infinity,
-    meta: { silent: true },
-    queryFn: async () => ((await (await fetch("/api/health")).json()) as { version?: string }).version ?? "",
-  });
-  const report = `https://github.com/jviars/crewtavo/issues/new?${new URLSearchParams({ template: "bug_report.yml", ...(health.data ? { version: health.data } : {}) })}`;
+  // Outdoor Expert's own issues for this modified version, not the original Crewtavo's.
+  const report = "https://github.com/outdoorexpertcleaners-blip/crewtavo/issues/new";
 
   useEffect(() => {
     const p = panel.current;
@@ -138,17 +130,17 @@ export function HelpButton() {
         </div>
         <div className="panel-body">
           <form className="stack-sm" style={{ padding: "0 16px 14px" }} onSubmit={ask}>
-            <label htmlFor={`${id}-q`} className="small" style={{ fontWeight: 600 }}>{t("Ask AI about Crewtavo")}</label>
+            <label htmlFor={`${id}-q`} className="small" style={{ fontWeight: 600 }}>{t("Ask AI about the app")}</label>
             <input id={`${id}-q`} name="question" className="input" required pattern=".*\S.*" placeholder={t("How do I send invoices in a batch?")} autoComplete="off" />
             <div className="row">
               <Button type="submit" value="claude" icon="external" className="grow">{t("Ask Claude")}</Button>
               <Button type="submit" value="chatgpt" icon="external" className="grow">{t("Ask ChatGPT")}</Button>
             </div>
-            <span className="muted small">{t("It reads Crewtavo's docs to answer. Leave out client names.")}</span>
+            <span className="muted small">{t("It reads the app's docs to answer. Leave out client names.")}</span>
           </form>
-          <HelpRow icon="book" title={page ? t("Docs for this screen") : t("Crewtavo docs")} body="crewtavo.com/docs" href={`${DOCS}${page ? `${page}/` : ""}`} onClick={close} />
+          <HelpRow icon="book" title={page ? t("Docs for this screen") : t("App docs")} body="crewtavo.com/docs" href={`${DOCS}${page ? `${page}/` : ""}`} onClick={close} />
           {!sub && <HelpRow icon="clipboard" title={t("Your company's guides")} body={t("Knowledge base")} to="/kb" onClick={close} />}
-          {!sub && <HelpRow icon="sparkle" title={t("Connect Claude or ChatGPT")} body={t("Have it do the work in Crewtavo")} to="/settings?tab=assistants" onClick={close} />}
+          {!sub && <HelpRow icon="sparkle" title={t("Connect Claude or ChatGPT")} body={t("Have it do the work in the app")} to="/settings?tab=assistants" onClick={close} />}
           {admin ? (
             <HelpRow icon="alert" title={t("Report a problem")} body={t("Public on GitHub, with no promise of a reply. Leave out client details.")} href={report} onClick={close} />
           ) : (

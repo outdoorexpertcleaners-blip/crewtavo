@@ -41,8 +41,8 @@ export function useCheckAgain(onDone: () => void) {
     meta: { inline: true },
     mutationFn: () => api.get<Accounts>("/apps/google_business/locations"),
     onSuccess: (res) => {
-      if (!res.problem) toast.success("Google lets Crewtavo in now. Your reviews are on their way.");
-      else if (res.problem === "approval" || res.problem === "not_enabled") toast.info("Google still isn't letting Crewtavo in. Crewtavo checks again every 6 hours.");
+      if (!res.problem) toast.success("Google lets the app in now. Your reviews are on their way.");
+      else if (res.problem === "approval" || res.problem === "not_enabled") toast.info("Google still isn't letting the app in. The app checks again every 6 hours.");
       onDone();
     },
   });
@@ -86,7 +86,7 @@ export function ApprovalCallout({ own, projectNumber, admin, notEnabled = false,
           <>
             <span style={{ fontWeight: 400 }}>
               Whoever owns {project} Google Cloud project fills in Google's access request form, using an email that manages your Business Profile. The profile needs to have
-              been verified for 60 days or more, and Google takes about 2 weeks. Review asks keep working meanwhile, and Crewtavo checks again every 6 hours.
+              been verified for 60 days or more, and Google takes about 2 weeks. Review asks keep working meanwhile, and the app checks again every 6 hours.
             </span>
             {projectNumber && (
               <span className="row wrap" style={{ gap: 8, fontWeight: 400 }}>
@@ -175,7 +175,7 @@ export function GoogleBeforeSignIn({ app, onConnect, connecting }: { app: AppRow
           <CopyRow label="Scope" value={BUSINESS_SCOPE} />
         </div></li>
         <li><div className="stack-sm" style={{ gap: 8 }}>
-          <span>Sign in with a Google account that manages your Business Profile. You can sign in before Google approves: Crewtavo checks every 6 hours and starts once it does.</span>
+          <span>Sign in with a Google account that manages your Business Profile. You can sign in before Google approves: the app checks every 6 hours and starts once it does.</span>
           <Button variant="primary" style={{ justifySelf: "start" }} loading={connecting} onClick={onConnect}>Sign in with Google</Button>
         </div></li>
       </ol>
@@ -241,7 +241,7 @@ export function GoogleBusinessPanel({ app, onChanged, onReconnect, reconnecting 
       {problem === "error" && (
         <div className="callout callout-warning" role="status">
           <Icon name="alert" size={20} />
-          <div className="grow">{g.problem_message} {g.next_sync_at ? `Crewtavo tries again at ${formatTime(g.next_sync_at, session.company.timezone)}.` : null}</div>
+          <div className="grow">{g.problem_message} {g.next_sync_at ? `The app tries again at ${formatTime(g.next_sync_at, session.company.timezone)}.` : null}</div>
         </div>
       )}
       <FormError error={check.error} />
@@ -327,7 +327,7 @@ function LocationPicker({ current, kept, reviewCount, marketingOn, onDone, onCan
   if (list.isPending) return <CardSkeleton lines={3} title={false} />;
   if (list.error) return <ErrorState compact error={list.error} onRetry={() => list.refetch()} />;
   const accounts = list.data.accounts.filter((a) => a.locations.length);
-  if (!accounts.length && list.data.problem && list.data.problem !== "pick") return <span className="muted small">Google isn't letting Crewtavo see your locations yet.</span>;
+  if (!accounts.length && list.data.problem && list.data.problem !== "pick") return <span className="muted small">Google isn't letting the app see your locations yet.</span>;
   if (!accounts.length) {
     return (
       <div className="stack-sm" style={{ gap: 8 }}>
@@ -339,7 +339,7 @@ function LocationPicker({ current, kept, reviewCount, marketingOn, onDone, onCan
   return (
     <form className="stack-sm" onSubmit={submit}>
       <strong className="small">Pick your business's location</strong>
-      <span className="muted small">Crewtavo brings in one location's reviews.</span>
+      <span className="muted small">The app brings in one location's reviews.</span>
       {accounts.map((account) => (
         <fieldset key={account.name} className="stack-sm" style={{ border: 0, padding: 0, margin: 0 }}>
           {accounts.length > 1 && <legend className="muted small strong" style={{ marginBottom: 6 }}>{account.title}</legend>}

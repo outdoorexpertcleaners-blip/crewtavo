@@ -30,9 +30,9 @@ export function SpanishOffer() {
   return (
     <section className="card card-pad stack-sm" aria-labelledby="spanish-offer">
       {/* i18n-ignore: asked in both languages whatever the app is in */}
-      <strong id="spanish-offer" lang="es" style={{ fontSize: 16 }}>¿Usar Crewtavo en español?</strong>
+      <strong id="spanish-offer" lang="es" style={{ fontSize: 16 }}>¿Usar la aplicación en español?</strong>
       {/* i18n-ignore */}
-      <span className="muted small" lang="en">Use Crewtavo in Spanish? You can change it later in Settings → Profile.</span>
+      <span className="muted small" lang="en">Use the app in Spanish? You can change it later in Settings → Profile.</span>
       <FormError error={answer.error} />
       <div className="row wrap" style={{ gap: 8 }}>
         {/* i18n-ignore */}

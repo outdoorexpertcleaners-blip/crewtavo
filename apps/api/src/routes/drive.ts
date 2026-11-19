@@ -165,7 +165,7 @@ async function checkGoogleSignIn(clientId: string, accessToken: string): Promise
   if (!info) throw new HttpError(400, "Google didn't accept that sign-in. Choose the files again.");
   const apps = [info.aud, info.azp].filter((party) => party !== undefined && party !== null && party !== "");
   if (!apps.length || apps.some((party) => party !== clientId)) {
-    throw new HttpError(403, "That Google sign-in is for another app, so nothing was brought in. Choose the files again from Crewtavo.");
+    throw new HttpError(403, "That Google sign-in is for another app, so nothing was brought in. Choose the files again from the app.");
   }
 }
 
@@ -190,7 +190,7 @@ async function fromGoogle(url: string, accessToken: string, signal: AbortSignal,
   if (reason === "cannotDownloadAbusiveFile") throw new Skipped(`Google flagged ${name} as harmful, so it can't be brought in.`);
   if (reason === "cannotDownloadFile") throw new Skipped(`The owner of ${name} doesn't allow downloading it.`);
   if (response.status === 429 || /rateLimit/i.test(reason)) throw new Skipped(`Google Drive is busy. Try ${name} again in a minute.`);
-  if (response.status === 403 || response.status === 404) throw new Skipped(`Google Drive didn't let Crewtavo open ${name}. Choose it again.`);
+  if (response.status === 403 || response.status === 404) throw new Skipped(`Google Drive didn't let the app open ${name}. Choose it again.`);
   throw new Skipped(`Google Drive couldn't send ${name} (error ${response.status}). Try again in a minute.`);
 }
 
@@ -274,16 +274,16 @@ async function bringIn(c: Ctx, accessToken: string, picked: Picked, place: Place
   // A shortcut: the file it points to (once; a shortcut to a shortcut isn't followed).
   if (file.mimeType === SHORTCUT) {
     const target = file.shortcutDetails?.targetId;
-    if (!target) throw new Skipped(`${name} is a shortcut to something Crewtavo can't open. Choose the file itself.`);
+    if (!target) throw new Skipped(`${name} is a shortcut to something the app can't open. Choose the file itself.`);
     file = await aboutFile(target, accessToken, signal, name);
   }
   name = shown(file.name || picked.name);
   if (file.mimeType === FOLDER) throw new Skipped(`${name} is a folder. Open it and choose the files in it.`);
-  if (file.mimeType === SHORTCUT) throw new Skipped(`${name} is a shortcut to something Crewtavo can't open. Choose the file itself.`);
+  if (file.mimeType === SHORTCUT) throw new Skipped(`${name} is a shortcut to something the app can't open. Choose the file itself.`);
   const exported = GOOGLE_EXPORTS[file.mimeType];
   if (!exported && file.mimeType.startsWith(GOOGLE_KIND)) throw new Skipped(`${name} is a kind of Google file that can't be downloaded.`);
   if (file.capabilities?.canDownload === false) throw new Skipped(`The owner of ${name} doesn't allow downloading it.`);
-  const tooLarge = `${name} is larger than ${megabytes(UPLOAD_LIMIT)}, the most Crewtavo takes.`;
+  const tooLarge = `${name} is larger than ${megabytes(UPLOAD_LIMIT)}, the most the app takes.`;
   if (!exported && Number(file.size) > UPLOAD_LIMIT) throw new Skipped(tooLarge);
   // The storage limits, as the gateway checks an upload from the browser (lib/storageLimits.ts): first
   // by the size Google gives, so a file that won't fit isn't downloaded at all...
@@ -325,9 +325,9 @@ async function bringIn(c: Ctx, accessToken: string, picked: Picked, place: Place
   if (stored.error) {
     held.release();
     const status = String((stored.error as { statusCode?: unknown }).statusCode ?? "");
-    if (status === "413" || /maximum allowed size|too large/i.test(stored.error.message)) throw new Skipped(`${name} is larger than this Crewtavo's storage takes.`);
+    if (status === "413" || /maximum allowed size|too large/i.test(stored.error.message)) throw new Skipped(`${name} is larger than this app's storage takes.`);
     console.warn(`Couldn't store a file from Google Drive: ${stored.error.message}`);
-    throw new Skipped(`Crewtavo couldn't store ${name}. Try again in a minute.`);
+    throw new Skipped(`The app couldn't store ${name}. Try again in a minute.`);
   }
 
   // Recorded as the person: the database decides whether they can add files there, and they added it.
@@ -476,7 +476,7 @@ drive.post("/drive/trash/:id/to-drive", requireUser, requireCompany(DRIVE_ROLES)
     const status = String((copied.error as { statusCode?: unknown }).statusCode ?? "");
     if (status === "404" || /not.?found/i.test(copied.error.message)) throw new HttpError(404, "That file is gone from storage, so it can't be restored.");
     console.warn(`Couldn't copy a file out of the Trash: ${copied.error.message}`);
-    throw new HttpError(503, "Crewtavo couldn't copy that file. Try again in a minute.");
+    throw new HttpError(503, "The app couldn't copy that file. Try again in a minute.");
   }
   const fileName = storedName(trashed.file_name?.trim() || `${SOURCE_NAMES[trashed.source] ?? "File"}.${ext}`, ext);
   const row = await db

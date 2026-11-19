@@ -14,7 +14,7 @@ describe("a database request while the server restarts", () => {
   it("fails with the restart's status and sends no report", () => {
     let error: unknown;
     try {
-      unwrap({ data: null, error: { message: "This part of Crewtavo is still starting. Try again in a moment." }, status: 503 });
+      unwrap({ data: null, error: { message: "This part of the app is still starting. Try again in a moment." }, status: 503 });
     } catch (e) {
       error = e;
     }

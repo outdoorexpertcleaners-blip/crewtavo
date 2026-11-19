@@ -65,7 +65,7 @@ function railway(call: Call, over: Partial<Record<"project" | "usage" | "metrics
   if (query.includes("buckets(first")) return data(pick("buckets", { project: { buckets: { edges: [] } } }));
   if (query.includes("bucketInstanceDetails(")) return data(pick("bucket", { bucketInstanceDetails: null }));
   if (query.includes("project(id")) {
-    return data(pick("project", { project: { name: "Crewtavo", subscriptionType: "hobby", createdAt: "2026-09-01T00:00:00Z", services: { edges: [{ node: { id: "svc-db", name: "db" } }, { node: { id: "svc-crewtavo", name: "crewtavo" } }] } } }));
+    return data(pick("project", { project: { name: "The app", subscriptionType: "hobby", createdAt: "2026-09-01T00:00:00Z", services: { edges: [{ node: { id: "svc-db", name: "db" } }, { node: { id: "svc-crewtavo", name: "crewtavo" } }] } } }));
   }
   if (query.includes("usage(projectId")) {
     const { start, end } = call.body.variables;
@@ -147,7 +147,7 @@ describe("reading Railway", () => {
 
   it("counts the trial's days and credit from when the project was made", async () => {
     // Made 2.5 days ago: $0.36 of credit used.
-    const calls = serve((call) => railway(call, { project: { project: { name: "Crewtavo", subscriptionType: "trial", createdAt: "2026-10-18T00:00:00Z", services: { edges: [] } } } }));
+    const calls = serve((call) => railway(call, { project: { project: { name: "The app", subscriptionType: "trial", createdAt: "2026-10-18T00:00:00Z", services: { edges: [] } } } }));
     const o = await readHosting(env, oauth, NOW);
     expect(o.plan).toBe("trial");
     expect(o.trial).toEqual({ daysLeft: 28, creditLeft: 4.64 });
@@ -155,7 +155,7 @@ describe("reading Railway", () => {
 
     // Made last month: the credit is counted from then, in a usage call of its own.
     forgetHosting();
-    const before = serve((call) => railway(call, { project: { project: { name: "Crewtavo", subscriptionType: "trial", createdAt: "2026-09-30T12:00:00Z", services: { edges: [] } } } }));
+    const before = serve((call) => railway(call, { project: { project: { name: "The app", subscriptionType: "trial", createdAt: "2026-09-30T12:00:00Z", services: { edges: [] } } } }));
     const late = await readHosting(env, oauth, NOW);
     expect(usageCalls(before)).toContainEqual(["2026-09-30T12:00:00.000Z", NOW.toISOString()]);
     expect(late.trial).toEqual({ daysLeft: 10, creditLeft: 2.1 });
@@ -163,7 +163,7 @@ describe("reading Railway", () => {
   });
 
   it("doesn't forecast from less than an hour of use", async () => {
-    serve((call) => railway(call, { project: { project: { name: "Crewtavo", subscriptionType: "trial", createdAt: new Date(NOW.getTime() - 20 * 60_000).toISOString(), services: { edges: [] } } } }));
+    serve((call) => railway(call, { project: { project: { name: "The app", subscriptionType: "trial", createdAt: new Date(NOW.getTime() - 20 * 60_000).toISOString(), services: { edges: [] } } } }));
     const o = await readHosting(env, oauth, NOW);
     expect(o.project).toMatchObject({ perDay: null, forecast: null });
   });
@@ -204,7 +204,7 @@ describe("reading Railway", () => {
 /** An overview with nothing wrong, for changing one thing at a time. */
 function calm(over: Partial<HostingOverview> = {}): Omit<HostingOverview, "warnings"> {
   return {
-    projectName: "Crewtavo",
+    projectName: "The app",
     plan: "hobby",
     period: { start: "2026-10-01T00:00:00.000Z", end: "2026-11-01T00:00:00.000Z" },
     project: { cost: 2, perDay: 0.15, forecast: 4, services: [] },
@@ -256,7 +256,7 @@ describe("warnings", () => {
 });
 
 describe("the twice-daily check", () => {
-  const trialProject = { project: { project: { name: "Crewtavo", subscriptionType: "trial", createdAt: "2026-09-25T12:00:00Z", services: { edges: [] } } } };
+  const trialProject = { project: { project: { name: "The app", subscriptionType: "trial", createdAt: "2026-09-25T12:00:00Z", services: { edges: [] } } } };
 
   it("tells the owner and admins about each new warning once", async () => {
     const secret = await encryptJson(env, { access_token: "at", refresh_token: "rt", expires_at: Date.now() + 3_600_000, extra: { method: "oauth", client_id: "cid", client_secret: "sec", redirect_uri: "https://x/cb", scope: SCOPE } });
@@ -294,7 +294,7 @@ describe("the twice-daily check", () => {
       return [];
     });
     await checkHosting(env, adminClient(env), NOW);
-    expect(calls.find((c) => c.path === "notifications")?.body).toEqual([expect.objectContaining({ title: "Crewtavo lost its Railway connection" })]);
+    expect(calls.find((c) => c.path === "notifications")?.body).toEqual([expect.objectContaining({ title: "The app lost its Railway connection" })]);
   });
 
   it("does nothing off Railway", async () => {
@@ -331,11 +331,11 @@ describe("asking the owner to connect Railway", () => {
 
     // One from before the scope was recorded asked for the project too: it's kept.
     const kept = serve(answer(await client()));
-    expect(await railwayClient(env, adminClient(env), "co-1", "https://x/cb", "Crewtavo")).toMatchObject({ client_id: "old" });
+    expect(await railwayClient(env, adminClient(env), "co-1", "https://x/cb", "The app")).toMatchObject({ client_id: "old" });
     expect(kept.some((c) => c.url.pathname === "/oauth/register")).toBe(false);
 
     const calls = serve(answer(await client("openid project:member workspace:admin offline_access")));
-    expect(await railwayClient(env, adminClient(env), "co-1", "https://x/cb", "Crewtavo")).toMatchObject({ client_id: "new", scope: SCOPE });
+    expect(await railwayClient(env, adminClient(env), "co-1", "https://x/cb", "The app")).toMatchObject({ client_id: "new", scope: SCOPE });
     expect(calls.find((c) => c.url.pathname === "/oauth/register")?.body.scope).toBe(SCOPE);
     expect(calls.some((c) => c.method === "DELETE" && c.url.pathname === "/oauth/register/old")).toBe(true);
   });

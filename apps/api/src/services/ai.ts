@@ -149,7 +149,7 @@ export async function checkAnthropicKey(env: Env, apiKey: string): Promise<strin
     if (error instanceof Anthropic.AuthenticationError) return "Anthropic turned the Claude key down. Check that it was copied correctly on the Apps page, or make a new one in the Claude Console.";
     if (error instanceof Anthropic.PermissionDeniedError || error instanceof Anthropic.NotFoundError) return `The Claude key can't use ${aiModel(env)}. Check the key's workspace in the Claude Console.`;
     if (error instanceof Anthropic.RateLimitError) return "Anthropic is busy right now. Try again in a minute.";
-    return "Crewtavo couldn't reach Anthropic to check the Claude key. Try again in a minute.";
+    return "The app couldn't reach Anthropic to check the Claude key. Try again in a minute.";
   }
 }
 

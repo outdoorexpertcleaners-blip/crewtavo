@@ -1234,7 +1234,7 @@ function PictureControl({ pkg, customer, children }: { pkg: RoofPackage; custome
     meta: { inline: true },
     mutationFn: async (file: File) => {
       const jpeg = await packagePicture(file);
-      if (!jpeg) throw new Error("Crewtavo can't open that picture here. Try a JPEG or PNG.");
+      if (!jpeg) throw new Error("The app can't open that picture here. Try a JPEG or PNG.");
       return setPackagePicture(pkg.id, jpeg);
     },
     onSuccess: (r) => saved({ picture: r.path, picture_width: r.width, picture_height: r.height }),

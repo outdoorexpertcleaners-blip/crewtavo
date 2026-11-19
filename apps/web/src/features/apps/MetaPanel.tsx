@@ -188,7 +188,7 @@ export function MetaPanel({ app, onChanged }: { app: AppRow; onChanged: () => vo
             <Icon name="alert" size={20} />
             <div className="grow stack-sm" style={{ gap: 8 }}>
               <strong>Last step: switch your Meta app to Live, or only you can see the posts.</strong>
-              <span style={{ fontWeight: 400 }}>In your app's dashboard, fill in the privacy page under <strong>App settings → Basic</strong>, then use the <strong>App mode</strong> switch at the top. Meta's API can't tell Crewtavo when it's Live, so tick the box once you've switched it.</span>
+              <span style={{ fontWeight: 400 }}>In your app's dashboard, fill in the privacy page under <strong>App settings → Basic</strong>, then use the <strong>App mode</strong> switch at the top. Meta's API can't tell the app when it's Live, so tick the box once you've switched it.</span>
               <div style={{ fontWeight: 400 }}><PrivacyLine /></div>
               <label className="checkbox" style={{ fontWeight: 400 }}>
                 <input type="checkbox" checked={false} disabled={live.isPending} onChange={() => live.mutate(true)} />

@@ -267,7 +267,7 @@ export function Composer({
         {replyTo && (
           <div className={s.bar}>
             <Icon name="reply" size={14} />
-            <span className="grow"><T text="Replying to <b>{name}</b>" b={(s) => <strong>{s}</strong>} name={replyTo.author?.name ?? "Crewtavo"} /></span>
+            <span className="grow"><T text="Replying to <b>{name}</b>" b={(s) => <strong>{s}</strong>} name={replyTo.author?.name ?? t("The app")} /></span>
             <button type="button" className="icon-btn" aria-label={t("Cancel reply")} onClick={onCancelReply}><Icon name="x" size={14} /></button>
           </div>
         )}

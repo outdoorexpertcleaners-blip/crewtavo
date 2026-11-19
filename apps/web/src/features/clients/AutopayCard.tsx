@@ -213,7 +213,7 @@ export function AutopayCard({ client }: { client: { id: string; display_name: st
       {a.live ? (
         <>
           <span className="muted small">{agreedText(a.live)}</span>
-          {a.since && <span className="muted small">Charged from Crewtavo since {formatDate(a.since)}</span>}
+          {a.since && <span className="muted small">Charged from the app since {formatDate(a.since)}</span>}
           {a.state === "paused" && <span className="muted small">Nothing is charged until you turn it back on. Invoices go out with the Pay link meanwhile.</span>}
           {a.state === "pending" && <span className="muted small">Charges start once Stripe has checked the bank account. This takes a few days.</span>}
           {a.state === "needs_update" && <span className="small" style={{ color: "var(--danger)" }}>{m ? "The card was declined or can't be charged. They were sent a link to update it." : "The card was removed. They need to add one again from their client page."}</span>}

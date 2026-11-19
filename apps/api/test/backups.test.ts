@@ -359,7 +359,7 @@ describe("the backups task", () => {
     // Storage is still refusing tonight.
     backupTools.dump = () => dumpOf([archive(100)], 1, "pg_dump: error: could not connect\n")();
     expect(await runBackups(env, db, NOW)).toMatchObject({ failed: 1, warned: 1 });
-    expect(tables.notifications![0]).toMatchObject({ user_id: OWNER, title: "Crewtavo hasn't backed up its database for over two days" });
+    expect(tables.notifications![0]).toMatchObject({ user_id: OWNER, title: "The app hasn't backed up its database for over two days" });
     expect(tables.notifications![0]!.body).toContain("The last good backup is from November 9.");
     expect(await runBackups(env, db, new Date(NOW.getTime() + 3_600_000))).toMatchObject({ warned: 0 });
     expect(tables.notifications!.length).toBe(1);

@@ -474,7 +474,7 @@ describe("texting", () => {
       // The text is on their timeline like any other, and the office reads what they wrote.
       expect(messages).toEqual([["client-1", body], ["client-2", body]]);
       expect(notices).toEqual(["Ana Smith asked to stop texts", "Ana S. asked to stop texts"]);
-      expect(told[0]).toBe(`They texted “${body}”, so Crewtavo won't text them. If that isn't what they meant, you can turn texts back on from their page, only if they ask.`);
+      expect(told[0]).toBe(`They texted “${body}”, so the app won't text them. If that isn't what they meant, you can turn texts back on from their page, only if they ask.`);
     });
 
     it("keeps the keyword as the keyword's, and what Twilio acted on as Twilio's", async () => {

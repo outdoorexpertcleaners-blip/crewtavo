@@ -156,7 +156,7 @@ export function SetupCard() {
     // Its check usually lands after the rest of Home, so it fades in rather than popping in.
     <section className="stack" aria-labelledby="setup-title" style={{ animation: "fade-in var(--dur-enter) var(--ease-enter)" }}>
       <div className="section-head">
-        <h2 id="setup-title" className="section-title">Set up Crewtavo</h2>
+        <h2 id="setup-title" className="section-title">Set up the app</h2>
         <span className="muted small">{done} of {list.length} done</span>
         <Button size="sm" variant="ghost" onClick={hide}>Hide</Button>
       </div>

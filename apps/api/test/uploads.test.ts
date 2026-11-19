@@ -79,7 +79,7 @@ describe("the upload limit on Railway", () => {
   it("without the Railway connection, says to connect it first", async () => {
     const calls = await serve({ connected: false });
     expect(await uploadLimit(env, adminClient(env), "co-1")).toEqual({ connected: false, limit: null, target: UPLOAD_LIMIT });
-    await expect(raiseUploadLimit(env, adminClient(env), "co-1")).rejects.toThrow("Connect Crewtavo to Railway first");
+    await expect(raiseUploadLimit(env, adminClient(env), "co-1")).rejects.toThrow("Connect the app to Railway first");
     expect(railwayCalls(calls)).toEqual([]);
   });
 

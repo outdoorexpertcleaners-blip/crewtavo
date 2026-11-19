@@ -152,7 +152,7 @@ describe("sending to the people named", () => {
     ]);
     server.tables = { client_contacts: contacts, sms_stops: [{ phone_key: "5405550133" }] };
     expect(await refusal(deliver(scope(), "invoice", invoice, sendSchema.parse({ channel: "sms", recipients: ["(540) 555-0111", "540-555-0133"] })))).toEqual([
-      400, "540-555-0133 asked not to be texted, so Crewtavo can't text it.",
+      400, "540-555-0133 asked not to be texted, so the app can't text it.",
     ]);
     expect(texts).toEqual([]);
   });

@@ -4,7 +4,6 @@ import { Icon } from "@/components/ui/Icon";
 import abcSupplyLogo from "@/assets/apps/abc-supply.svg";
 import chatgptLogo from "@/assets/apps/chatgpt.svg";
 import claudeLogo from "@/assets/apps/claude.svg";
-import crewtavoLogo from "@/assets/apps/crewtavo.svg";
 import falLogo from "@/assets/apps/fal.svg";
 import openMeteoLogo from "@/assets/apps/open-meteo.png";
 import googleBusinessLogo from "@/assets/apps/google-business.svg";
@@ -19,16 +18,19 @@ import twilioLogo from "@/assets/apps/twilio.svg";
 import zohoLogo from "@/assets/apps/zoho.svg";
 import { APP_INFO, type AppRow } from "./catalog";
 
+/** The built-in apps wear the business's own app icon (public/icon-192.png), not Crewtavo's mark. */
+const BUILT_IN = "/icon-192.png";
+
 const LOGOS: Record<string, string> = {
-  team_chat: crewtavoLogo,
-  website_analytics: crewtavoLogo,
-  website_forms: crewtavoLogo,
-  careers: crewtavoLogo,
-  drive: crewtavoLogo,
-  marketing: crewtavoLogo,
-  paving: crewtavoLogo,
-  roofing: crewtavoLogo,
-  snow: crewtavoLogo,
+  team_chat: BUILT_IN,
+  website_analytics: BUILT_IN,
+  website_forms: BUILT_IN,
+  careers: BUILT_IN,
+  drive: BUILT_IN,
+  marketing: BUILT_IN,
+  paving: BUILT_IN,
+  roofing: BUILT_IN,
+  snow: BUILT_IN,
   google_business: googleBusinessLogo,
   meta: metaLogo,
   google_calendar: googleCalendarLogo,
@@ -49,7 +51,7 @@ const LOGOS: Record<string, string> = {
 /** Wordmark-shaped logos get more width. */
 const WIDE = new Set(["zoho_calendar", "zoho_books", "abc_supply"]);
 /** Logos that are already a whole app icon fill the tile. */
-const FULL = new Set(["sveltia", "open_meteo"]);
+const FULL = new Set(["sveltia", "open_meteo", "team_chat", "website_analytics", "website_forms", "careers", "drive", "marketing", "paving", "roofing", "snow"]);
 
 export type IconSize = "sm" | "md" | "lg";
 

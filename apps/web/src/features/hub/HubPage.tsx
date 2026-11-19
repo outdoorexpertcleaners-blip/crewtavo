@@ -23,7 +23,6 @@ import { Field, FormError } from "@/components/ui/Field";
 import { Icon } from "@/components/ui/Icon";
 import { PrivacyLink } from "@/components/ui/PrivacyLink";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { BrandMark } from "@/components/shell/BrandMark";
 import {
   awaitingInitials,
   choiceLabel,
@@ -49,7 +48,7 @@ import { sanitizeContractHtml } from "@/lib/html";
 import { ClientPortal, hubZone, MessageDialog, type ClientView, type PortalVisit } from "./ClientPortal";
 import { CARD_REQUIRED } from "./HubAutopay";
 import { HubReviews } from "./HubReviews";
-import { BigProposal, bigProposalFor } from "./BigProposal";
+import { BigProposal, bigProposalFor, SOURCE_URL } from "./BigProposal";
 import {
   autopayPayNote,
   contrastOnWhite,
@@ -304,7 +303,7 @@ export function HubPage() {
             <footer className="public-foot hub-foot">
               <span><Icon name="lock" size={12} /> Private link{clientName ? ` for ${clientName}` : ""}. Keep it to yourself.</span>
               {d.company.privacy_url && <span><PrivacyLink url={d.company.privacy_url} /></span>}
-              <span className="hub-powered">Powered by <BrandMark size={13} /> <strong>Crewtavo</strong></span>
+              <span className="hub-powered"><a href={SOURCE_URL} target="_blank" rel="noreferrer">Source code</a></span>
             </footer>
           </>
         )}
@@ -745,7 +744,7 @@ function RangeHub({ token, data, onChanged, onAsk, onPrint }: { token: string; d
             {credits && <span>{credits}</span>}
             {company.privacy_url && <span><PrivacyLink url={company.privacy_url} /></span>}
           </div>
-          <span className={styles.private}>A private link{clientName ? ` for ${clientName}` : ""}. Powered by Crewtavo.</span>
+          <span className={styles.private}>A private link{clientName ? ` for ${clientName}` : ""}. <a href={SOURCE_URL} target="_blank" rel="noreferrer">Source code</a></span>
         </div>
       </footer>
     </div>

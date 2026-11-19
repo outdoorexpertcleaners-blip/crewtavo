@@ -60,7 +60,7 @@ export async function addCloudflareRecords(token: string, zone: string, records:
   for (const record of todo) {
     await call(token.trim(), `/zones/${zoneId}/dns_records`, {
       method: "POST",
-      body: JSON.stringify({ type: record.type, name: record.name, content: record.value, ttl: 1, ...(record.type === "TXT" ? {} : { proxied: false }), comment: "Crewtavo" }),
+      body: JSON.stringify({ type: record.type, name: record.name, content: record.value, ttl: 1, ...(record.type === "TXT" ? {} : { proxied: false }), comment: "Outdoor Expert app" }),
     });
   }
   return todo.length;

@@ -126,12 +126,12 @@ describe("Railway", () => {
 
   it("registers this instance as its own OAuth client, and says so plainly when Railway won't", async () => {
     const calls = serve(() => Response.json({ client_id: "cid", client_secret: "sec", registration_access_token: "rat", registration_client_uri: "https://backboard.railway.com/oauth/register/cid" }, { status: 201 }));
-    const client = await registerClient("https://x.up.railway.app/api/railway/callback", "Crewtavo for Green Lawn");
+    const client = await registerClient("https://x.up.railway.app/api/railway/callback", "The app for Green Lawn");
     expect(client).toMatchObject({ client_id: "cid", client_secret: "sec", redirect_uri: "https://x.up.railway.app/api/railway/callback" });
     expect(calls[0]!.body).toMatchObject({ redirect_uris: ["https://x.up.railway.app/api/railway/callback"], scope: "openid project:member offline_access" });
 
     serve(() => Response.json({ error: "invalid_client_metadata", error_description: "registration closed" }, { status: 400 }));
-    await expect(registerClient("https://x.up.railway.app/cb", "Crewtavo")).rejects.toThrow("Use a project token instead");
+    await expect(registerClient("https://x.up.railway.app/cb", "The app")).rejects.toThrow("Use a project token instead");
   });
 
   describe("adding the address", () => {
@@ -231,7 +231,7 @@ describe("the switch-over task", () => {
     const secret = await encryptJson(before, { access_token: "at", refresh_token: "rt", expires_at: Date.now() + 3_600_000, extra: { method: "oauth" } });
     const routed: RailwayDomainStatus = { ...readyStatus, verified: false, certificateStatus: "CERTIFICATE_STATUS_TYPE_VALIDATING_OWNERSHIP", dnsRecords: [{ recordType: "DNS_RECORD_TYPE_CNAME", purpose: "DNS_RECORD_PURPOSE_TRAFFIC_ROUTE", hostlabel: "app", fqdn: "app.greenlawn.com", zone: "greenlawn.com", requiredValue: "abc123.up.railway.app", status: "DNS_RECORD_STATUS_REQUIRES_UPDATE" }] };
     const calls = serve((call) => {
-      if (call.path === "web_address" && call.method === "GET") return [{ ...waiting, automatic: false, railway_domain_id: null, error: "Railway didn't let Crewtavo add app.greenlawn.com." }];
+      if (call.path === "web_address" && call.method === "GET") return [{ ...waiting, automatic: false, railway_domain_id: null, error: "Railway didn't let the app add app.greenlawn.com." }];
       if (call.path === "integration_secrets") return [{ ciphertext: secret }];
       if (call.path === "integrations") return [{ status: "connected" }];
       if (call.url.host === "backboard.railway.com") return { data: { domains: { customDomains: [{ id: "dom-9", domain: "app.greenlawn.com", status: routed }] } } };

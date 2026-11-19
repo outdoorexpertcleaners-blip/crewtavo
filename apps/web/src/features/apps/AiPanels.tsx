@@ -20,7 +20,7 @@ const SERVICES: Array<{ service: "claude" | "chatgpt"; label: string; hint: stri
  */
 export function AiServiceChoice({ ai, onChanged }: { ai: AiState | undefined; onChanged: () => void }) {
   const save = useMutation({
-    meta: { success: (res: { service: string | null }) => `Crewtavo's AI uses ${res.service === "chatgpt" ? "ChatGPT" : "Claude"} now` },
+    meta: { success: (res: { service: string | null }) => `The app's AI uses ${res.service === "chatgpt" ? "ChatGPT" : "Claude"} now` },
     mutationFn: (service: "claude" | "chatgpt") => api.put<{ service: string | null }>("/ai/service", { service }),
     onSuccess: onChanged,
   });
@@ -28,10 +28,10 @@ export function AiServiceChoice({ ai, onChanged }: { ai: AiState | undefined; on
   const using = save.isPending ? save.variables : ai.service;
   return (
     <section className="card card-pad stack-sm" aria-labelledby="ai-service" style={{ gap: 10 }}>
-      <h2 id="ai-service" className="section-title" style={{ fontSize: 16 }}>Crewtavo's AI uses</h2>
+      <h2 id="ai-service" className="section-title" style={{ fontSize: 16 }}>The app's AI uses</h2>
       <span className="muted small">You've added a key for both. This one writes the drafts, answers from your guides and reads receipts; the other is kept and not used.</span>
       <fieldset className="stack-sm" style={{ border: 0, padding: 0, margin: 0 }} disabled={save.isPending}>
-        <legend className="sr-only">Crewtavo's AI uses</legend>
+        <legend className="sr-only">The app's AI uses</legend>
         {SERVICES.map((s) => (
           <label key={s.service} className={`card-row choice-row${using === s.service ? " picked" : ""}`} style={{ cursor: "pointer" }}>
             <input type="radio" name="ai-service" checked={using === s.service} onChange={() => save.mutate(s.service)} />
@@ -67,10 +67,10 @@ export function OpenAiModelCard({ app, onChanged }: { app: AppRow; onChanged: ()
     <section className="card card-pad stack-sm" aria-labelledby="openai-model" style={{ gap: 10 }}>
       <h2 id="openai-model" className="section-title" style={{ fontSize: 16 }}>Model</h2>
       {state.model_locked ? (
-        <span className="muted small">Whoever runs this Crewtavo server set the model to <strong>{state.model}</strong> (OPENAI_MODEL), so it isn't picked here.</span>
+        <span className="muted small">Whoever runs this app server set the model to <strong>{state.model}</strong> (OPENAI_MODEL), so it isn't picked here.</span>
       ) : (
         <>
-          <span className="muted small">The OpenAI model your key uses for Crewtavo's AI. These are the ones OpenAI lists for your key; OpenAI's prices differ by model.</span>
+          <span className="muted small">The OpenAI model your key uses for the app's AI. These are the ones OpenAI lists for your key; OpenAI's prices differ by model.</span>
           <div className="row wrap" style={{ gap: 8 }}>
             <select className="select grow" style={{ maxWidth: 320 }} value={model ?? ""} disabled={pick.isPending} onChange={(e) => pick.mutate(e.target.value)} aria-label="OpenAI model">
               {/* A model picked before that OpenAI no longer lists still shows, so it can be seen and changed. */}

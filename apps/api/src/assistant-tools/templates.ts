@@ -37,7 +37,7 @@ export const templateTools = {
       template_id: z.uuid().optional(),
       name: z.string().trim().min(1).max(TEMPLATE_LIMITS.name).optional().describe("Default \"Standard\" for a new one."),
       make_default: z.boolean().optional().describe("Print with this one unless a quote names another."),
-      letterhead: z.enum(["built_in", "custom"]).optional().describe("custom prints the business's own letterhead pictures, uploaded in Crewtavo; without them Crewtavo's still prints."),
+      letterhead: z.enum(["built_in", "custom"]).optional().describe("custom prints the business's own letterhead pictures, uploaded in the app; without them the app's still prints."),
       header: z.enum(HEADER_STYLES.map((h) => h.id) as [HeaderStyle, ...HeaderStyle[]]).optional(),
       color: z.string().regex(/^#[0-9a-f]{6}$/i, "Use a hex color like #1f4e79.").nullable().optional(),
       font: z.enum(["modern", "classic"]).optional().describe("modern is sans serif, classic a serif."),

@@ -17,7 +17,7 @@ export function LicenseSettings() {
       <div className="card card-pad stack-sm" style={{ gap: 12 }}>
         <div className="stack-sm" style={{ gap: 2 }}>
           <strong>Crewtavo Terms</strong>
-          <span className="muted small">Version {TERMS_VERSION}. What the business agreed to when it set up Crewtavo: it runs Crewtavo itself and is responsible for its data and its customers.</span>
+          <span className="muted small">Version {TERMS_VERSION}. What the business agreed to when it set up the app: it runs the app itself and is responsible for its data and its customers.</span>
         </div>
         <TermsSummary />
         <TermsText />

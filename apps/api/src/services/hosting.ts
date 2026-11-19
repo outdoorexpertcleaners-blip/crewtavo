@@ -87,7 +87,7 @@ export async function hostingOverview(env: Env, admin: Db, companyId: string, { 
   const cached = cache.get(companyId);
   if (!fresh && cached && now.getTime() - cached.at < CACHE_MS) return cached.overview;
   const access = await railwayAccess(env, admin, companyId);
-  if (!access) throw new HttpError(409, "Connect Railway to see what Crewtavo costs.");
+  if (!access) throw new HttpError(409, "Connect Railway to see what the app costs.");
   const overview = await readHosting(env, access, now);
   cache.set(companyId, { at: now.getTime(), overview });
   // Settings → Storage's default limit follows the plan and the storage service's volume (services/storageUsage.ts).
@@ -206,7 +206,7 @@ export function hostingWarnings(o: Omit<HostingOverview, "warnings">): HostingWa
         key: `trial-${step}`,
         level: left <= 3 ? "urgent" : "warning",
         title: left <= 0 ? "Your Railway trial ends today" : `Your Railway trial ends in about ${plural(left, "day")}`,
-        body: "Crewtavo stops when it does. To keep it running, choose Railway's Hobby plan: $5 a month, including $5 of usage.",
+        body: "The app stops when it does. To keep it running, choose Railway's Hobby plan: $5 a month, including $5 of usage.",
         action: "upgrade",
       });
     }
@@ -216,14 +216,14 @@ export function hostingWarnings(o: Omit<HostingOverview, "warnings">): HostingWa
         key: "trial-credit",
         level: "urgent",
         title: "Your Railway trial credit is almost used up",
-        body: `About ${money(trial.creditLeft)} of the $5 is left${days !== null ? `, about ${plural(days, "day")} at this rate` : ""}. Crewtavo stops when it runs out, so choose Railway's Hobby plan before then.`,
+        body: `About ${money(trial.creditLeft)} of the $5 is left${days !== null ? `, about ${plural(days, "day")} at this rate` : ""}. The app stops when it runs out, so choose Railway's Hobby plan before then.`,
         action: "upgrade",
       });
     }
   }
 
   if (plan === "free") {
-    warnings.push({ key: "free", level: "warning", title: "Crewtavo is on Railway's Free plan", body: "Free includes $1 of usage a month, less than Crewtavo needs, so Railway stops it partway through the month. Choose the Hobby plan ($5 a month, including $5 of usage) to keep it running.", action: "upgrade" });
+    warnings.push({ key: "free", level: "warning", title: "The app is on Railway's Free plan", body: "Free includes $1 of usage a month, less than the app needs, so Railway stops it partway through the month. Choose the Hobby plan ($5 a month, including $5 of usage) to keep it running.", action: "upgrade" });
   }
 
   const forecast = o.project?.forecast ?? null;
@@ -235,7 +235,7 @@ export function hostingWarnings(o: Omit<HostingOverview, "warnings">): HostingWa
         key: `over:${period}`,
         level: "warning",
         title: `About ${money(forecast)} of Railway usage this month`,
-        body: `That's ${money(over)} more than the ${money(included)} ${name} includes, so Railway adds about ${money(over)} to the ${money(price)} plan. Settings → Hosting in Crewtavo shows what's using it.`,
+        body: `That's ${money(over)} more than the ${money(included)} ${name} includes, so Railway adds about ${money(over)} to the ${money(price)} plan. Settings → Hosting in the app shows what's using it.`,
         action: null,
       });
     }
@@ -251,7 +251,7 @@ export function hostingWarnings(o: Omit<HostingOverview, "warnings">): HostingWa
       key: `disk:${disk.service}:${full >= 0.95 ? 95 : 85}`,
       level: full >= 0.95 ? "urgent" : "warning",
       title: `${label} storage is ${Math.floor(full * 100)}% full`,
-      body: `${disk.usedGb} of ${disk.sizeGb} GB is used. When it's full, Crewtavo can't save anything new there. Make the volume on the ${disk.service} service bigger in Railway; Hobby volumes go up to 5 GB, and Pro goes much higher.${
+      body: `${disk.usedGb} of ${disk.sizeGb} GB is used. When it's full, the app can't save anything new there. Make the volume on the ${disk.service} service bigger in Railway; Hobby volumes go up to 5 GB, and Pro goes much higher.${
         disk.service === "storage" ? " Or move photos and files to a Railway bucket, which grows as it fills, from Settings → Hosting." : ""
       }`,
       action: "project",
@@ -265,8 +265,8 @@ export function hostingWarnings(o: Omit<HostingOverview, "warnings">): HostingWa
 const LAPSED: HostingWarning = {
   key: "lapsed",
   level: "urgent",
-  title: "Crewtavo lost its Railway connection",
-  body: "Log in with Railway again in Settings → Hosting, so Crewtavo can warn you before your Railway trial runs out or the bill goes over your plan.",
+  title: "The app lost its Railway connection",
+  body: "Log in with Railway again in Settings → Hosting, so the app can warn you before your Railway trial runs out or the bill goes over your plan.",
   action: null,
 };
 

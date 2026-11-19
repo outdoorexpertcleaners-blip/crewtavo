@@ -122,7 +122,7 @@ function Numbers({ stats }: { stats: UseQueryResult<Stats> }) {
         <div className="hint">{pending}</div>
       </div>
       <div className="card stat"><div className="label">Credits {statusText("credit", "applied").toLowerCase()}</div><div className="value">{formatMoneyCents(credits.applied)}</div><div className="hint">On clients' invoices</div></div>
-      <div className="card stat"><div className="label">Credits {statusText("credit", "issued").toLowerCase()}</div><div className="value">{formatMoneyCents(credits.given)}</div><div className="hint">Outside Crewtavo</div></div>
+      <div className="card stat"><div className="label">Credits {statusText("credit", "issued").toLowerCase()}</div><div className="value">{formatMoneyCents(credits.given)}</div><div className="hint">Outside the app</div></div>
     </div>
   );
 }

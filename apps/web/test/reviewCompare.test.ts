@@ -265,7 +265,7 @@ describe("Compare now", () => {
 
   it("says the figures are Google's as of now, with no change over time", () => {
     const card = source("features/marketing/ReviewCompare.tsx");
-    expect(card).toContain("Google's figures as of ${formatTime(run.at)}. Crewtavo doesn't keep them, so there's no change over time to show");
+    expect(card).toContain("Google's figures as of ${formatTime(run.at)}. The app doesn't keep them, so there's no change over time to show");
     expect(card).not.toMatch(/Checked again every week|Last checked|week to week|Since \$\{/);
   });
 });

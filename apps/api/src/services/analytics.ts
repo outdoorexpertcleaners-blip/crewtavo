@@ -50,7 +50,7 @@ export const analyticsSettings = (settings: unknown): AnalyticsSettings =>
  * Old browsers run it too (ES5), and it stays small: it loads on every page.
  */
 export function trackerScript(endpoint: string): string {
-  return `/* Crewtavo website analytics: counts visits without cookies. ${ANALYTICS_DOCS} */
+  return `/* Outdoor Expert website analytics: counts visits without cookies. ${ANALYTICS_DOCS} */
 (function () {
   var w = window, d = document, n = navigator, l = location, h = w.history, me = d.currentScript;
   var site = me && me.getAttribute("data-site"), page = me && me.getAttribute("data-page");
@@ -167,7 +167,7 @@ export async function checkWebsite(address: string, scriptUrl: string): Promise<
     if (status < 200 || status > 299) {
       response.destroy();
       return result(false, status === 401 || status === 403 || status === 429 || status === 503
-        ? `Your website didn't let Crewtavo look at it (it answered ${status}). If the line is on it, visits still show up here a minute after someone opens it.`
+        ? `Your website didn't let the app look at it (it answered ${status}). If the line is on it, visits still show up here a minute after someone opens it.`
         : `Your website answered with an error (${status}). Check the address.`);
     }
     try {

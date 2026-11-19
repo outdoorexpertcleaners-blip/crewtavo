@@ -442,10 +442,10 @@ export const googleEventId = (visitId: string) => `ctv${visitId.replace(/-/g, ""
 /** Make the "<Company> (Crewtavo)" calendar in the connected account. Returns its ID. */
 export async function createVisitsCalendar(env: Env, admin: Db, companyId: string): Promise<{ id: string; name: string }> {
   const { data: company } = await admin.from("companies").select("name, timezone").eq("id", companyId).single();
-  const name = clip(`${company?.name ?? "Crewtavo"} visits`, 80);
+  const name = clip(`${company?.name ?? "Outdoor Expert"} visits`, 80);
   const created = (await gcal(env, admin, companyId, "POST", "/calendars", {
     summary: name,
-    description: "Visits from Crewtavo, kept up to date as the schedule changes. Changes made here aren't copied back.",
+    description: "Visits from the app, kept up to date as the schedule changes. Changes made here aren't copied back.",
     timeZone: company?.timezone ?? "UTC",
   }))!;
   return { id: String(created.id), name };
@@ -501,7 +501,7 @@ export async function pushVisit(env: Env, admin: Db, companyId: string, calendar
   const body = {
     summary: visit.status === "completed" ? `✓ ${visit.title}` : visit.title,
     location: place ? [place.line1, place.city, [place.region, place.postal_code].filter(Boolean).join(" ")].filter(Boolean).join(", ") : undefined,
-    description: [job?.client?.display_name, job ? `Job #${job.number}` : null, crew ? `Crew: ${crew.name}` : null, visit.notes, link ? `Open in Crewtavo: ${link}` : null]
+    description: [job?.client?.display_name, job ? `Job #${job.number}` : null, crew ? `Crew: ${crew.name}` : null, visit.notes, link ? `Open in the app: ${link}` : null]
       .filter(Boolean)
       .join("\n"),
     start: timed ? { dateTime: visit.starts_at } : { date: visit.scheduled_on },
@@ -511,7 +511,7 @@ export async function pushVisit(env: Env, admin: Db, companyId: string, calendar
     // The calendar is a mirror of the schedule; reminders for every visit would be noise.
     reminders: { useDefault: false, overrides: [] },
     extendedProperties: { private: { crewtavo_visit: visit.id } },
-    ...(link ? { source: { title: "Crewtavo", url: link } } : {}),
+    ...(link ? { source: { title: "Open in the app", url: link } } : {}),
   };
 
   try {

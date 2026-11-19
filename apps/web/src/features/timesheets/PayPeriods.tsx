@@ -184,7 +184,7 @@ function MarkPaidDialog({ summary, people, onClose, onSaved }: { summary: Summar
     },
   });
   return (
-    <Dialog open onClose={onClose} title="Mark paid" description={`${people.length} ${people.length === 1 ? "person" : "people"}, ${formatMoney(total)}. Record this after you've paid them: Crewtavo doesn't send money. Their time and piece pay in this period are then locked.`}>
+    <Dialog open onClose={onClose} title="Mark paid" description={`${people.length} ${people.length === 1 ? "person" : "people"}, ${formatMoney(total)}. Record this after you've paid them: the app doesn't send money. Their time and piece pay in this period are then locked.`}>
       <form onSubmit={(e: FormEvent) => { e.preventDefault(); save.mutate(); }}>
         <Field label="How they were paid">
           <select className="select" value={method} onChange={(e) => setMethod(e.target.value as typeof method)}>

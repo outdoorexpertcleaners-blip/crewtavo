@@ -123,7 +123,7 @@ export const invoiceTools = {
   }),
   update_invoice: tool({
     description:
-      "Change an invoice's custom fields (list_custom_fields), by key, or turn late fees off for it (no_late_fee true: the hourly run never adds one; false turns them back on for an invoice that hasn't had one). Its lines change with edit_invoice_lines; its dates, discount and tax rate in Crewtavo, while it's a draft.",
+      "Change an invoice's custom fields (list_custom_fields), by key, or turn late fees off for it (no_late_fee true: the hourly run never adds one; false turns them back on for an invoice that hasn't had one). Its lines change with edit_invoice_lines; its dates, discount and tax rate in the app, while it's a draft.",
     input: z.object({ invoice_id: z.uuid(), custom_fields: customFieldsArg.custom_fields, no_late_fee: z.boolean().optional(), ...companyArg }),
     area: "invoices",
     run: async (ctx, a) => {
@@ -198,7 +198,7 @@ export const invoiceTools = {
     run: (ctx, a) => remindInvoices(salesScope(ctx), a.invoice_ids),
   }),
   record_payment: tool({
-    description: "Record a payment the client made outside Crewtavo's online pay page: cash, check, ACH or other, up to the balance due, with an optional tip and a note (a check number). A draft invoice becomes sent. Card payments come in through Stripe. Card refunds are made from the invoice page (Refund) or in Stripe.",
+    description: "Record a payment the client made outside the app's online pay page: cash, check, ACH or other, up to the balance due, with an optional tip and a note (a check number). A draft invoice becomes sent. Card payments come in through Stripe. Card refunds are made from the invoice page (Refund) or in Stripe.",
     input: z.object({
       invoice_id: z.uuid(),
       amount: z.number().positive().max(1e8),

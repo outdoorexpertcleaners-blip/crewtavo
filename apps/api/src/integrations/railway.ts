@@ -63,7 +63,7 @@ export function railwayIds(env: Env): Ids | null {
 
 function ids(env: Env): Ids {
   const found = railwayIds(env);
-  if (!found) throw new RailwayError("Crewtavo can't tell which Railway project it's in. Add the address by hand instead.");
+  if (!found) throw new RailwayError("The app can't tell which Railway project it's in. Add the address by hand instead.");
   return found;
 }
 
@@ -88,7 +88,7 @@ export async function registerClient(redirectUri: string, name: string): Promise
   }).catch(() => null);
   const json = (await res?.json().catch(() => ({}))) as Partial<RailwayClient> & { error_description?: string };
   if (!res?.ok || !json.client_id || !json.client_secret) {
-    throw new RailwayError(`Railway didn't let Crewtavo sign in for you${json.error_description ? ` (${json.error_description})` : ""}. Use a project token instead.`, res?.status ?? 0);
+    throw new RailwayError(`Railway didn't let the app sign in for you${json.error_description ? ` (${json.error_description})` : ""}. Use a project token instead.`, res?.status ?? 0);
   }
   return {
     client_id: json.client_id,
@@ -143,7 +143,7 @@ export const exchangeCode = (client: RailwayClient, code: string, verifier: stri
 
 /** A fresh access token. Railway rotates refresh tokens: keep the one that comes back. */
 export async function refreshAccess(client: RailwayClient, access: RailwayAccess): Promise<RailwayAccess> {
-  if (!access.refresh_token) throw new RailwayError("Crewtavo's Railway sign-in ran out. Log in with Railway again.");
+  if (!access.refresh_token) throw new RailwayError("The app's Railway sign-in ran out. Log in with Railway again.");
   const next = await tokenRequest(client, { grant_type: "refresh_token", refresh_token: access.refresh_token });
   return { ...next, refresh_token: next.refresh_token ?? access.refresh_token };
 }
@@ -163,8 +163,8 @@ async function gql<T>(access: RailwayAccess, query: string, variables: Record<st
   if (access.method === "token") headers["Project-Access-Token"] = access.token;
   else headers.Authorization = `Bearer ${access.token}`;
   const res = await fetch(`${BACKBOARD}/graphql/v2`, { method: "POST", headers, body: JSON.stringify({ query, variables }), signal: timeout() }).catch(() => null);
-  if (!res) throw new RailwayError("Couldn't reach Railway. Crewtavo tries again in a few minutes.");
-  if (res.status === 429) throw new RailwayError("Railway asked Crewtavo to slow down. It tries again in a few minutes.", 429);
+  if (!res) throw new RailwayError("Couldn't reach Railway. The app tries again in a few minutes.");
+  if (res.status === 429) throw new RailwayError("Railway asked the app to slow down. It tries again in a few minutes.", 429);
   // The screen gets words to act on; the log keeps which call Railway refused, and why.
   const refused = (why: string) => {
     console.warn(`Railway refused ${query.match(/\{\s*(\w+)/)?.[1] ?? "a call"}: ${why}`);
@@ -175,14 +175,14 @@ async function gql<T>(access: RailwayAccess, query: string, variables: Record<st
   const problem = json.errors?.[0]?.message;
   if (problem && /not authorized/i.test(problem)) throw refused(problem);
   if (problem) throw new RailwayError(`Railway said: ${problem}`, res.status);
-  if (!res.ok || !json.data) throw new RailwayError(`Railway answered with an error (${res.status}). Crewtavo tries again in a few minutes.`, res.status);
+  if (!res.ok || !json.data) throw new RailwayError(`Railway answered with an error (${res.status}). The app tries again in a few minutes.`, res.status);
   return json.data;
 }
 
 const lostAccess = (access: RailwayAccess) =>
   access.method === "token"
     ? "Railway didn't accept the project token. Make a new one in the project's Settings → Tokens, for this environment."
-    : "Crewtavo's Railway access doesn't reach this project. Log in with Railway again and choose this project.";
+    : "The app's Railway access doesn't reach this project. Log in with Railway again and choose this project.";
 
 /** Checks the access reaches this instance's project, and finds the auth service (redeployed on a switch). */
 export async function projectAccess(env: Env, access: RailwayAccess): Promise<{ name: string; authServiceId: string | null }> {
@@ -199,8 +199,8 @@ export async function projectAccess(env: Env, access: RailwayAccess): Promise<{ 
     { id: projectId },
   ).catch((error) => {
     if (error instanceof RailwayError && access.method === "oauth") {
-      console.warn(`Railway didn't show Crewtavo its project: ${error.message} (granted: ${access.granted ?? "not said"})`);
-      throw new RailwayError(`Crewtavo can't see ${env.RAILWAY_PROJECT_NAME ? `the ${env.RAILWAY_PROJECT_NAME} project` : "this Railway project"}. Log in with Railway again and choose it on Railway's screen.`);
+      console.warn(`Railway didn't show the app its project: ${error.message} (granted: ${access.granted ?? "not said"})`);
+      throw new RailwayError(`The app can't see ${env.RAILWAY_PROJECT_NAME ? `the ${env.RAILWAY_PROJECT_NAME} project` : "this Railway project"}. Log in with Railway again and choose it on Railway's screen.`);
     }
     throw error;
   });
@@ -260,7 +260,7 @@ export async function addCustomDomain(env: Env, access: RailwayAccess, domain: s
     // The project itself is reachable (checked at sign-in), so this is Railway refusing this one step.
     // Added by hand, the domain is found above next time and Crewtavo carries on from there.
     if (error.denied) {
-      throw new RailwayError(`Railway didn't let Crewtavo add ${domain}. Add it in Railway yourself: open the crewtavo service, then Settings → Networking → Custom Domain. Crewtavo picks it up from there and does the rest.`, error.status, true);
+      throw new RailwayError(`Railway didn't let the app add ${domain}. Add it in Railway yourself: open the crewtavo service, then Settings → Networking → Custom Domain. The app picks it up from there and does the rest.`, error.status, true);
     }
     // Only Railway's own answers; "couldn't reach Railway" and the like stay as they are.
     if (!error.message.startsWith("Railway said: ")) throw error;
@@ -491,7 +491,7 @@ export async function deployBucket(env: Env, access: RailwayAccess, bucketId: st
   await gql(access, "mutation ($environmentId: String!, $patch: EnvironmentConfig, $message: String) { environmentPatchCommit(environmentId: $environmentId, patch: $patch, commitMessage: $message) }", {
     environmentId,
     patch,
-    message: "Crewtavo: a bucket for photos and files",
+    message: "Outdoor Expert app: a bucket for photos and files",
   });
   return "deployed";
 }

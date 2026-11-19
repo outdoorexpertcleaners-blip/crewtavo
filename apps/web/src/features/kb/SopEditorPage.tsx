@@ -108,7 +108,7 @@ function Editor({ pageId, initial, loadedAt, categories, titleHint }: { pageId: 
     accept: PICTURE_ACCEPT,
     add: async (file) => {
       const picture = await guidePicture(file);
-      if (!picture) throw new Error("Crewtavo can't open that picture here. Try a JPEG or PNG.");
+      if (!picture) throw new Error("The app can't open that picture here. Try a JPEG or PNG.");
       return { path: await uploadFile(company.id, "kb", picture.file), width: picture.width, height: picture.height };
     },
     link: (path) => queryClient.fetchQuery(photoQuery(path)),
@@ -352,7 +352,7 @@ function CoverField({ path, preview, onChange }: { path: string | null; preview:
     setOpening(true);
     const jpeg = await coverPicture(file);
     setOpening(false);
-    if (!jpeg) return setError("Crewtavo can't open that picture here. Try a JPEG or PNG.");
+    if (!jpeg) return setError("The app can't open that picture here. Try a JPEG or PNG.");
     onChange({ file: new File([jpeg], "cover.jpg", { type: "image/jpeg" }), url: URL.createObjectURL(jpeg) });
   };
   return (

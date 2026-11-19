@@ -250,7 +250,7 @@ describe("installing", () => {
   it.each([
     ["Safari on an iPhone", { userAgent: UA.iphoneSafari }, "ios"],
     ["Safari on an iPad asking for desktop sites", { userAgent: UA.macSafari, platform: "MacIntel", touch: 5 }, "ios"],
-    ["Crewtavo already on the iPhone's Home Screen", { userAgent: UA.iphoneSafari, standalone: true }, null],
+    ["The app already on the iPhone's Home Screen", { userAgent: UA.iphoneSafari, standalone: true }, null],
     ["Chrome on an iPhone (no Add to Home Screen steps to give)", { userAgent: UA.iphoneChrome }, null],
     ["Firefox on an iPhone", { userAgent: UA.iphoneFirefox }, null],
     ["Facebook's built-in browser on an iPhone", { userAgent: UA.iphoneFacebook }, null],
@@ -399,8 +399,8 @@ describe("the service worker, when the phone has signal again (Background Sync)"
     await expect(sw.dispatch("sync", { tag: SYNC_TAG })).resolves.toBe("done");
     expect(sw.showNotification).toHaveBeenCalledTimes(1);
     const [title, options] = sw.showNotification.mock.calls[0]!;
-    expect(title).toBe("Crewtavo");
-    expect(options).toMatchObject({ body: "3 updates are waiting to be sent. Open Crewtavo to send them.", tag: SYNC_TAG, data: { link: "/field" } });
+    expect(title).toBe("Outdoor Expert");
+    expect(options).toMatchObject({ body: "3 updates are waiting to be sent. Open the app to send them.", tag: SYNC_TAG, data: { link: "/field" } });
 
     // Tapping it opens Crewtavo on My day.
     await sw.dispatch("notificationclick", { notification: { close: () => undefined, data: options.data } });
@@ -412,7 +412,7 @@ describe("the service worker, when the phone has signal again (Background Sync)"
     await (await one.open(WAITING_CACHE)).put("/waiting/u1", new Response("1"));
     const sw = loadServiceWorker({ caches: one });
     await sw.dispatch("sync", { tag: SYNC_TAG });
-    expect(sw.showNotification.mock.calls[0]![1]).toMatchObject({ body: "1 update is waiting to be sent. Open Crewtavo to send them." });
+    expect(sw.showNotification.mock.calls[0]![1]).toMatchObject({ body: "1 update is waiting to be sent. Open the app to send them." });
   });
 
   it("with Crewtavo on the screen, leaves it to the app, and fails so the browser asks again later (unless it's the last try)", async () => {
@@ -431,7 +431,7 @@ describe("the service worker, when the phone has signal again (Background Sync)"
     const hidden = { url: "https://crew.example.com/field", visibilityState: "hidden" } as const;
     const sw = loadServiceWorker({ caches, windows: [hidden, "https://elsewhere.example.com/"] });
     await expect(sw.dispatch("sync", { tag: SYNC_TAG })).resolves.toBe("done");
-    expect(sw.showNotification.mock.calls[0]![1]).toMatchObject({ body: "3 updates are waiting to be sent. Open Crewtavo to send them.", tag: SYNC_TAG });
+    expect(sw.showNotification.mock.calls[0]![1]).toMatchObject({ body: "3 updates are waiting to be sent. Open the app to send them.", tag: SYNC_TAG });
     const last = loadServiceWorker({ caches, windows: [hidden] });
     await expect(last.dispatch("sync", { tag: SYNC_TAG, lastChance: true })).resolves.toBe("done");
     expect(last.showNotification).toHaveBeenCalledTimes(1);
@@ -514,19 +514,19 @@ describe("the service worker, offline (production builds)", () => {
   it("fetches the manifest from the network, so installed apps get new icons and shortcuts, and keeps a copy for no signal", async () => {
     let online = true;
     const caches = new FakeCaches();
-    const network = vi.fn(async () => (online ? new Response('{"name":"Crewtavo","v":2}') : Promise.reject(new TypeError("Failed to fetch"))));
-    await (await caches.open("crewtavo-app-v2")).put("/manifest.webmanifest", new Response('{"name":"Crewtavo","v":1}'));
+    const network = vi.fn(async () => (online ? new Response('{"name":"The app","v":2}') : Promise.reject(new TypeError("Failed to fetch"))));
+    await (await caches.open("crewtavo-app-v2")).put("/manifest.webmanifest", new Response('{"name":"The app","v":1}'));
     const sw = loadServiceWorker({ caches, offline: true, network });
     const request = { url: "https://crew.example.com/manifest.webmanifest", method: "GET", mode: "cors" };
 
     const fresh = (await sw.dispatch("fetch", { request })) as Response;
-    expect(await fresh.text()).toBe('{"name":"Crewtavo","v":2}');
+    expect(await fresh.text()).toBe('{"name":"The app","v":2}');
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(caches.entries("crewtavo-app-v2")["/manifest.webmanifest"]).toBe('{"name":"Crewtavo","v":2}');
+    expect(caches.entries("crewtavo-app-v2")["/manifest.webmanifest"]).toBe('{"name":"The app","v":2}');
 
     online = false;
     const saved = (await sw.dispatch("fetch", { request })) as Response;
-    expect(await saved.text()).toBe('{"name":"Crewtavo","v":2}');
+    expect(await saved.text()).toBe('{"name":"The app","v":2}');
   });
 
   it("never keeps a stored file, so one moved to the Trash stops opening; pictures of the app itself are still kept", async () => {
@@ -545,13 +545,13 @@ describe("the service worker, offline (production builds)", () => {
 
   it("keeps the words of the \"updates waiting\" notice when a new version takes over, so it's still in Spanish for someone using Spanish", async () => {
     const caches = new FakeCaches();
-    await (await caches.open("crewtavo-words")).put("/waiting", new Response(JSON.stringify({ one: "1 novedad pendiente de enviar. Abre Crewtavo para enviarla.", other: "{count} novedades pendientes de enviar. Abre Crewtavo para enviarlas." })));
+    await (await caches.open("crewtavo-words")).put("/waiting", new Response(JSON.stringify({ one: "1 novedad pendiente de enviar. Abre la aplicación para enviarla.", other: "{count} novedades pendientes de enviar. Abre la aplicación para enviarlas." })));
     await (await caches.open("crewtavo-waiting")).put("/waiting/u1", new Response("2"));
     const sw = loadServiceWorker({ caches, offline: true, windows: [] });
     await sw.dispatch("activate");
     expect(await caches.keys()).toEqual(expect.arrayContaining(["crewtavo-words", "crewtavo-waiting"]));
     await sw.dispatch("sync", { tag: "crewtavo-field-sync" });
-    expect(sw.showNotification).toHaveBeenCalledWith("Crewtavo", expect.objectContaining({ body: "2 novedades pendientes de enviar. Abre Crewtavo para enviarlas." }));
+    expect(sw.showNotification).toHaveBeenCalledWith("Outdoor Expert", expect.objectContaining({ body: "2 novedades pendientes de enviar. Abre la aplicación para enviarlas." }));
   });
 
   it("empties what the last version kept when this one takes over (stored pictures among it)", async () => {
@@ -654,7 +654,7 @@ describe("opening the app through the service worker (production builds)", () =>
     it("is never kept as the page that came back for it, so the screen works again once the file is there", async () => {
       const caches = new FakeCaches();
       // A server before this version answers a missing file with the app's page, marked to keep forever.
-      let answer = async () => new Response("<!doctype html><title>Crewtavo</title>", { headers: { "content-type": "text/html; charset=UTF-8", "cache-control": "public, max-age=31536000, immutable" } });
+      let answer = async () => new Response("<!doctype html><title>The app</title>", { headers: { "content-type": "text/html; charset=UTF-8", "cache-control": "public, max-age=31536000, immutable" } });
       const sw = loadServiceWorker({ caches, offline: true, network: () => answer() });
       const request = script("/assets/Visit-NEW00003.js");
       expect(await text(await sw.dispatch("fetch", { request }))).toContain("<!doctype html>");
@@ -678,13 +678,13 @@ describe("opening the app through the service worker (production builds)", () =>
       let answer: () => Promise<Response> = async () => js("export const Visit = 1;");
       const sw = loadServiceWorker({ caches, offline: true, network: () => answer() });
       const request = script("/assets/Visit-NEW00003.js");
-      await (await caches.open(APP)).put(request, html("<!doctype html><title>Crewtavo</title>"));
+      await (await caches.open(APP)).put(request, html("<!doctype html><title>The app</title>"));
       expect(await text(await sw.dispatch("fetch", { request }))).toBe("export const Visit = 1;");
       await new Promise((resolve) => setTimeout(resolve, 0));
       expect(caches.entries(APP)).toEqual({ "/assets/Visit-NEW00003.js": "export const Visit = 1;" });
 
       // With no signal it fails as a missing file does, rather than as a page that isn't a script.
-      await (await caches.open(APP)).put(request, html("<!doctype html><title>Crewtavo</title>"));
+      await (await caches.open(APP)).put(request, html("<!doctype html><title>The app</title>"));
       answer = async () => Promise.reject(new TypeError("Failed to fetch"));
       await expect(sw.dispatch("fetch", { request })).rejects.toThrow("Failed to fetch");
       expect(caches.entries(APP)).toEqual({});

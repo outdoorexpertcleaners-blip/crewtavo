@@ -69,7 +69,7 @@ describe("phone numbers", () => {
 
   it("text the code first, with the company's name", () => {
     expect(signInCodeText("042517", "Oscar Roofing")).toBe(
-      "042517 is your sign-in code for Oscar Roofing on Crewtavo. It runs out in 10 minutes. If you didn't ask for it, ignore this text.",
+      "042517 is your sign-in code for Oscar Roofing. It runs out in 10 minutes. If you didn't ask for it, ignore this text.",
     );
   });
 });
@@ -94,7 +94,7 @@ describe("email addresses for sign-in codes", () => {
   it("get an email with the code on its own line, from the company", () => {
     expect(signInCodeEmail({ code: "042517", companyName: "Oscar Roofing", name: "Al Apex" })).toEqual({
       subject: "Your sign-in code for Oscar Roofing",
-      text: "Hi Al,\n\nHere's your code to sign in to Oscar Roofing on Crewtavo:\n\n042517\n\nIt runs out in 10 minutes. If you didn't ask for it, ignore this email.\n\nThanks,\nOscar Roofing",
+      text: "Hi Al,\n\nHere's your code to sign in to Oscar Roofing:\n\n042517\n\nIt runs out in 10 minutes. If you didn't ask for it, ignore this email.\n\nThanks,\nOscar Roofing",
     });
     expect(signInCodeEmail({ code: "042517", companyName: "Oscar Roofing" }).text).toMatch(/^Hi there,/);
   });

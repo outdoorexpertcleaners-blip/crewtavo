@@ -20,7 +20,7 @@ const env: Env = {
   ENCRYPTION_KEY: btoa(String.fromCharCode(...new Uint8Array(32).map((_, i) => i * 7))),
   APP_URL: "https://ops.example.com",
   RESEND_API_KEY: "re_test",
-  EMAIL_FROM: "Crewtavo <noreply@example.com>",
+  EMAIL_FROM: "The app <noreply@example.com>",
   TWILIO_ACCOUNT_SID: "AC123",
   TWILIO_AUTH_TOKEN: "twilio-token",
   TWILIO_FROM_NUMBER: "+15405550000",
@@ -339,7 +339,7 @@ describe("the office's link for a sub", () => {
     const body = (await res.json()) as { link: string; email: unknown; sms: unknown };
     expect(body).toMatchObject({ email: { sent: true, reason: null }, sms: { sent: true, reason: null } });
     const [email] = db.emails();
-    expect(email).toMatchObject({ to: ["al@apex.test"], subject: "Paperwork for Uniform Roofing", reply_to: "office@uniform.test", from: "Crewtavo <noreply@example.com>" });
+    expect(email).toMatchObject({ to: ["al@apex.test"], subject: "Paperwork for Uniform Roofing", reply_to: "office@uniform.test", from: "The app <noreply@example.com>" });
     expect(email.text).toContain("Hi Al,");
     expect(email.text).toContain("Please send us your W-9 and liability insurance.");
     expect(email.text).toContain(body.link);

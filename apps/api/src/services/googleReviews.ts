@@ -259,7 +259,7 @@ export async function checkAccess(env: Env, admin: Db, companyId: string, found?
       p_title: detail === "none" ? "Google reviews need another Google account" : "Pick the location for your Google reviews",
       p_body: detail === "none"
         ? `${problemMessage("pick", detail)} Sign in with the one that does in Apps → Google Business Profile.`
-        : "Google lets Crewtavo in now. Pick the location whose reviews come in, in Apps → Google Business Profile.",
+        : "Google lets the app in now. Pick the location whose reviews come in, in Apps → Google Business Profile.",
     });
   }
   return { accounts, problem: "pick" };

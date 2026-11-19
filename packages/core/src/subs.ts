@@ -301,7 +301,7 @@ export function subAccessText(access: { state: SubAccessState; last_sign_in_at?:
 export function signInLinkMessages(m: { companyName: string; subName: string; contactName?: string | null; link: string }) {
   return {
     subject: `Your sign-in for ${m.companyName}`,
-    text: `Hi ${greetingName(m.contactName || m.subName)},\n\nHere's your link to sign in to ${m.companyName} on Crewtavo, where you'll see the jobs you're on with us and send us your paperwork:\n\n${m.link}\n\nIt works once, within a day. On your phone, open it in your browser and you'll stay signed in there.\n\nThanks,\n${m.companyName}`,
+    text: `Hi ${greetingName(m.contactName || m.subName)},\n\nHere's your link to sign in to ${m.companyName}, where you'll see the jobs you're on with us and send us your paperwork:\n\n${m.link}\n\nIt works once, within a day. On your phone, open it in your browser and you'll stay signed in there.\n\nThanks,\n${m.companyName}`,
     sms: `${m.companyName}: here's your link to sign in and see your jobs with us. It works once, within a day: ${m.link}`,
   };
 }
@@ -326,7 +326,7 @@ export const SIGN_IN_CODE_TRIES = 5;
  * where the phone's notification shows it and offers to fill it in.
  */
 export const signInCodeText = (code: string, companyName: string) =>
-  `${code} is your sign-in code for ${companyName} on Crewtavo. It runs out in ${SIGN_IN_CODE_MINUTES} minutes. If you didn't ask for it, ignore this text.`;
+  `${code} is your sign-in code for ${companyName}. It runs out in ${SIGN_IN_CODE_MINUTES} minutes. If you didn't ask for it, ignore this text.`;
 
 /**
  * The email with a code for signing in (Get a sign-in code by email on the sign-in page, for when
@@ -336,6 +336,6 @@ export const signInCodeText = (code: string, companyName: string) =>
 export function signInCodeEmail(m: { code: string; companyName: string; name?: string | null }) {
   return {
     subject: `Your sign-in code for ${m.companyName}`,
-    text: `Hi ${greetingName(m.name)},\n\nHere's your code to sign in to ${m.companyName} on Crewtavo:\n\n${m.code}\n\nIt runs out in ${SIGN_IN_CODE_MINUTES} minutes. If you didn't ask for it, ignore this email.\n\nThanks,\n${m.companyName}`,
+    text: `Hi ${greetingName(m.name)},\n\nHere's your code to sign in to ${m.companyName}:\n\n${m.code}\n\nIt runs out in ${SIGN_IN_CODE_MINUTES} minutes. If you didn't ask for it, ignore this email.\n\nThanks,\n${m.companyName}`,
   };
 }

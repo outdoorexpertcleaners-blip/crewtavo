@@ -17,7 +17,7 @@ const env: Env = {
   ENCRYPTION_KEY: btoa(String.fromCharCode(...new Uint8Array(32).map((_, i) => i * 7))),
   APP_URL: "https://ops.example.com",
   RESEND_API_KEY: "re_server",
-  EMAIL_FROM: "Crewtavo <noreply@example.com>",
+  EMAIL_FROM: "The app <noreply@example.com>",
   TWILIO_ACCOUNT_SID: "AC123",
   TWILIO_AUTH_TOKEN: "twilio-token",
   TWILIO_FROM_NUMBER: "+15405550000",
@@ -157,7 +157,7 @@ describe("a text", () => {
       p_company: co, p_channel: "sms", p_ok: false, p_refused: true,
       p_error: "The text provider refused it (401: Authenticate).",
       p_title: "Texts aren't going out",
-      p_body: "The text provider refused it (401: Authenticate). Reminders and other texts won't reach anyone until it's fixed. Check the Twilio account, and the Twilio keys this Crewtavo was set up with.",
+      p_body: "The text provider refused it (401: Authenticate). Reminders and other texts won't reach anyone until it's fixed. Check the Twilio account, and the Twilio keys this app was set up with.",
     }]);
   });
 

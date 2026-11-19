@@ -405,7 +405,7 @@ export function SocialComposer({ open, onClose, state, post, start }: { open: bo
           {unreachable && (
             <div className="callout callout-warning">
               <Icon name="alert" size={20} />
-              <div className="grow">Crewtavo's address isn't public, so Meta and Google can't fetch the pictures. Save it as a draft, or use Share elsewhere. Words alone can still post.</div>
+              <div className="grow">The app's address isn't public, so Meta and Google can't fetch the pictures. Save it as a draft, or use Share elsewhere. Words alone can still post.</div>
             </div>
           )}
           <div ref={errorRef} style={{ scrollMarginBottom: 96 }}>

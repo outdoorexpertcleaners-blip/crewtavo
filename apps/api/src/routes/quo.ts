@@ -170,7 +170,7 @@ quo.put("/apps/quo/test-numbers", requireUser, requireCompany(ADMINS, "apps"), a
  */
 quo.post("/apps/quo/webhook", requireUser, requireCompany(ADMINS, "apps"), async (c) => {
   const base = appUrl(c);
-  if (!base.startsWith("https://")) throw new HttpError(400, "Quo can only reach a public https address, and this Crewtavo doesn't have one yet.");
+  if (!base.startsWith("https://")) throw new HttpError(400, "Quo can only reach a public https address, and this app doesn't have one yet.");
   const admin = adminClient(c.env);
   const settings = await current(admin, c.var.companyId);
   const kept = await loadSecret(c.env, admin, c.var.companyId, "quo").catch(() => null);

@@ -160,7 +160,7 @@ export function MapsSettings() {
           <>Make a free account at <a href="https://location.arcgis.com/sign-up/" target="_blank" rel="noreferrer">ArcGIS Location Platform</a>.</>,
           <>In the dashboard, open <strong>Developer credentials</strong>, then <strong>New developer credential</strong> and choose <strong>API key credentials</strong>.</>,
           <>Under privileges, open <strong>Location services</strong> and tick <strong>Basemaps</strong>.</>,
-          <>Under referrers, add <code>{location.origin}</code> so the key only works on your Crewtavo.</>,
+          <>Under referrers, add <code>{location.origin}</code> so the key only works on your app.</>,
           <>Copy the API key (it starts with <code>AAPT</code> or <code>AAPK</code>) and paste it below.</>,
         ]}
       />
@@ -183,7 +183,7 @@ export function MapsSettings() {
         ]}
         footnote={
           <>
-            Google Maps features and content in Crewtavo are subject to the{" "}
+            Google Maps features and content in the app are subject to the{" "}
             <a href={GOOGLE_MAPS_TERMS_URL} target="_blank" rel="noreferrer">Google Maps/Google Earth Additional Terms of Service</a> and the{" "}
             <a href={GOOGLE_PRIVACY_URL} target="_blank" rel="noreferrer">Google Privacy Policy</a>.
           </>
@@ -268,7 +268,7 @@ function KeyCard({
         {set ? (
           <span className="chip chip-green"><Icon name="check" size={14} /> Working · key ending {current!.slice(-4)}</span>
         ) : inherited ? (
-          <span className="chip chip-green"><Icon name="check" size={14} /> Set up by whoever installed Crewtavo</span>
+          <span className="chip chip-green"><Icon name="check" size={14} /> Set up by whoever installed the app</span>
         ) : (
           <span className="chip">Not set up</span>
         )}

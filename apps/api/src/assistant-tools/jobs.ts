@@ -624,7 +624,7 @@ async function createJob(ctx: ToolContext, a: JobInput) {
     property_id: propertyId,
     ...(rule && { repeats: describeRule(rule), next_dates: occurrenceDates({ starts_on: first, ends_on: a.ends_on ?? null, recurrence_rule: rule, active_months: a.season_months ?? null }, first, addYear(first)).slice(0, 4) }),
     ...scheduled,
-    ...(!propertyId && { note: "No property: the client has none or several. Set it in Crewtavo, or give property_id." }),
+    ...(!propertyId && { note: "No property: the client has none or several. Set it in the app, or give property_id." }),
     visits_ahead_days: recurring ? VISIT_DATES_AHEAD : undefined,
   };
 }

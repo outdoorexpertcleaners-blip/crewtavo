@@ -115,7 +115,7 @@ describe("the sign-in address", () => {
     expect(params).toEqual({
       response_type: "code",
       client_id: "dynamic_agent_client",
-      agent_name_hint: "Crewtavo",
+      agent_name_hint: "Outdoor Expert app",
       ext_agent_host_id: "urn:uuid:6f1b8f0e-3c59-4d0a-9d55-1f2a3b4c5d6e",
       redirect_uri: CALLBACK,
       scope: "openid profile email offline_access resource.invoke chatgpt.tokens.use.direct",
@@ -152,7 +152,7 @@ describe("the sign-in address", () => {
     expect(params.id_token_hint).toBeUndefined();
     // Use a different account starts a new registration.
     const fresh = Object.fromEntries((await begin(pat, { fresh: true })).url.searchParams);
-    expect(fresh).toMatchObject({ client_id: "dynamic_agent_client", agent_name_hint: "Crewtavo" });
+    expect(fresh).toMatchObject({ client_id: "dynamic_agent_client", agent_name_hint: "Outdoor Expert app" });
     expect(fresh.login_hint).toBeUndefined();
   });
 
@@ -228,7 +228,7 @@ describe("pasting the address the browser landed on", () => {
     for (const client_id of ["", "dynamic_agent_client"]) {
       const { state } = await begin();
       const address = `${CALLBACK}?${new URLSearchParams({ code: "code-pat-1", scope: GRANTED, state, ...(client_id ? { client_id } : {}) })}`;
-      expect(await refusal(plans.finishSignIn(env, admin, pat, address))).toEqual([400, "ChatGPT didn't finish registering Crewtavo for your account. Press Continue with ChatGPT and try again."]);
+      expect(await refusal(plans.finishSignIn(env, admin, pat, address))).toEqual([400, "ChatGPT didn't finish registering the app for your account. Press Continue with ChatGPT and try again."]);
     }
     expect(ai.calls).toEqual([]);
     expect(planRow()).toBeUndefined();

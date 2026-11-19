@@ -124,8 +124,8 @@ interface Instance {
   dbUrl: string;
 }
 
-const NOT_AN_INSTANCE = "Crewtavo makes backups where it runs its own database (the Railway template or docker compose). This one uses another database, so back it up there.";
-const NO_PG_DUMP = "This Crewtavo was started without the database's backup tool (pg_dump), so it can't make backups. Crewtavo's Docker image has it.";
+const NOT_AN_INSTANCE = "The app makes backups where it runs its own database (the Railway template or docker compose). This one uses another database, so back it up there.";
+const NO_PG_DUMP = "This app was started without the database's backup tool (pg_dump), so it can't make backups. The app's Docker image has it.";
 
 /** What a backup needs from this instance, or why it can't make one. */
 function instanceOf(env: Env): Instance | string {
@@ -253,10 +253,10 @@ async function runBackup(admin: Db, instance: Instance, id: string): Promise<boo
   };
   const beat = setInterval(() => {
     void admin.from("backups").update({ heartbeat_at: new Date().toISOString() }).match({ id, status: "running" }).select("id").then(({ data, error }) => {
-      if (!error && !data?.length) stop("Another Crewtavo server closed this backup while it was still being made.");
+      if (!error && !data?.length) stop("Another app server closed this backup while it was still being made.");
     });
   }, HEARTBEAT_MS);
-  const limit = setTimeout(() => stop("The backup took more than three hours, so Crewtavo stopped it."), RUN_LIMIT_MS);
+  const limit = setTimeout(() => stop("The backup took more than three hours, so the app stopped it."), RUN_LIMIT_MS);
   try {
     const piece = Buffer.allocUnsafe(PART_BYTES);
     let filled = 0;
@@ -265,7 +265,7 @@ async function runBackup(admin: Db, instance: Instance, id: string): Promise<boo
     const send = async () => {
       // A storage move is switching storage over: nothing is written until it has, as for uploads.
       for (let waited = 0; storageWritesPaused(); waited += 5_000) {
-        if (waited >= PAUSE_WAIT_MS) throw new BackupFailed("Files were moving to new storage for too long. Crewtavo tries again within the hour.");
+        if (waited >= PAUSE_WAIT_MS) throw new BackupFailed("Files were moving to new storage for too long. The app tries again within the hour.");
         await backupTools.wait(5_000);
       }
       if (parts === 0 && piece.subarray(0, 5).toString("latin1") !== "PGDMP") throw new BackupFailed("pg_dump didn't write a backup file.");
@@ -295,7 +295,7 @@ async function runBackup(admin: Db, instance: Instance, id: string): Promise<boo
     if (stored.length !== parts || size !== bytes) throw new BackupFailed(`Storage has ${stored.length} of the backup's ${parts} pieces (${Number.isFinite(size) ? size : "an unknown number"} of ${bytes} bytes).`);
     const { data, error } = await admin.from("backups").update({ status: "ok", finished_at: new Date().toISOString(), bytes, parts }).match({ id, status: "running" }).select("id");
     if (error) throw new BackupFailed(`The backup was made but couldn't be recorded (${error.message}).`);
-    if (!data?.length) throw new BackupFailed("Another Crewtavo server closed this backup while it was still being made.");
+    if (!data?.length) throw new BackupFailed("Another app server closed this backup while it was still being made.");
     return true;
   } catch (error) {
     dump.stop();
@@ -467,11 +467,11 @@ async function warnOwners(admin: Db, company: { id: string; timezone: string }, 
   if (tonight.length >= TRIES && !tonight.some((r) => r.warned_at)) {
     warning = {
       title: "Last night's database backup didn't work",
-      body: `${latest.error ?? "It didn't finish."} Crewtavo tries again tomorrow night. ${lastGoodAt ? `Your last good backup is from ${dayOf(lastGoodAt, company.timezone)}.` : "There's no good backup yet."} Settings → Your data has Back up now.`,
+      body: `${latest.error ?? "It didn't finish."} The app tries again tomorrow night. ${lastGoodAt ? `Your last good backup is from ${dayOf(lastGoodAt, company.timezone)}.` : "There's no good backup yet."} Settings → Your data has Back up now.`,
     };
   } else if (stale && !list.some((r) => r.warned_at && now.getTime() - Date.parse(r.warned_at) < BACKUP_WARN_AGAIN_HOURS * HOUR_MS)) {
     warning = {
-      title: "Crewtavo hasn't backed up its database for over two days",
+      title: "The app hasn't backed up its database for over two days",
       body: `${lastGoodAt ? `The last good backup is from ${dayOf(lastGoodAt, company.timezone)}.` : "No backup has worked yet."} Open Settings → Your data to see why, and press Back up now.`,
     };
   }

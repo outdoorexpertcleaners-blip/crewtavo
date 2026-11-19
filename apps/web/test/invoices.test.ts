@@ -221,7 +221,7 @@ describe("what the office reads about a bank payment on its way", () => {
 
   it("says to record one still clearing in a Stripe account Crewtavo left once it clears", () => {
     expect(bankPaymentNote({ ...bank, left: true }, "America/Chicago")).toBe(
-      "A bank payment of $160.00 was still clearing in the Stripe account Crewtavo used before, so it won't show up here on its own. Check it in that Stripe account, and record it here once it clears.",
+      "A bank payment of $160.00 was still clearing in the Stripe account the app used before, so it won't show up here on its own. Check it in that Stripe account, and record it here once it clears.",
     );
   });
 
@@ -310,7 +310,7 @@ describe("an invoice whose autopay bank payment is on its way", () => {
     const html = invoicePage("processing", { left: true });
     expect(control(html, "Record payment")).not.toMatch(/disabled=""/);
     expect(control(html, "Void invoice")).not.toBeNull();
-    expect(html).toContain("was still clearing in the Stripe account Crewtavo used before, so it won&#x27;t show up here on its own. Check it in that Stripe account, and record it here once it clears.");
+    expect(html).toContain("was still clearing in the Stripe account the app used before, so it won&#x27;t show up here on its own. Check it in that Stripe account, and record it here once it clears.");
     expect(html).not.toContain("Record any other payment once it clears or bounces.");
     const migration = readFileSync(fileURLToPath(new URL("../../../supabase/migrations/20261101000100_autopay.sql", import.meta.url)), "utf8");
     expect(migration).toMatch(/s\.status = 'processing' and s\.detached_at is not null/);
@@ -774,7 +774,7 @@ describe("Charge cards on the Invoices page", () => {
     const bodies: unknown[] = [];
     const post = async (body: { invoices: Array<{ id: string; amount: number }> }) => {
       bodies.push(body);
-      if (bodies.length === 2) throw new Error("Couldn't reach Crewtavo");
+      if (bodies.length === 2) throw new Error("Couldn't reach the app");
       return { results: body.invoices.map((b) => ({ invoice_id: b.id, outcome: b.id === "i0" ? "in_progress" : "queued", reason: null })) };
     };
     const done = await chargeInChunks(rows, post);
@@ -787,7 +787,7 @@ describe("Charge cards on the Invoices page", () => {
     expect(done.rows.slice(50).every((d) => chargeOutcomeText(d.result) === "Not sent. Try again.")).toBe(true);
     expect(chargeSummary(done.rows.map((d) => d.result))).toBe("49 charging. 1 already on its way. 70 not charged. Each invoice shows when it's paid.");
     // When the first fails nothing went, so the form says why and can be pressed again.
-    await expect(chargeInChunks(rows.slice(0, 3), async () => { throw new Error("Couldn't reach Crewtavo"); })).rejects.toThrow("Couldn't reach Crewtavo");
+    await expect(chargeInChunks(rows.slice(0, 3), async () => { throw new Error("Couldn't reach the app"); })).rejects.toThrow("Couldn't reach the app");
   });
 
   it("says when there's nothing to charge", () => {

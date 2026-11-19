@@ -58,7 +58,7 @@ export function useAnalyticsSwitch() {
   const turnOff = async () => {
     const ok = await confirm({
       title: "Uninstall Website Analytics?",
-      body: "Crewtavo stops counting visits to your website right away. Everything counted so far is kept, and shows in Marketing again if you install it again. The line on your website does nothing until then.",
+      body: "The app stops counting visits to your website right away. Everything counted so far is kept, and shows in Marketing again if you install it again. The line on your website does nothing until then.",
       confirmLabel: "Uninstall",
       danger: true,
     });
@@ -80,7 +80,7 @@ const BUILDERS: Builder[] = [
     label: "Wix",
     steps: [
       <>In your site's dashboard, go to <strong>Settings</strong>, then <strong>Custom Code</strong> (under Development &amp; integrations).</>,
-      <>Click <strong>+ Add Custom Code</strong> at the top right and paste the line. Name it Crewtavo.</>,
+      <>Click <strong>+ Add Custom Code</strong> at the top right and paste the line. Name it Outdoor Expert app.</>,
       <>Under <strong>Add Code to Pages</strong>, choose <strong>All pages</strong> and <strong>Load code once</strong>. Under <strong>Place Code in</strong>, choose <strong>Head</strong>.</>,
       <>Click <strong>Apply</strong>.</>,
     ],
@@ -115,13 +115,13 @@ const BUILDERS: Builder[] = [
       <>Paste the line for GoDaddy below into <strong>Custom Code</strong>. On each other page, change <code className={styles.inline}>data-page="/"</code> to that page's address, like <code className={styles.inline}>"/services"</code>.</>,
       <>Publish.</>,
     ],
-    note: <>GoDaddy runs custom code in a box of its own, so Crewtavo can't see where these visitors came from. Pages and visitors still count.</>,
+    note: <>GoDaddy runs custom code in a box of its own, so the app can't see where these visitors came from. Pages and visitors still count.</>,
   },
   { id: "developer", label: "Built by a developer" },
   {
     id: "google-sites",
     label: "Google Sites",
-    note: <>Google Sites doesn't let a website add its own code to its pages, so Crewtavo can't count its visits. The booking form still works on it.</>,
+    note: <>Google Sites doesn't let a website add its own code to its pages, so the app can't count its visits. The booking form still works on it.</>,
   },
   {
     id: "other",
@@ -239,7 +239,7 @@ export function AnalyticsPanel() {
       <section id="app-setup" className="card card-pad stack" aria-labelledby="analytics-line" style={{ gap: 14 }}>
         <div className="stack-sm" style={{ gap: 4 }}>
           <h2 id="analytics-line" className="section-title" style={{ fontSize: 16 }}>Put this line on your website</h2>
-          <span className="muted small">It goes on every page, in the part of the page called the head. It loads from your own Crewtavo, uses no cookies and keeps nothing that tells who a visitor is.</span>
+          <span className="muted small">It goes on every page, in the part of the page called the head. It loads from your own app, uses no cookies and keeps nothing that tells who a visitor is.</span>
         </div>
         <div className="row wrap" style={{ gap: 8 }}>
           <code className="code-pill grow" aria-label={builder.id === "godaddy" ? "The line for GoDaddy" : "The line to paste"}>{line}</code>
@@ -260,7 +260,7 @@ export function AnalyticsPanel() {
 
       <section className="card card-pad stack-sm" aria-labelledby="analytics-check" style={{ gap: 10 }}>
         <h2 id="analytics-check" className="section-title" style={{ fontSize: 16 }}>Check your website</h2>
-        <span className="muted small">After you publish, Crewtavo opens your home page and looks for the line. Once it finds it, only that website's pages count, so a copy of your site somewhere else doesn't add to your numbers.</span>
+        <span className="muted small">After you publish, the app opens your home page and looks for the line. Once it finds it, only that website's pages count, so a copy of your site somewhere else doesn't add to your numbers.</span>
         <form className="row wrap" style={{ gap: 8 }} onSubmit={submit}>
           <input className="input grow" style={{ minWidth: 0, flexBasis: 220 }} type="text" inputMode="url" autoComplete="url" spellCheck={false} placeholder="greenlawn.com" aria-label="Your website's address" value={site} onChange={(e) => { setSite(e.target.value); check.reset(); }} />
           <Button type="submit" variant={working ? "secondary" : "primary"} icon="refresh" loading={check.isPending}>Check</Button>

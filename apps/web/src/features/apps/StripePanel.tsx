@@ -39,7 +39,7 @@ export function StripePanel({ app, onChanged }: { app: AppRow; onChanged: () => 
         </div>
         {details.own && !details.webhook && (
           <span className="small" style={{ color: "var(--danger)", fontWeight: 600 }}>
-            <Icon name="alert" size={14} /> Stripe can't reach this address, so payments won't show up on their own. Once Crewtavo has a public https address, connect the key again.
+            <Icon name="alert" size={14} /> Stripe can't reach this address, so payments won't show up on their own. Once the app has a public https address, connect the key again.
           </span>
         )}
         {/* A full secret key can make payouts too: a restricted one from the same form can't. */}
